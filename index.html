@@ -2,111 +2,1423 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>Health Calculator Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Find all your health and fitness calculations in one place! Use our free online tools for BMI, ideal weight, calorie intake, body fat, and more. Get accurate results at HealthCalculator.site." />
+    
+    <title>Health Calculator - Complete Health Tools</title>
 
-        <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-TKWFXJ2K');</script>
-<!-- End Google Tag Manager -->
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-TKWFXJ2K');</script>
+    <!-- End Google Tag Manager -->
 
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-J71E617X6E"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-J71E617X6E');
-</script>  
-    <link rel="icon" type="image/png" href="favicon.png">  
-    <link rel="stylesheet" href="styles.css">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J71E617X6E"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-J71E617X6E');
+    </script>  
+    <link rel="icon" type="image/png" href="favicon.png">   
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            text-align: center;
+            padding: 1.5rem 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .calculator-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .nav-btn {
+            background: #fff;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 0.6rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            background: #fff;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 0.6rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 10px;
+            right: 0;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-content a {
+            color: #667eea;
+            padding: 0.8rem 1rem;
+            text-decoration: none;
+            display: block;
+            font-size: 0.85rem;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .nav-dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .nav-dropdown:hover .dropdown-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .main-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .calculator-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .calculator-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .calculator-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .calculator-card h2 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+            background: white;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .calc-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .result {
+            margin-top: 1.5rem;
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .result.normal {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .result.warning {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+        }
+
+        .result.danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+
+        .result.info {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        .bmi-chart, .macro-breakdown {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+        }
+
+        .macro-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.4rem 0;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+
+        .water-visual {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .water-drops {
+            font-size: 1.8rem;
+            color: #2196F3;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        #hip-group {
+            display: block;
+        }
+
+        #hip-group.hidden {
+            display: none;
+        }
+
+        /* Progress indicators */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 0.8rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+
+        .progress-normal { background: #4CAF50; }
+        .progress-warning { background: #FF9800; }
+        .progress-danger { background: #f44336; }
+
+        /* Heart rate zones */
+        .hr-zones {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .hr-zone {
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .fat-burn { background: #4CAF50; }
+        .cardio { background: #FF9800; }
+
+        /* Sleep cycle visualization */
+        .sleep-cycles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .sleep-cycle {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .header {
+                padding: 2rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .header p {
+                font-size: 1.1rem;
+            }
+
+            .nav-btn, .dropdown-btn {
+                padding: 0.8rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .calculator-card {
+                padding: 2rem;
+                border-radius: 20px;
+            }
+
+            .calculator-card h2 {
+                font-size: 1.8rem;
+            }
+
+            .input-group input,
+            .input-group select {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+
+            .calc-btn {
+                padding: 1.2rem;
+                font-size: 1.1rem;
+            }
+
+            .result {
+                padding: 1.5rem;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calculator-nav {
+                padding: 0.5rem;
+                gap: 0.3rem;
+            }
+
+            .nav-btn, .dropdown-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.75rem;
+                gap: 0.3rem;
+            }
+
+            .nav-btn i, .dropdown-btn i {
+                font-size: 0.9rem;
+            }
+
+            .dropdown-content {
+                min-width: 140px;
+            }
+
+            .dropdown-content a {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .calculator-card {
+                padding: 1.2rem;
+            }
+
+            .calculator-card h2 {
+                font-size: 1.3rem;
+            }
+
+            .input-group label {
+                font-size: 0.9rem;
+            }
+
+            .input-group input,
+            .input-group select {
+                padding: 0.7rem;
+                font-size: 0.9rem;
+            }
+
+            .calc-btn {
+                padding: 0.9rem;
+                font-size: 0.95rem;
+                margin: 1.2rem 0;
+            }
+
+            .result {
+                padding: 1rem;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKWFXJ2K"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
     <header class="header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="logo">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <div class="header-text">
-                    <h1>Health Calculator Suite</h1>
-                    <p id="selected-calculator-info" class="calculator-info hidden"></p>
-                </div>
-            </div>
-            
-            <div class="header-right">
-                <div class="tools-count">
-                    <span class="count">14</span> Professional Health Tools
-                </div>
-                <button id="menu-btn" class="menu-btn">
-                    <i class="fas fa-bars"></i>
-                    <span class="menu-text">All Calculators</span>
-                </button>
-            </div>
-        </div>
+        <h1><i class="fas fa-heartbeat"></i> Health Calculator</h1>
+        <p>Complete health information for your wellness</p>
     </header>
 
-    <!-- Sidebar Menu -->
-    <div id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-            <h2>Health Calculators</h2>
-            <button id="close-sidebar" class="close-btn">
-                <i class="fas fa-times"></i>
+    <nav class="calculator-nav">
+        <button class="nav-btn active" data-calculator="bmi">
+            <i class="fas fa-weight"></i> BMI
+        </button>
+        <button class="nav-btn" data-calculator="bmr">
+            <i class="fas fa-fire"></i> BMR
+        </button>
+        <button class="nav-btn" data-calculator="water">
+            <i class="fas fa-tint"></i> Water
+        </button>
+        <button class="nav-btn" data-calculator="heartrate">
+            <i class="fas fa-heartbeat"></i> Heart
+        </button>
+        
+        <div class="nav-dropdown">
+            <button class="dropdown-btn">
+                <i class="fas fa-ellipsis-h"></i> More
             </button>
-        </div>
-        <div class="sidebar-content">
-            <div class="calculator-list" id="calculator-list">
-                <!-- Calculator buttons will be generated by JavaScript -->
+            <div class="dropdown-content">
+                <a href="#" data-calculator="pregnancy"><i class="fas fa-baby"></i> Pregnancy</a>
+                <a href="#" data-calculator="bodyfat"><i class="fas fa-percentage"></i> Body Fat</a>
+                <a href="#" data-calculator="calorie"><i class="fas fa-running"></i> Calorie</a>
+                <a href="#" data-calculator="bp"><i class="fas fa-thermometer"></i> BP</a>
+                <a href="#" data-calculator="macro"><i class="fas fa-utensils"></i> Macro</a>
+                <a href="#" data-calculator="sleep"><i class="fas fa-moon"></i> Sleep</a>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <!-- Sidebar Overlay -->
-    <div id="sidebar-overlay" class="sidebar-overlay"></div>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Welcome Screen -->
-        <div id="welcome-screen" class="welcome-screen">
-            <div class="welcome-icon">
-                <i class="fas fa-calculator"></i>
-            </div>
-            <h2>Welcome to Health Calculator Suite</h2>
-            <p>Choose a calculator from the menu to get started</p>
-            <div class="calculator-grid" id="calculator-grid">
-                <!-- Calculator grid will be generated by JavaScript -->
-            </div>
-        </div>
-
-        <!-- Calculator Container -->
-        <div id="calculator-container" class="calculator-container hidden">
-            <!-- Individual calculators will be loaded here -->
-        </div>
-
-        <!-- Medical Disclaimer -->
-        <div class="disclaimer">
-            <div class="disclaimer-content">
-                <div class="disclaimer-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
+    <main class="main-container">
+        <!-- BMI Calculator -->
+        <div class="calculator-section active" id="bmi">
+            <div class="calculator-card">
+                <h2><i class="fas fa-weight"></i> BMI Calculator</h2>
+                <div class="input-group">
+                    <label>Height (cm):</label>
+                    <input type="number" id="height" placeholder="170" min="50" max="250">
                 </div>
-                <div class="disclaimer-text">
-                    <h4>Medical Disclaimer</h4>
-                    <p>
-                        These calculators are for informational purposes only and should not replace professional medical advice. 
-                        Always consult with healthcare professionals for accurate medical assessments and personalized health guidance. 
-                        Results are estimates based on standard formulas and may not reflect individual health conditions.
-                    </p>
+                <div class="input-group">
+                    <label>Weight (kg):</label>
+                    <input type="number" id="weight" placeholder="65" min="20" max="300">
                 </div>
+                <button class="calc-btn" onclick="calculateBMI()">
+                    <i class="fas fa-calculator"></i> Calculate BMI
+                </button>
+                <div class="result" id="bmi-result"></div>
+            </div>
+        </div>
+
+        <!-- BMR Calculator -->
+        <div class="calculator-section" id="bmr">
+            <div class="calculator-card">
+                <h2><i class="fas fa-fire"></i> BMR Calculator</h2>
+                <div class="input-group">
+                    <label>Age:</label>
+                    <input type="number" id="bmr-age" placeholder="25" min="10" max="100">
+                </div>
+                <div class="input-group">
+                    <label>Gender:</label>
+                    <select id="bmr-gender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Weight (kg):</label>
+                    <input type="number" id="bmr-weight" placeholder="65" min="20" max="300">
+                </div>
+                <div class="input-group">
+                    <label>Height (cm):</label>
+                    <input type="number" id="bmr-height" placeholder="170" min="50" max="250">
+                </div>
+                <div class="input-group">
+                    <label>Activity Level:</label>
+                    <select id="activity-level">
+                        <option value="1.2">Sedentary (little/no exercise)</option>
+                        <option value="1.375">Light activity (light exercise)</option>
+                        <option value="1.55">Moderate activity (moderate exercise)</option>
+                        <option value="1.725">High activity (hard exercise)</option>
+                        <option value="1.9">Very high activity (very hard exercise)</option>
+                    </select>
+                </div>
+                <button class="calc-btn" onclick="calculateBMR()">
+                    <i class="fas fa-calculator"></i> Calculate BMR
+                </button>
+                <div class="result" id="bmr-result"></div>
+            </div>
+        </div>
+
+        <!-- Water Intake Calculator -->
+        <div class="calculator-section" id="water">
+            <div class="calculator-card">
+                <h2><i class="fas fa-tint"></i> Daily Water Intake</h2>
+                <div class="input-group">
+                    <label>Weight (kg):</label>
+                    <input type="number" id="water-weight" placeholder="65" min="20" max="300">
+                </div>
+                <div class="input-group">
+                    <label>Activity Level:</label>
+                    <select id="water-activity">
+                        <option value="0">Low activity</option>
+                        <option value="500">Moderate activity</option>
+                        <option value="1000">High activity</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Weather:</label>
+                    <select id="weather">
+                        <option value="0">Normal</option>
+                        <option value="500">Hot</option>
+                        <option value="-200">Cold</option>
+                    </select>
+                </div>
+                <button class="calc-btn" onclick="calculateWater()">
+                    <i class="fas fa-calculator"></i> Calculate Water Intake
+                </button>
+                <div class="result" id="water-result"></div>
+            </div>
+        </div>
+
+        <!-- Heart Rate Calculator -->
+        <div class="calculator-section" id="heartrate">
+            <div class="calculator-card">
+                <h2><i class="fas fa-heartbeat"></i> Target Heart Rate</h2>
+                <div class="input-group">
+                    <label>Age:</label>
+                    <input type="number" id="hr-age" placeholder="25" min="10" max="100">
+                </div>
+                <div class="input-group">
+                    <label>Resting Heart Rate:</label>
+                    <input type="number" id="resting-hr" placeholder="70" min="40" max="120">
+                </div>
+                <button class="calc-btn" onclick="calculateHeartRate()">
+                    <i class="fas fa-calculator"></i> Calculate Heart Rate
+                </button>
+                <div class="result" id="hr-result"></div>
+            </div>
+        </div>
+
+        <!-- Pregnancy Calculator -->
+        <div class="calculator-section" id="pregnancy">
+            <div class="calculator-card">
+                <h2><i class="fas fa-baby"></i> Pregnancy Due Date</h2>
+                <div class="input-group">
+                    <label>Last Menstrual Period (LMP) Date:</label>
+                    <input type="date" id="lmp-date">
+                </div>
+                <button class="calc-btn" onclick="calculatePregnancy()">
+                    <i class="fas fa-calculator"></i> Calculate Due Date
+                </button>
+                <div class="result" id="pregnancy-result"></div>
+            </div>
+        </div>
+
+        <!-- Body Fat Calculator -->
+        <div class="calculator-section" id="bodyfat">
+            <div class="calculator-card">
+                <h2><i class="fas fa-percentage"></i> Body Fat Percentage</h2>
+                <div class="input-group">
+                    <label>Gender:</label>
+                    <select id="bf-gender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Neck (cm):</label>
+                    <input type="number" id="neck" placeholder="35" min="20" max="60">
+                </div>
+                <div class="input-group">
+                    <label>Waist (cm):</label>
+                    <input type="number" id="waist" placeholder="80" min="40" max="150">
+                </div>
+                <div class="input-group" id="hip-group">
+                    <label>Hip (cm) - For Women:</label>
+                    <input type="number" id="hip" placeholder="90" min="50" max="150">
+                </div>
+                <div class="input-group">
+                    <label>Height (cm):</label>
+                    <input type="number" id="bf-height" placeholder="170" min="50" max="250">
+                </div>
+                <button class="calc-btn" onclick="calculateBodyFat()">
+                    <i class="fas fa-calculator"></i> Calculate Body Fat
+                </button>
+                <div class="result" id="bf-result"></div>
+            </div>
+        </div>
+
+        <!-- Calorie Burn Calculator -->
+        <div class="calculator-section" id="calorie">
+            <div class="calculator-card">
+                <h2><i class="fas fa-running"></i> Calorie Burn Calculator</h2>
+                <div class="input-group">
+                    <label>Activity:</label>
+                    <select id="activity-type">
+                        <option value="8">Running (8 mph)</option>
+                        <option value="6">Cycling</option>
+                        <option value="10">Swimming</option>
+                        <option value="4">Walking</option>
+                        <option value="7">Yoga</option>
+                        <option value="12">Gym</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Weight (kg):</label>
+                    <input type="number" id="calorie-weight" placeholder="65" min="20" max="300">
+                </div>
+                <div class="input-group">
+                    <label>Time (minutes):</label>
+                    <input type="number" id="exercise-time" placeholder="30" min="1" max="480">
+                </div>
+                <button class="calc-btn" onclick="calculateCalorieBurn()">
+                    <i class="fas fa-calculator"></i> Calculate Calorie Burn
+                </button>
+                <div class="result" id="calorie-result"></div>
+            </div>
+        </div>
+
+        <!-- Blood Pressure Calculator -->
+        <div class="calculator-section" id="bp">
+            <div class="calculator-card">
+                <h2><i class="fas fa-thermometer"></i> Blood Pressure Checker</h2>
+                <div class="input-group">
+                    <label>Systolic BP:</label>
+                    <input type="number" id="systolic" placeholder="120" min="70" max="250">
+                </div>
+                <div class="input-group">
+                    <label>Diastolic BP:</label>
+                    <input type="number" id="diastolic" placeholder="80" min="40" max="150">
+                </div>
+                <button class="calc-btn" onclick="calculateBP()">
+                    <i class="fas fa-calculator"></i> Check Blood Pressure
+                </button>
+                <div class="result" id="bp-result"></div>
+            </div>
+        </div>
+
+        <!-- Macro Calculator -->
+        <div class="calculator-section" id="macro">
+            <div class="calculator-card">
+                <h2><i class="fas fa-utensils"></i> Macro Nutrients</h2>
+                <div class="input-group">
+                    <label>Age:</label>
+                    <input type="number" id="macro-age" placeholder="25" min="10" max="100">
+                </div>
+                <div class="input-group">
+                    <label>Weight (kg):</label>
+                    <input type="number" id="macro-weight" placeholder="65" min="20" max="300">
+                </div>
+                <div class="input-group">
+                    <label>Fitness Goal:</label>
+                    <select id="fitness-goal">
+                        <option value="maintain">Maintain Weight</option>
+                        <option value="lose">Weight Loss</option>
+                        <option value="gain">Muscle Gain</option>
+                    </select>
+                </div>
+                <button class="calc-btn" onclick="calculateMacros()">
+                    <i class="fas fa-calculator"></i> Calculate Macros
+                </button>
+                <div class="result" id="macro-result"></div>
+            </div>
+        </div>
+
+        <!-- Sleep Calculator -->
+        <div class="calculator-section" id="sleep">
+            <div class="calculator-card">
+                <h2><i class="fas fa-moon"></i> Sleep Calculator</h2>
+                <div class="input-group">
+                    <label>Bedtime:</label>
+                    <input type="time" id="bedtime" value="22:30">
+                </div>
+                <div class="input-group">
+                    <label>Or Wake Time:</label>
+                    <input type="time" id="waketime" value="06:30">
+                </div>
+                <button class="calc-btn" onclick="calculateSleep()">
+                    <i class="fas fa-calculator"></i> Calculate Best Alarm Time
+                </button>
+                <div class="result" id="sleep-result"></div>
             </div>
         </div>
     </main>
 
-    <script src="script.js"></script>
+    <footer class="footer">
+        <p>&copy; 2023 Health Calculator | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+    </footer>
+
+    <script>
+        // Global variables
+        let currentCalculator = 'bmi';
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCalculators();
+            setupEventListeners();
+        });
+
+        function initializeCalculators() {
+            // Show BMI calculator by default
+            showCalculator('bmi');
+            
+            // Set today's date as default for pregnancy calculator
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('lmp-date').value = formattedDate;
+        }
+
+        function setupEventListeners() {
+            // Navigation buttons
+            const navButtons = document.querySelectorAll('.nav-btn, .dropdown-content a');
+            navButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const calculator = this.dataset.calculator;
+                    showCalculator(calculator);
+                    
+                    // Update active state for main nav buttons
+                    document.querySelectorAll('.nav-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        if(btn.dataset.calculator === calculator) {
+                            btn.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            // Body fat gender change
+            document.getElementById('bf-gender').addEventListener('change', function() {
+                const hipGroup = document.getElementById('hip-group');
+                if (this.value === 'female') {
+                    hipGroup.classList.remove('hidden');
+                } else {
+                    hipGroup.classList.add('hidden');
+                }
+            });
+        }
+
+        function showCalculator(calculatorId) {
+            // Hide all calculators
+            const sections = document.querySelectorAll('.calculator-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected calculator
+            document.getElementById(calculatorId).classList.add('active');
+            currentCalculator = calculatorId;
+            
+            // Scroll to top of calculator
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // BMI Calculator
+        function calculateBMI() {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const resultDiv = document.getElementById('bmi-result');
+
+            if (!height || !weight) {
+                showError(resultDiv, 'Please fill all fields');
+                return;
+            }
+
+            const heightInMeters = height / 100;
+            const bmi = weight / (heightInMeters * heightInMeters);
+            
+            let category, className, advice;
+            
+            if (bmi < 18.5) {
+                category = 'Underweight';
+                className = 'warning';
+                advice = 'You are underweight. Consider eating nutritious food and consult a doctor.';
+            } else if (bmi < 25) {
+                category = 'Normal Weight';
+                className = 'normal';
+                advice = 'Great! Your weight is normal. Keep maintaining it.';
+            } else if (bmi < 30) {
+                category = 'Overweight';
+                className = 'warning';
+                advice = 'You are slightly overweight. Consider exercise and balanced diet.';
+            } else {
+                category = 'Obese';
+                className = 'danger';
+                advice = 'You are significantly overweight. Please consult a doctor immediately.';
+            }
+
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-chart-line"></i> Your BMI: ${bmi.toFixed(1)}</h3>
+                <p><strong>Category:</strong> ${category}</p>
+                <p><strong>Advice:</strong> ${advice}</p>
+                <div class="bmi-chart">
+                    <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                        <span style="color: #2196F3;">< 18.5</span>
+                        <span style="color: #4CAF50;">18.5-24.9</span>
+                        <span style="color: #FF9800;">25-29.9</span>
+                        <span style="color: #f44336;">≥ 30</span>
+                    </div>
+                </div>
+            `;
+            
+            showResult(resultDiv, className);
+        }
+
+        // BMR Calculator
+        function calculateBMR() {
+            const age = parseFloat(document.getElementById('bmr-age').value);
+            const gender = document.getElementById('bmr-gender').value;
+            const weight = parseFloat(document.getElementById('bmr-weight').value);
+            const height = parseFloat(document.getElementById('bmr-height').value);
+            const activityLevel = parseFloat(document.getElementById('activity-level').value);
+            const resultDiv = document.getElementById('bmr-result');
+
+            if (!age || !weight || !height) {
+                showError(resultDiv, 'Please fill all fields');
+                return;
+            }
+
+            let bmr;
+            if (gender === 'male') {
+                bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+            } else {
+                bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+            }
+
+            const tdee = bmr * activityLevel;
+
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-fire"></i> Your Daily Calorie Needs</h3>
+                <p><strong>BMR (Basic Calories):</strong> ${Math.round(bmr)} calories/day</p>
+                <p><strong>TDEE (Total Calories):</strong> ${Math.round(tdee)} calories/day</p>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>Based on Weight Goals:</h4>
+                    <p>• <strong>Weight Loss:</strong> ${Math.round(tdee - 500)} calories/day</p>
+                    <p>• <strong>Maintain Weight:</strong> ${Math.round(tdee)} calories/day</p>
+                    <p>• <strong>Weight Gain:</strong> ${Math.round(tdee + 500)} calories/day</p>
+                </div>
+            `;
+            
+            showResult(resultDiv, 'info');
+        }
+
+        // Water Intake Calculator
+        function calculateWater() {
+            const weight = parseFloat(document.getElementById('water-weight').value);
+            const activity = parseFloat(document.getElementById('water-activity').value);
+            const weather = parseFloat(document.getElementById('weather').value);
+            const resultDiv = document.getElementById('water-result');
+
+            if (!weight) {
+                showError(resultDiv, 'Please enter your weight');
+                return;
+            }
+
+            // Basic formula: 35ml per kg of body weight
+            let waterNeeded = weight * 35 + activity + weather;
+            const liters = waterNeeded / 1000;
+            const glasses = Math.round(waterNeeded / 250); // 250ml per glass
+
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-tint"></i> Your Daily Water Intake</h3>
+                <div class="water-visual">
+                    <div class="water-drops">💧💧💧💧💧</div>
+                </div>
+                <p><strong>Total Water:</strong> ${liters.toFixed(1)} liters</p>
+                <p><strong>In Glasses:</strong> ${glasses} glasses (250ml per glass)</p>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>💡 Tips:</h4>
+                    <p>• Drink 2 glasses of water when you wake up</p>
+                    <p>• Drink water 30 minutes before meals</p>
+                    <p>• Drink more water during exercise</p>
+                </div>
+            `;
+            
+            showResult(resultDiv, 'info');
+        }
+
+        // Heart Rate Calculator
+        function calculateHeartRate() {
+            const age = parseFloat(document.getElementById('hr-age').value);
+            const restingHR = parseFloat(document.getElementById('resting-hr').value);
+            const resultDiv = document.getElementById('hr-result');
+
+            if (!age || !restingHR) {
+                showError(resultDiv, 'Please fill all fields');
+                return;
+            }
+
+            const maxHR = 220 - age;
+            const hrReserve = maxHR - restingHR;
+            
+            // Target heart rate zones using Karvonen formula
+            const fatBurnLow = Math.round(restingHR + (hrReserve * 0.5));
+            const fatBurnHigh = Math.round(restingHR + (hrReserve * 0.6));
+            const cardioLow = Math.round(restingHR + (hrReserve * 0.7));
+            const cardioHigh = Math.round(restingHR + (hrReserve * 0.85));
+
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-heartbeat"></i> Your Heart Rate Zones</h3>
+                <p><strong>Maximum Heart Rate:</strong> ${maxHR} BPM</p>
+                <div class="hr-zones">
+                    <div class="hr-zone fat-burn">
+                        <h4>Fat Burn Zone</h4>
+                        <p>${fatBurnLow}-${fatBurnHigh} BPM</p>
+                        <small>For weight loss</small>
+                    </div>
+                    <div class="hr-zone cardio">
+                        <h4>Cardio Zone</h4>
+                        <p>${cardioLow}-${cardioHigh} BPM</p>
+                        <small>For cardio fitness</small>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>💡 Advice:</h4>
+                    <p>• Fat burn: ${fatBurnLow}-${fatBurnHigh} BPM for 30-45 minutes</p>
+                    <p>• Cardio: ${cardioLow}-${cardioHigh} BPM for 20-30 minutes</p>
+                </div>
+            `;
+            
+            showResult(resultDiv, 'info');
+        }
+
+        // Pregnancy Calculator
+        function calculatePregnancy() {
+            const lmpDate = new Date(document.getElementById('lmp-date').value);
+            const resultDiv = document.getElementById('pregnancy-result');
+
+            if (!lmpDate || isNaN(lmpDate)) {
+                showError(resultDiv, 'Please enter a valid date');
+                return;
+            }
+
+            const today = new Date();
+            const dueDate = new Date(lmpDate);
+            dueDate.setDate(dueDate.getDate() + 280); // 40 weeks
+
+            const daysDiff = Math.floor((today - lmpDate) / (1000 * 60 * 60 * 24));
+            const weeks = Math.floor(daysDiff / 7);
+            const days = daysDiff % 7;
+
+            let trimester;
+            if (weeks <= 12) {
+                trimester = 'First Trimester';
+            } else if (weeks <= 26) {
+                trimester = 'Second Trimester';
+            } else {
+                trimester = 'Third Trimester';
+            }
+
+            const remainingDays = Math.floor((dueDate - today) / (1000 * 60 * 60 * 24));
+
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-baby"></i> Pregnancy Information</h3>
+                <p><strong>Estimated Due Date:</strong> ${dueDate.toLocaleDateString('en-US')}</p>
+                <p><strong>Pregnancy Duration:</strong> ${weeks} weeks ${days} days</p>
+                <p><strong>Trimester:</strong> ${trimester}</p>
+                <p><strong>Days Remaining:</strong> ${remainingDays > 0 ? remainingDays : 0} days</p>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>💡 Advice:</h4>
+                    <p>• Regular doctor checkups</p>
+                    <p>• Eat nutritious food</p>
+                    <p>• Light exercise</p>
+                    <p>• Avoid stress</p>
+                </div>
+            `;
+            
+            showResult(resultDiv, 'info');
+        }
+
+        // Body Fat Calculator
+        function calculateBodyFat() {
+            const gender = document.getElementById('bf-gender').value;
+            const neck = parseFloat(document.getElementById('neck').value);
+            const waist = parseFloat(document.getElementById('waist').value);
+            const hip = parseFloat(document.getElementById('hip').value);
+            const height = parseFloat(document.getElementById('bf-height').value);
+            const resultDiv = document.getElementById('bf-result');
+
+            if (!neck || !waist || !height || (gender === 'female' && !hip)) {
+                showError(resultDiv, 'Please fill all required fields');
+                return;
+            }
+
+            let bodyFat;
+            if (gender === 'male') {
+                bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+            } else {
+                bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+            }
+
+            let category, className, advice;
+            
+            if (gender === 'male') {
+                if (bodyFat < 6) {
+                    category = 'Very Low Fat';
+                    className = 'warning';
+                    advice = 'Fat level is very low, may be harmful to health.';
+                } else if (bodyFat < 14) {
+                    category = 'Athlete';
+                    className = 'normal';
+                    advice = 'Excellent! You are at athlete level.';
+                } else if (bodyFat < 18) {
+                    category = 'Fit';
+                    className = 'normal';
+                    advice = 'Good! You are fit.';
+                } else if (bodyFat < 25) {
+                    category = 'Normal';
+                    className = 'normal';
+                    advice = 'Normal fat level.';
+                } else {
+                    category = 'High Fat';
+                    className = 'warning';
+                    advice = 'Fat level is high, consider exercising.';
+                }
+            } else {
+                if (bodyFat < 16) {
+                    category = 'Athlete';
+                    className = 'normal';
+                    advice = 'Excellent! You are at athlete level.';
+                } else if (bodyFat < 20) {
+                    category = 'Fit';
+                    className = 'normal';
+                    advice = 'Good! You are fit.';
+                } else if (bodyFat < 25) {
+                    category = 'Normal';
+                    className = 'normal';
+                    advice = 'Normal fat level.';
+                } else if (bodyFat < 32) {
+                    category = 'High Fat';
+                    className = 'warning';
+                    advice = 'Fat level is high, consider exercising.';
+                } else {
+                    category = 'Obese';
+                    className = 'danger';
+                    advice = 'Fat level is very high, consult a doctor.';
+                }
+            }
+
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-percentage"></i> Your Body Fat: ${bodyFat.toFixed(1)}%</h3>
+                <p><strong>Category:</strong> ${category}</p>
+                <p><strong>Advice:</strong> ${advice}</p>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>💡 Tips:</h4>
+                    <p>• Exercise regularly</p>
+                    <p>• Eat protein-rich food</p>
+                    <p>• Get adequate sleep</p>
+                </div>
+            `;
+            
+            showResult(resultDiv, className);
+        }
+
+        // Calorie Burn Calculator
+        function calculateCalorieBurn() {
+            const activityMET = parseFloat(document.getElementById('activity-type').value);
+            const weight = parseFloat(document.getElementById('calorie-weight').value);
+            const time = parseFloat(document.getElementById('exercise-time').value);
+            const resultDiv = document.getElementById('calorie-result');
+
+            if (!weight || !time) {
+                showError(resultDiv, 'Please fill all fields');
+                return;
+            }
+
+            // Calories burned = MET × weight (kg) × time (hours)
+            const caloriesBurned = activityMET * weight * (time / 60);
+            const activityName = document.getElementById('activity-type').options[document.getElementById('activity-type').selectedIndex].text;
+
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-running"></i> Calorie Burn Report</h3>
+                <p><strong>Activity:</strong> ${activityName}</p>
+                <p><strong>Time:</strong> ${time} minutes</p>
+                <p><strong>Calories Burned:</strong> ${Math.round(caloriesBurned)} calories</p>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>💡 Comparison:</h4>
+                    <p>• This equals ${Math.round(caloriesBurned / 4)} grams of sugar</p>
+                    <p>• Or ${Math.round(caloriesBurned / 9)} grams of fat</p>
+                    <p>• ${Math.round(caloriesBurned / 150)} sweets equivalent</p>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>🔥 Try more activities:</h4>
+                    <p>• ${time} minutes walking = ${Math.round(4 * weight * (time / 60))} calories</p>
+                    <p>• ${time} minutes cycling = ${Math.round(6 * weight * (time / 60))} calories</p>
+                </div>
+            `;
+            
+            showResult(resultDiv, 'info');
+        }
+
+        // Blood Pressure Calculator
+        function calculateBP() {
+            const systolic = parseFloat(document.getElementById('systolic').value);
+            const diastolic = parseFloat(document.getElementById('diastolic').value);
+            const resultDiv = document.getElementById('bp-result');
+
+            if (!systolic || !diastolic) {
+                showError(resultDiv, 'Please fill all fields');
+                return;
+            }
+
+            let category, className, advice;
+
+            if (systolic < 90 || diastolic < 60) {
+                category = 'Low Blood Pressure (Hypotension)';
+                className = 'warning';
+                advice = 'Your BP is low. Drink water and consult a doctor.';
+            } else if (systolic < 120 && diastolic < 80) {
+                category = 'Normal';
+                className = 'normal';
+                advice = 'Excellent! Your BP is normal.';
+            } else if (systolic < 130 && diastolic < 80) {
+                category = 'Elevated';
+                className = 'warning';
+                advice = 'BP is slightly elevated. Reduce salt and exercise.';
+            } else if (systolic < 140 || diastolic < 90) {
+                category = 'Stage 1 Hypertension';
+                className = 'warning';
+                advice = 'High BP. Consult a doctor and change lifestyle.';
+            } else if (systolic < 180 || diastolic < 120) {
+                category = 'Stage 2 Hypertension';
+                className = 'danger';
+                advice = 'Very high BP. See a doctor immediately.';
+            } else {
+                category = 'Hypertensive Crisis';
+                className = 'danger';
+                advice = 'Very dangerous situation! Go to hospital immediately.';
+            }
+
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-thermometer"></i> Your BP: ${systolic}/${diastolic} mmHg</h3>
+                <p><strong>Category:</strong> ${category}</p>
+                <p><strong>Advice:</strong> ${advice}</p>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>💡 Ways to control BP:</h4>
+                    <p>• Reduce salt intake (less than 5g per day)</p>
+                    <p>• Exercise 30 minutes daily</p>
+                    <p>• Lose weight</p>
+                    <p>• Quit smoking and alcohol</p>
+                    <p>• Reduce stress</p>
+                </div>
+            `;
+            
+            showResult(resultDiv, className);
+        }
+
+        // Macro Calculator
+        function calculateMacros() {
+            const age = parseFloat(document.getElementById('macro-age').value);
+            const weight = parseFloat(document.getElementById('macro-weight').value);
+            const goal = document.getElementById('fitness-goal').value;
+            const resultDiv = document.getElementById('macro-result');
+
+            if (!age || !weight) {
+                showError(resultDiv, 'Please fill all fields');
+                return;
+            }
+
+            // Basic calorie calculation (simplified)
+            let calories = weight * 24; // Base calories
+            
+            if (goal === 'lose') {
+                calories = calories * 0.8; // 20% reduction
+            } else if (goal === 'gain') {
+                calories = calories * 1.2; // 20% increase
+            }
+
+            // Macro distribution
+            let proteinPercent, carbPercent, fatPercent;
+            
+            if (goal === 'lose') {
+                proteinPercent = 0.4;
+                carbPercent = 0.3;
+                fatPercent = 0.3;
+            } else if (goal === 'gain') {
+                proteinPercent = 0.3;
+                carbPercent = 0.4;
+                fatPercent = 0.3;
+            } else {
+                proteinPercent = 0.3;
+                carbPercent = 0.4;
+                fatPercent = 0.3;
+            }
+
+            const proteinGrams = Math.round((calories * proteinPercent) / 4);
+            const carbGrams = Math.round((calories * carbPercent) / 4);
+            const fatGrams = Math.round((calories * fatPercent) / 9);
+
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-utensils"></i> Your Daily Macro Needs</h3>
+                <p><strong>Total Calories:</strong> ${Math.round(calories)} calories/day</p>
+                <div class="macro-breakdown">
+                    <div class="macro-item">
+                        <span><strong>🥩 Protein:</strong></span>
+                        <span>${proteinGrams}g (${Math.round(proteinPercent * 100)}%)</span>
+                    </div>
+                    <div class="macro-item">
+                        <span><strong>🍞 Carbohydrates:</strong></span>
+                        <span>${carbGrams}g (${Math.round(carbPercent * 100)}%)</span>
+                    </div>
+                    <div class="macro-item">
+                        <span><strong>🥑 Fat:</strong></span>
+                        <span>${fatGrams}g (${Math.round(fatPercent * 100)}%)</span>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>💡 Protein Sources:</h4>
+                    <p>• Beans, chickpeas, lentils</p>
+                    <p>• Cheese, yogurt, milk</p>
+                    <p>• Eggs, chicken, fish</p>
+                    <p>• Nuts and seeds</p>
+                </div>
+            `;
+            
+            showResult(resultDiv, 'info');
+        }
+
+        // Sleep Calculator
+        function calculateSleep() {
+            const bedtime = document.getElementById('bedtime').value;
+            const waketime = document.getElementById('waketime').value;
+            const resultDiv = document.getElementById('sleep-result');
+
+            if (!bedtime && !waketime) {
+                showError(resultDiv, 'Please enter at least one time');
+                return;
+            }
+
+            const sleepCycleMinutes = 90; // 90 minutes per cycle
+            const optimalCycles = [4, 5, 6]; // 6, 7.5, 9 hours
+
+            let suggestions = [];
+
+            if (bedtime) {
+                // Calculate wake times
+                const bedDate = new Date();
+                const [hours, minutes] = bedtime.split(':');
+                bedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+                optimalCycles.forEach(cycles => {
+                    const wakeDate = new Date(bedDate);
+                    wakeDate.setMinutes(wakeDate.getMinutes() + (cycles * sleepCycleMinutes) + 15); // 15 min to fall asleep
+                    
+                    suggestions.push({
+                        cycles: cycles,
+                        time: wakeDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                        hours: cycles * 1.5
+                    });
+                });
+
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-moon"></i> Best Alarm Times</h3>
+                    <p><strong>Bedtime:</strong> ${bedtime}</p>
+                    <div class="sleep-cycles">
+                        ${suggestions.map(s => 
+                            `<div class="sleep-cycle">
+                                <strong>${s.time}</strong><br>
+                                ${s.hours} hours sleep<br>
+                                (${s.cycles} cycles)
+                            </div>`
+                        ).join('')}
+                    </div>
+                `;
+            } else if (waketime) {
+                // Calculate bedtimes
+                const wakeDate = new Date();
+                const [hours, minutes] = waketime.split(':');
+                wakeDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+                optimalCycles.forEach(cycles => {
+                    const bedDate = new Date(wakeDate);
+                    bedDate.setMinutes(bedDate.getMinutes() - (cycles * sleepCycleMinutes) - 15); // 15 min to fall asleep
+                    
+                    suggestions.push({
+                        cycles: cycles,
+                        time: bedDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                        hours: cycles * 1.5
+                    });
+                });
+
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-moon"></i> Best Bedtimes</h3>
+                    <p><strong>Wake Time:</strong> ${waketime}</p>
+                    <div class="sleep-cycles">
+                        ${suggestions.map(s => 
+                            `<div class="sleep-cycle">
+                                <strong>${s.time}</strong><br>
+                                ${s.hours} hours sleep<br>
+                                (${s.cycles} cycles)
+                            </div>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+
+            resultDiv.innerHTML += `
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                    <h4>💡 Tips for better sleep:</h4>
+                    <p>• Turn off phone 1 hour before bed</p>
+                    <p>• Keep room cool and dark</p>
+                    <p>• No caffeine before bed</p>
+                    <p>• Sleep and wake at regular times</p>
+                </div>
+            `;
+            
+            showResult(resultDiv, 'info');
+        }
+
+        // Utility functions
+        function showResult(resultDiv, className) {
+            resultDiv.className = `result show ${className}`;
+        }
+
+        function showError(resultDiv, message) {
+            resultDiv.innerHTML = `<p style="color: #f44336;"><i class="fas fa-exclamation-triangle"></i> ${message}</p>`;
+            resultDiv.className = 'result show danger';
+        }
+    </script>
 </body>
 </html>
