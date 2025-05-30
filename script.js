@@ -6,14 +6,14 @@ const calculators = [
     { id: "body-shape", name: "Body Shape Calculator", category: "Body Health", icon: "fas fa-user", color: "bg-purple" },
     { id: "calorie-burn", name: "Calorie Burn Calculator", category: "Nutrition", icon: "fas fa-fire", color: "bg-red" },
     { id: "macro", name: "Macro Calculator", category: "Nutrition", icon: "fas fa-chart-pie", color: "bg-green" },
-    { id: "water-intake", name: "Water Intake Calculator", category: "Nutrition", icon: "fas fa-tint", color: "bg-blue" },
-    { id: "heart-rate", name: "Heart Rate Calculator", category: "Fitness", icon: "fas fa-heart", color: "bg-red" },
+    { id: "water-intake", name: "Water Intake Calculator", category: "Nutrition", icon: "fas fa-tint", color: "bg-cyan" },
+    { id: "heart-rate", name: "Heart Rate Calculator", category: "Fitness", icon: "fas fa-heart", color: "bg-deep-orange" },
     { id: "vo2-max", name: "VO2 Max Calculator", category: "Fitness", icon: "fas fa-wind", color: "bg-indigo" },
-    { id: "sleep", name: "Sleep Calculator", category: "Wellness", icon: "fas fa-moon", color: "bg-indigo" },
+    { id: "sleep", name: "Sleep Calculator", category: "Wellness", icon: "fas fa-moon", color: "bg-blue" },
     { id: "blood-pressure", name: "Blood Pressure Guide", category: "Wellness", icon: "fas fa-stethoscope", color: "bg-pink" },
-    { id: "pregnancy", name: "Pregnancy Calculator", category: "Special", icon: "fas fa-baby", color: "bg-pink" },
+    { id: "pregnancy", name: "Pregnancy Calculator", category: "Special", icon: "fas fa-baby", color: "bg-rose" },
     { id: "ideal-weight", name: "Ideal Weight Calculator", category: "Special", icon: "fas fa-weight", color: "bg-teal" },
-    { id: "ovulation", name: "Ovulation Calculator", category: "Women's Health", icon: "fas fa-calendar-check", color: "bg-rose" }
+    { id: "ovulation", name: "Ovulation Calculator", category: "Women's Health", icon: "fas fa-calendar-check", color: "bg-amber" }
 ];
 
 let selectedCalculator = '';
