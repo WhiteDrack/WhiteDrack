@@ -1,4 +1,4 @@
-/* Reset and Base Styles */
+ /* Reset and Base Styles */
 * {
     margin: 0;
     padding: 0;
@@ -463,6 +463,10 @@ body {
 .bg-pink { background: #e91e63; }
 .bg-teal { background: #009688; }
 .bg-rose { background: #f43f5e; }
+.bg-cyan { background: #00bcd4; }
+.bg-lime { background: #8bc34a; }
+.bg-amber { background: #ffc107; }
+.bg-deep-orange { background: #ff5722; }
 
 /* Medical Disclaimer */
 .disclaimer {
