@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /https://healthcalculator.site
+Disallow: /private/
+Disallow: /tmp/
+Disallow: /admin/
+Disallow: /search/
+
+Sitemap: https://healthcalculator.site/sitemap.xml
