@@ -1,7 +1,7 @@
  <!DOCTYPE html>
 <html lang="en">
 <head>
- <meta name="msvalidate.01" content="21CD177BBEE4923775D1088CF0166EC7" />
+    <meta name="msvalidate.01" content="21CD177BBEE4923775D1088CF0166EC7" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Find all your health and fitness calculations in one place! Use our free online tools for BMI, ideal weight, calorie intake, body fat, and more. Get accurate results at HealthCalculator.site." />
@@ -500,6 +500,57 @@
                 font-size: 0.95rem;
             }
         }
+
+        /* Blog Content Styles */
+        .blog-content {
+            line-height: 1.6;
+            margin-top: 1.5rem;
+        }
+        
+        .blog-content h3 {
+            color: #667eea;
+            margin: 1.2rem 0 0.8rem;
+            font-size: 1.2rem;
+        }
+        
+        .blog-content ul, .blog-content ol {
+            padding-left: 1.5rem;
+            margin: 0.8rem 0;
+        }
+        
+        .blog-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 0.8rem;
+            text-align: left;
+        }
+        
+        .comparison-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .tip-card {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
     </style>
 </head>
 <body>
@@ -560,6 +611,67 @@
                 </button>
                 <div class="result" id="bmi-result"></div>
             </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-book-open"></i> Understanding BMI: Your Complete Guide</h2>
+                <div class="blog-content">
+                    <h3>What is BMI?</h3>
+                    <p>Body Mass Index (BMI) is a simple calculation using your height and weight to assess whether your weight falls within a healthy range. Our BMI calculator provides instant results to help you understand where you stand.</p>
+                    
+                    <h3>Why BMI Matters for Health</h3>
+                    <p>Maintaining a healthy BMI is crucial because:</p>
+                    <ul>
+                        <li>High BMI increases risk of heart disease and diabetes</li>
+                        <li>Low BMI may indicate nutritional deficiencies</li>
+                        <li>Helps track weight loss/gain progress effectively</li>
+                    </ul>
+                    
+                    <div class="info-box">
+                        <h3>BMI Categories</h3>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>BMI Range</th>
+                                <th>Category</th>
+                                <th>Health Risk</th>
+                            </tr>
+                            <tr>
+                                <td>&lt; 18.5</td>
+                                <td>Underweight</td>
+                                <td>High</td>
+                            </tr>
+                            <tr>
+                                <td>18.5-24.9</td>
+                                <td>Normal</td>
+                                <td>Low</td>
+                            </tr>
+                            <tr>
+                                <td>25-29.9</td>
+                                <td>Overweight</td>
+                                <td>Moderate</td>
+                            </tr>
+                            <tr>
+                                <td>≥ 30</td>
+                                <td>Obese</td>
+                                <td>High</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <h3>Limitations of BMI</h3>
+                    <p>While useful, BMI doesn't consider muscle mass. Athletes may show high BMI despite being healthy. For more accurate assessment, combine BMI with our <a href="#" onclick="showCalculator('bodyfat')">body fat calculator</a>.</p>
+                    
+                    <div class="tip-card">
+                        <h3>Tips for Healthy BMI</h3>
+                        <p>To improve your BMI score:</p>
+                        <ul>
+                            <li>Combine cardio and strength training</li>
+                            <li>Focus on nutrient-dense whole foods</li>
+                            <li>Get 7-9 hours of quality sleep nightly</li>
+                            <li>Manage stress through meditation/yoga</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- BMR Calculator -->
@@ -600,6 +712,62 @@
                 </button>
                 <div class="result" id="bmr-result"></div>
             </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-fire"></i> BMR Explained: Boost Your Metabolism Naturally</h2>
+                <div class="blog-content">
+                    <h3>What is Basal Metabolic Rate?</h3>
+                    <p>Your BMR represents how many calories your body burns at complete rest to maintain vital functions. It accounts for 60-70% of total calorie expenditure.</p>
+                    
+                    <h3>Factors Affecting BMR</h3>
+                    <ul>
+                        <li><strong>Age:</strong> Metabolism slows about 2% per decade after 20</li>
+                        <li><strong>Gender:</strong> Men typically have higher BMR due to more muscle</li>
+                        <li><strong>Body Composition:</strong> Muscle burns more calories than fat</li>
+                        <li><strong>Hormones:</strong> Thyroid function significantly impacts BMR</li>
+                    </ul>
+                    
+                    <div class="info-box">
+                        <h3>TDEE: Beyond BMR</h3>
+                        <p>Total Daily Energy Expenditure (TDEE) includes all activities. Use our calculator to account for your exercise level when planning weight goals.</p>
+                    </div>
+                    
+                    <h3>Metabolism-Boosting Strategies</h3>
+                    <p>Increase your BMR naturally by:</p>
+                    <ul>
+                        <li>Building muscle through resistance training</li>
+                        <li>Eating adequate protein (1.6-2.2g/kg of body weight)</li>
+                        <li>Staying hydrated (cold water may temporarily boost metabolism)</li>
+                        <li>Incorporating HIIT workouts 2-3x weekly</li>
+                    </ul>
+                    
+                    <div class="tip-card">
+                        <h3>Activity Level Guide</h3>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>Activity Level</th>
+                                <th>Description</th>
+                                <th>Multiplier</th>
+                            </tr>
+                            <tr>
+                                <td>Sedentary</td>
+                                <td>Little/no exercise</td>
+                                <td>1.2</td>
+                            </tr>
+                            <tr>
+                                <td>Light</td>
+                                <td>Light exercise 1-3 days/week</td>
+                                <td>1.375</td>
+                            </tr>
+                            <tr>
+                                <td>Moderate</td>
+                                <td>Moderate exercise 3-5 days/week</td>
+                                <td>1.55</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Water Intake Calculator -->
@@ -631,6 +799,51 @@
                 </button>
                 <div class="result" id="water-result"></div>
             </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-tint"></i> Hydration Science: Why Water Matters</h2>
+                <div class="blog-content">
+                    <h3>The Importance of Proper Hydration</h3>
+                    <p>Water comprises about 60% of your body weight and is essential for:</p>
+                    <ul>
+                        <li>Nutrient transport and waste removal</li>
+                        <li>Joint lubrication and organ protection</li>
+                        <li>Temperature regulation</li>
+                        <li>Cognitive function and mood</li>
+                    </ul>
+                    
+                    <div class="info-box">
+                        <h3>Signs of Dehydration</h3>
+                        <p>Watch for these warning signs:</p>
+                        <ul>
+                            <li>Dark yellow urine</li>
+                            <li>Fatigue or dizziness</li>
+                            <li>Dry mouth/skin</li>
+                            <li>Headaches</li>
+                        </ul>
+                    </div>
+                    
+                    <h3>Hydration Hacks</h3>
+                    <p>Meet your daily water needs with these tips:</p>
+                    <ul>
+                        <li>Start your day with 2 glasses of water</li>
+                        <li>Use a marked water bottle to track intake</li>
+                        <li>Eat water-rich foods (cucumbers, watermelon)</li>
+                        <li>Add lemon/mint for flavor without calories</li>
+                    </ul>
+                    
+                    <div class="tip-card">
+                        <h3>Special Considerations</h3>
+                        <p>Increase water intake when:</p>
+                        <ul>
+                            <li>Exercising (add 500ml per hour of activity)</li>
+                            <li>In hot/humid climates</li>
+                            <li>Pregnant or breastfeeding</li>
+                            <li>Experiencing fever/illness</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Heart Rate Calculator -->
@@ -650,6 +863,55 @@
                 </button>
                 <div class="result" id="hr-result"></div>
             </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-heartbeat"></i> Mastering Heart Rate Zones</h2>
+                <div class="blog-content">
+                    <h3>The 5 Heart Rate Zones</h3>
+                    <div class="hr-zones" style="grid-template-columns:1fr">
+                        <div class="hr-zone" style="background:#4CAF50">
+                            <h4>Zone 1 (50-60%): Recovery</h4>
+                            <p>Improves basic endurance</p>
+                        </div>
+                        <div class="hr-zone" style="background:#8BC34A">
+                            <h4>Zone 2 (60-70%): Fat Burn</h4>
+                            <p>Optimal for weight loss</p>
+                        </div>
+                        <div class="hr-zone" style="background:#FFC107">
+                            <h4>Zone 3 (70-80%): Aerobic</h4>
+                            <p>Boosts cardiovascular fitness</p>
+                        </div>
+                    </div>
+                    
+                    <h3>How to Measure Resting Heart Rate</h3>
+                    <p>For accurate results:</p>
+                    <ol>
+                        <li>Measure first thing in morning</li>
+                        <li>Use two fingers on wrist/neck</li>
+                        <li>Count beats for 30 seconds × 2</li>
+                    </ol>
+                    
+                    <div class="info-box">
+                        <h3>Abnormal Heart Rates</h3>
+                        <p>Consult a doctor if:</p>
+                        <ul>
+                            <li>Resting HR > 100 (Tachycardia)</li>
+                            <li>Resting HR < 60 (unless athlete)</li>
+                            <li>Irregular rhythms detected</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h3>Heart Rate Training Tips</h3>
+                        <ul>
+                            <li>Warm up in Zone 1 for 5-10 minutes</li>
+                            <li>Spend most workouts in Zones 2-3</li>
+                            <li>Limit Zone 4-5 to 10-20% of weekly training</li>
+                            <li>Use a chest strap for most accurate readings</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Pregnancy Calculator -->
@@ -664,6 +926,47 @@
                     <i class="fas fa-calculator"></i> Calculate Due Date
                 </button>
                 <div class="result" id="pregnancy-result"></div>
+            </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-baby"></i> Pregnancy Timeline Explained</h2>
+                <div class="blog-content">
+                    <h3>Trimesters at a Glance</h3>
+                    <div style="display:flex;gap:10px;margin:15px 0">
+                        <div style="flex:1;padding:10px;background:#FFEB3B;border-radius:8px">
+                            <h4>First Trimester</h4>
+                            <p>Weeks 1-12</p>
+                            <p>Morning sickness, fatigue</p>
+                        </div>
+                        <div style="flex:1;padding:10px;background:#4CAF50;border-radius:8px">
+                            <h4>Second Trimester</h4>
+                            <p>Weeks 13-26</p>
+                            <p>Baby movements begin</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Key Pregnancy Milestones</h3>
+                    <ul>
+                        <li><strong>8 weeks:</strong> All major organs form</li>
+                        <li><strong>20 weeks:</strong> Anatomy scan ultrasound</li>
+                        <li><strong>37 weeks:</strong> Considered full-term</li>
+                    </ul>
+                    
+                    <div class="info-box">
+                        <h3>Due Date Accuracy</h3>
+                        <p>Only 5% of women deliver on their exact due date. Normal delivery range is 38-42 weeks.</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h3>Pregnancy Health Tips</h3>
+                        <ul>
+                            <li>Take prenatal vitamins with folic acid</li>
+                            <li>Attend all prenatal checkups</li>
+                            <li>Practice safe exercise (walking, swimming)</li>
+                            <li>Avoid alcohol, smoking, and raw fish</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -699,6 +1002,64 @@
                 </button>
                 <div class="result" id="bf-result"></div>
             </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-percentage"></i> Body Fat Science Decoded</h2>
+                <div class="blog-content">
+                    <h3>Types of Body Fat</h3>
+                    <div style="display:flex;gap:10px;margin:15px 0">
+                        <div style="flex:1;padding:10px;background:#FFCDD2;border-radius:8px">
+                            <h4>Visceral Fat</h4>
+                            <p>Dangerous abdominal fat surrounding organs</p>
+                        </div>
+                        <div style="flex:1;padding:10px;background:#C8E6C9;border-radius:8px">
+                            <h4>Subcutaneous</h4>
+                            <p>Fat under skin (less harmful)</p>
+                        </div>
+                    </div>
+
+                    <h3>Healthy Body Fat Ranges</h3>
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Category</th>
+                            <th>Men</th>
+                            <th>Women</th>
+                        </tr>
+                        <tr>
+                            <td>Essential Fat</td>
+                            <td>2-5%</td>
+                            <td>10-13%</td>
+                        </tr>
+                        <tr>
+                            <td>Athletes</td>
+                            <td>6-13%</td>
+                            <td>14-20%</td>
+                        </tr>
+                        <tr>
+                            <td>Healthy</td>
+                            <td>14-17%</td>
+                            <td>21-24%</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="info-box">
+                        <h3>Measurement Techniques</h3>
+                        <p>Our calculator uses the US Navy method. Other methods include:</p>
+                        <ul>
+                            <li><strong>DEXA Scan:</strong> Most accurate (medical grade)</li>
+                            <li><strong>Bod Pod:</strong> Air displacement technology</li>
+                            <li><strong>Calipers:</strong> Affordable but needs practice</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h3>Healthy Reduction Strategies</h3>
+                        <p><strong>Nutrition:</strong> High-protein, fiber-rich diet</p>
+                        <p><strong>Exercise:</strong> Combine resistance + cardio training</p>
+                        <p><strong>Lifestyle:</strong> Stress management + quality sleep</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Calorie Burn Calculator -->
@@ -729,6 +1090,47 @@
                 </button>
                 <div class="result" id="calorie-result"></div>
             </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-running"></i> Maximizing Calorie Burn</h2>
+                <div class="blog-content">
+                    <h3>MET Values Explained</h3>
+                    <p>MET (Metabolic Equivalent of Task) measures exercise intensity:</p>
+                    <ul>
+                        <li>1 MET = Resting energy expenditure</li>
+                        <li>3-6 METs = Moderate activity</li>
+                        <li>6+ METs = Vigorous activity</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <h3>Top Calorie-Burning Activities</h3>
+                        <ol>
+                            <li><strong>Running (8mph):</strong> 12.5 METs</li>
+                            <li><strong>Swimming laps:</strong> 8-10 METs</li>
+                            <li><strong>HIIT Training:</strong> 8-12 METs</li>
+                            <li><strong>Cycling (12-14mph):</strong> 8-10 METs</li>
+                        </ol>
+                    </div>
+                    
+                    <h3>Afterburn Effect (EPOC)</h3>
+                    <p>High-intensity workouts keep burning calories for 14-48 hours post-exercise through:</p>
+                    <ul>
+                        <li>Oxygen debt repayment</li>
+                        <li>Muscle repair processes</li>
+                        <li>Increased metabolic rate</li>
+                    </ul>
+                    
+                    <div class="tip-card">
+                        <h3>Workout Efficiency Tips</h3>
+                        <ul>
+                            <li>Combine cardio and strength training</li>
+                            <li>Try interval training (HIIT)</li>
+                            <li>Increase workout intensity gradually</li>
+                            <li>Stay consistent with exercise schedule</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Blood Pressure Calculator -->
@@ -747,6 +1149,68 @@
                     <i class="fas fa-calculator"></i> Check Blood Pressure
                 </button>
                 <div class="result" id="bp-result"></div>
+            </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-thermometer"></i> Understanding Blood Pressure</h2>
+                <div class="blog-content">
+                    <h3>The Silent Killer</h3>
+                    <p>High blood pressure often shows no symptoms but increases risk of:</p>
+                    <ul>
+                        <li>Stroke (4x higher risk)</li>
+                        <li>Heart attack (3x higher risk)</li>
+                        <li>Kidney disease</li>
+                    </ul>
+                    
+                    <div class="info-box">
+                        <h3>BP Categories</h3>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>Category</th>
+                                <th>Systolic</th>
+                                <th>Diastolic</th>
+                            </tr>
+                            <tr>
+                                <td>Normal</td>
+                                <td>&lt; 120</td>
+                                <td>&lt; 80</td>
+                            </tr>
+                            <tr>
+                                <td>Elevated</td>
+                                <td>120-129</td>
+                                <td>&lt; 80</td>
+                            </tr>
+                            <tr>
+                                <td>Stage 1</td>
+                                <td>130-139</td>
+                                <td>80-89</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <h3>Measurement Tips</h3>
+                    <p>For accurate readings:</p>
+                    <ol>
+                        <li>Sit quietly for 5 minutes first</li>
+                        <li>Keep feet flat, arm at heart level</li>
+                        <li>Avoid caffeine 30 minutes before</li>
+                        <li>Don't talk during measurement</li>
+                    </ol>
+                    
+                    <div class="tip-card">
+                        <h3>Natural Ways to Lower BP</h3>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                            <div style="padding:10px;background:#E3F2FD;border-radius:8px">
+                                <h4>DASH Diet</h4>
+                                <p>Rich in fruits, vegetables, low-fat dairy</p>
+                            </div>
+                            <div style="padding:10px;background:#E8F5E9;border-radius:8px">
+                                <h4>Potassium Foods</h4>
+                                <p>Bananas, spinach, sweet potatoes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -775,6 +1239,69 @@
                 </button>
                 <div class="result" id="macro-result"></div>
             </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-utensils"></i> Macro Nutrition Mastery</h2>
+                <div class="blog-content">
+                    <h3>The Big 3 Macronutrients</h3>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0">
+                        <div style="padding:10px;background:#FFF8E1;border-radius:8px">
+                            <h4>Proteins</h4>
+                            <p>Building blocks for muscles (4 cal/g)</p>
+                        </div>
+                        <div style="padding:10px;background:#E8F5E9;border-radius:8px">
+                            <h4>Carbs</h4>
+                            <p>Primary energy source (4 cal/g)</p>
+                        </div>
+                        <div style="padding:10px;background:#E3F2FD;border-radius:8px">
+                            <h4>Fats</h4>
+                            <p>Hormone production (9 cal/g)</p>
+                        </div>
+                    </div>
+
+                    <h3>Macro Ratios for Goals</h3>
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Goal</th>
+                            <th>Protein</th>
+                            <th>Carbs</th>
+                            <th>Fats</th>
+                        </tr>
+                        <tr>
+                            <td>Weight Loss</td>
+                            <td>30-35%</td>
+                            <td>30-40%</td>
+                            <td>25-35%</td>
+                        </tr>
+                        <tr>
+                            <td>Muscle Gain</td>
+                            <td>25-30%</td>
+                            <td>45-50%</td>
+                            <td>20-25%</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="info-box">
+                        <h3>Protein Requirements</h3>
+                        <p>Daily protein needs vary by activity level:</p>
+                        <ul>
+                            <li><strong>Sedentary:</strong> 0.8g per kg body weight</li>
+                            <li><strong>Active:</strong> 1.2-1.6g per kg</li>
+                            <li><strong>Athletes:</strong> 1.6-2.2g per kg</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h3>Quality Matters</h3>
+                        <p>Choose nutrient-dense sources:</p>
+                        <ul>
+                            <li><strong>Proteins:</strong> Chicken, fish, tofu, lentils</li>
+                            <li><strong>Carbs:</strong> Brown rice, quinoa, sweet potatoes</li>
+                            <li><strong>Fats:</strong> Avocados, nuts, olive oil</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Sleep Calculator -->
@@ -793,6 +1320,58 @@
                     <i class="fas fa-calculator"></i> Calculate Best Alarm Time
                 </button>
                 <div class="result" id="sleep-result"></div>
+            </div>
+            
+            <div class="calculator-card">
+                <h2><i class="fas fa-moon"></i> The Science of Sleep Cycles</h2>
+                <div class="blog-content">
+                    <h3>90-Minute Sleep Cycles</h3>
+                    <p>Each night you go through 4-6 sleep cycles consisting of:</p>
+                    <ul>
+                        <li><strong>NREM Stage 1:</strong> Light sleep (5-10 mins)</li>
+                        <li><strong>NREM Stage 2:</strong> Body temperature drops (20 mins)</li>
+                        <li><strong>Deep Sleep:</strong> Physical restoration</li>
+                        <li><strong>REM Sleep:</strong> Dreaming and memory consolidation</li>
+                    </ul>
+                    
+                    <div class="info-box">
+                        <h3>Sleep Needs by Age</h3>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>Age Group</th>
+                                <th>Hours Needed</th>
+                            </tr>
+                            <tr>
+                                <td>Adults (18-64)</td>
+                                <td>7-9 hours</td>
+                            </tr>
+                            <tr>
+                                <td>Seniors (65+)</td>
+                                <td>7-8 hours</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <h3>Consequences of Sleep Deprivation</h3>
+                    <div style="background:#FFF3E0;padding:15px;border-radius:8px">
+                        <p>Chronic lack of sleep increases risk of:</p>
+                        <ul>
+                            <li>Obesity (hormone imbalance)</li>
+                            <li>Diabetes (impaired glucose tolerance)</li>
+                            <li>Depression (50% higher risk)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h3>Sleep Hygiene Protocol</h3>
+                        <ol>
+                            <li>Keep bedroom temperature at 18-22°C</li>
+                            <li>Use blue light filters after sunset</li>
+                            <li>Establish pre-sleep routine (reading, meditation)</li>
+                            <li>Avoid caffeine after 2PM</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
