@@ -1,6 +1,3 @@
 User-agent: *
-Allow:
-Disallow: /admin/
-Disallow: /search/
 
 Sitemap: https://healthcalculator.site/sitemap.xml
