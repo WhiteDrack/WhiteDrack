@@ -2,112 +2,58 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Phone App</title>
+    <title>WebRTC Real Call</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #e0e0e0; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .phone-case { width: 320px; height: 600px; background: #1a1a1a; border-radius: 40px; border: 8px solid #333; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-        .screen { background: white; height: 100%; width: 100%; display: flex; flex-direction: column; }
-        
-        /* Header & Contacts */
-        .header { background: #007bff; color: white; padding: 15px; text-align: center; font-weight: bold; }
-        .contact-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        .contact-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .contact-item:hover { background: #f0f0f0; }
-
-        /* Dialer UI */
-        #display { width: 100%; border: none; font-size: 28px; text-align: center; padding: 20px 0; outline: none; background: #f9f9f9; }
-        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; background: white; }
-        .key { height: 60px; border-radius: 50%; border: 1px solid #ddd; font-size: 20px; background: #fff; cursor: pointer; }
-        .call-btn { background: #28a745; color: white; border: none; border-radius: 50px; grid-column: span 3; height: 50px; font-size: 18px; margin-top: 10px; cursor: pointer; }
-
-        /* Calling Simulation Screen */
-        #calling-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; color: white; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 10; }
-        .avatar { width: 100px; height: 100px; background: #7f8c8d; border-radius: 50%; margin-bottom: 20px; line-height: 100px; font-size: 40px; }
-        .end-call { background: #e74c3c; border: none; color: white; padding: 15px 40px; border-radius: 30px; margin-top: 50px; cursor: pointer; }
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
+        .status { color: green; font-weight: bold; margin-top: 20px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border-radius: 5px; border: none; background: #007bff; color: white; }
     </style>
 </head>
 <body>
 
-<div class="phone-case">
-    <div class="screen" id="main-screen">
-        <div class="header">My Contacts</div>
-        
-        <div class="contact-list">
-            <div class="contact-item" onclick="setNumber('9876543210', 'Rahul')">
-                <span>Rahul</span> <small>98765-43210</small>
-            </div>
-            <div class="contact-item" onclick="setNumber('8888888888', 'Priya')">
-                <span>Priya</span> <small>88888-88888</small>
-            </div>
-            <div class="contact-item" onclick="setNumber('9999911111', 'Papa')">
-                <span>Papa</span> <small>99999-11111</small>
-            </div>
-        </div>
+    <h2>WebRTC Internet Calling</h2>
+    <p>Apne mic ko allow karein aur "Start Call" dabayein</p>
+    
+    <button id="startBtn">Start Call</button>
+    <button id="hangupBtn" style="background: red;">Hang Up</button>
 
-        <input type="text" id="display" placeholder="Dial Number" readonly>
-        
-        <div class="keypad">
-            <button class="key" onclick="add('1')">1</button>
-            <button class="key" onclick="add('2')">2</button>
-            <button class="key" onclick="add('3')">3</button>
-            <button class="key" onclick="add('4')">4</button>
-            <button class="key" onclick="add('5')">5</button>
-            <button class="key" onclick="add('6')">6</button>
-            <button class="key" onclick="add('7')">7</button>
-            <button class="key" onclick="add('8')">8</button>
-            <button class="key" onclick="add('9')">9</button>
-            <button class="key" onclick="add('0')">0</button>
-            <button class="key" onclick="clearDisplay()" style="color:red">C</button>
-            <button class="call-btn" onclick="startSimulation()">📞 Call Now</button>
-        </div>
-    </div>
+    <div id="status" class="status">Status: Waiting...</div>
 
-    <div id="calling-screen">
-        <div class="avatar">👤</div>
-        <h2 id="calling-name">Unknown</h2>
-        <p id="calling-number">0000000000</p>
-        <p style="color: #27ae60; font-style: italic;">Calling...</p>
-        <button class="end-call" onclick="endCall()">End Call</button>
-    </div>
-</div>
+    <audio id="remoteAudio" autoplay controls style="display:none;"></audio>
 
-<script>
-    let dialNum = "";
-    let currentName = "Unknown";
+    <script>
+        let localStream;
+        let peerConnection;
+        const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] }; // Google ka free STUN server
 
-    function add(val) {
-        dialNum += val;
-        document.getElementById('display').value = dialNum;
-        currentName = "Unknown"; 
-    }
+        document.getElementById('startBtn').onclick = async () => {
+            document.getElementById('status').innerText = "Status: Connecting...";
+            
+            // 1. Mic access karein
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // 2. Peer Connection banayein
+            peerConnection = new RTCPeerConnection(config);
+            
+            // 3. Apni audio stream add karein
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-    function setNumber(num, name) {
-        dialNum = num;
-        currentName = name;
-        document.getElementById('display').value = dialNum;
-    }
+            // 4. Jab samne wale ki awaaz aaye
+            peerConnection.ontrack = (event) => {
+                document.getElementById('remoteAudio').srcObject = event.streams[0];
+                document.getElementById('status').innerText = "Status: Call Connected!";
+            };
 
-    function clearDisplay() {
-        dialNum = "";
-        document.getElementById('display').value = "";
-    }
+            // Yahan par Signaling (Socket.io) ka code aata hai jo dusre user ko signal bhejta hai
+            console.log("Peer Connection taiyar hai. Ab signalling server ki zaroorat hai.");
+        };
 
-    function startSimulation() {
-        if(dialNum === "") {
-            alert("Pehle number dial karein!");
-            return;
-        }
-        document.getElementById('calling-name').innerText = currentName;
-        document.getElementById('calling-number').innerText = dialNum;
-        document.getElementById('calling-screen').style.display = 'flex';
-    }
-
-    function endCall() {
-        document.getElementById('calling-screen').style.display = 'none';
-        clearDisplay();
-    }
-</script>
-
+        document.getElementById('hangupBtn').onclick = () => {
+            if(peerConnection) {
+                peerConnection.close();
+                document.getElementById('status').innerText = "Status: Call Ended.";
+            }
+        };
+    </script>
 </body>
 </html>
