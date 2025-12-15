@@ -1,59 +1,55 @@
+
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebRTC Real Call</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meri Location Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
-        .status { color: green; font-weight: bold; margin-top: 20px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border-radius: 5px; border: none; background: #007bff; color: white; }
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 10px;
+        }
+        body { font-family: Arial, sans-serif; text-align: center; }
     </style>
 </head>
 <body>
 
-    <h2>WebRTC Internet Calling</h2>
-    <p>Apne mic ko allow karein aur "Start Call" dabayein</p>
-    
-    <button id="startBtn">Start Call</button>
-    <button id="hangupBtn" style="background: red;">Hang Up</button>
+    <h2>Mera Current Location Map</h2>
+    <div id="map"></div>
 
-    <div id="status" class="status">Status: Waiting...</div>
-
-    <audio id="remoteAudio" autoplay controls style="display:none;"></audio>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        let localStream;
-        let peerConnection;
-        const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] }; // Google ka free STUN server
+        // Map initialize karein (Default view)
+        var map = L.map('map').setView([20.5937, 78.9629], 5); 
 
-        document.getElementById('startBtn').onclick = async () => {
-            document.getElementById('status').innerText = "Status: Connecting...";
-            
-            // 1. Mic access karein
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
-            // 2. Peer Connection banayein
-            peerConnection = new RTCPeerConnection(config);
-            
-            // 3. Apni audio stream add karein
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+        // Map tiles add karein (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
 
-            // 4. Jab samne wale ki awaaz aaye
-            peerConnection.ontrack = (event) => {
-                document.getElementById('remoteAudio').srcObject = event.streams[0];
-                document.getElementById('status').innerText = "Status: Call Connected!";
-            };
+        // User ki location track karein
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var lat = position.coords.latitude;
+                var lon = position.coords.longitude;
 
-            // Yahan par Signaling (Socket.io) ka code aata hai jo dusre user ko signal bhejta hai
-            console.log("Peer Connection taiyar hai. Ab signalling server ki zaroorat hai.");
-        };
+                // Map ko user ki location par le jayein
+                map.setView([lat, lon], 15);
 
-        document.getElementById('hangupBtn').onclick = () => {
-            if(peerConnection) {
-                peerConnection.close();
-                document.getElementById('status').innerText = "Status: Call Ended.";
-            }
-        };
+                // Ek marker add karein
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup("Aap yahan hain!")
+                    .openPopup();
+            }, function() {
+                alert("Location access nahi mila.");
+            });
+        } else {
+            alert("Aapka browser Geolocation support nahi karta.");
+        }
     </script>
 </body>
 </html>
