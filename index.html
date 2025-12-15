@@ -1,1023 +1,133 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPI QR Code Generator</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <!-- Firebase Authentication -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <!-- Firebase Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <title>HTML Phone Caller</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
         body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: #333;
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            padding: 15px;
+            height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
         }
-        
-        .container {
-            background-color: white;
+        .dialer-container {
+            background-color: #fff;
+            padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-            margin-top: 10px;
-            position: relative;
-        }
-        
-        .auth-container {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 300px;
             text-align: center;
-            padding: 20px 0;
         }
-        
-        .user-info {
-            display: none;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-        }
-        
-        .user-details {
-            flex: 1;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .user-email {
-            font-size: 0.8rem;
-            color: #7f8c8d;
-        }
-        
-        .logout-btn {
-            background: #e74c3c;
-            color: white;
+        #display {
+            width: 100%;
+            height: 50px;
+            font-size: 24px;
+            text-align: center;
             border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        
-        .login-btn {
-            background: linear-gradient(to right, #4285f4, #34a853);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin: 0 auto;
-            width: 100%;
-            max-width: 250px;
-        }
-        
-        .login-btn img {
-            width: 20px;
-            height: 20px;
-        }
-        
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 8px;
-            font-size: 1.8rem;
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 20px;
-            font-size: 1rem;
-            line-height: 1.4;
-        }
-        
-        .form-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .input-group {
-            width: 100%;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 0.95rem;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        input:focus, select:focus {
-            border-color: #3498db;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            margin-bottom: 20px;
+            color: #333;
+            letter-spacing: 2px;
         }
-        
-        .qr-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 15px;
-            background-color: #f8f9fa;
-            min-height: 300px;
-            justify-content: center;
-        }
-        
-        #qrcode {
-            padding: 15px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 200px;
-            min-width: 200px;
-            width: 100%;
-            max-width: 250px;
-        }
-        
-        .amount-display {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 15px;
-            width: 100%;
-        }
-        
-        .action-btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 120px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .download-btn {
-            background: linear-gradient(to right, #27ae60, #2ecc71);
-            color: white;
-        }
-        
-        .share-btn {
-            background: linear-gradient(to right, #3498db, #2980b9);
-            color: white;
-        }
-        
-        .save-btn {
-            background: linear-gradient(to right, #9b59b6, #8e44ad);
-            color: white;
-        }
-        
-        .action-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .action-btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .instructions {
-            background-color: #e8f4fc;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-        
-        .instructions h3 {
-            color: #2980b9;
-            margin-bottom: 8px;
-            font-size: 1.1rem;
-        }
-        
-        .instructions ol {
-            margin-left: 20px;
-        }
-        
-        .instructions li {
-            margin-bottom: 8px;
-            line-height: 1.5;
-            font-size: 0.9rem;
-        }
-        
-        .btn {
-            background: linear-gradient(to right, #3498db, #2c3e50);
-            color: white;
-            border: none;
-            padding: 16px 25px;
-            font-size: 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-            display: block;
-            margin: 15px auto;
-            width: 100%;
-            max-width: 300px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .note {
-            text-align: center;
-            color: #7f8c8d;
-            font-style: italic;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            line-height: 1.4;
-        }
-        
-        .placeholder-text {
-            color: #7f8c8d;
-            text-align: center;
-            font-style: italic;
-            padding: 20px;
-            font-size: 0.9rem;
-        }
-        
-        .success-message {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 10px;
-            text-align: center;
-            display: none;
-            font-size: 0.9rem;
-        }
-        
-        .required {
-            color: #e74c3c;
-        }
-        
-        .small-text {
-            font-size: 0.8rem;
-            color: #7f8c8d;
-            margin-top: 4px;
-        }
-        
-        .share-options {
-            display: none;
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            text-align: center;
-        }
-        
-        .share-options h4 {
-            margin-bottom: 10px;
-            color: #2c3e50;
-        }
-        
-        .share-icons {
-            display: flex;
-            justify-content: center;
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
-            margin-top: 10px;
         }
-        
-        .share-icon {
-            width: 40px;
-            height: 40px;
+        .key {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
+            width: 60px;
+            height: 60px;
+            font-size: 20px;
             cursor: pointer;
-            transition: transform 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.2s;
+            margin: auto;
         }
-        
-        .share-icon:active {
+        .key:active {
+            background-color: #e2e6ea;
             transform: scale(0.95);
         }
-        
-        .whatsapp {
-            background: #25D366;
+        .call-btn {
+            background-color: #28a745;
             color: white;
+            grid-column: span 3;
+            border-radius: 30px;
+            width: 100%;
+            height: 55px;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
         }
-        
-        .telegram {
-            background: #0088cc;
-            color: white;
+        .call-btn:hover {
+            background-color: #218838;
         }
-        
-        .facebook {
-            background: #3b5998;
-            color: white;
-        }
-        
-        .twitter {
-            background: #1da1f2;
-            color: white;
-        }
-        
-        .app-content {
-            display: none;
-        }
-        
-        .auth-message {
-            text-align: center;
-            padding: 20px;
-            color: #7f8c8d;
-        }
-        
-        /* Mobile-specific optimizations */
-        @media (max-width: 480px) {
-            .container {
-                padding: 15px;
-                border-radius: 15px;
-            }
-            
-            h1 {
-                font-size: 1.6rem;
-            }
-            
-            .subtitle {
-                font-size: 0.9rem;
-            }
-            
-            input, select {
-                padding: 12px;
-            }
-            
-            .btn {
-                padding: 14px 20px;
-            }
-            
-            #qrcode {
-                min-height: 180px;
-                min-width: 180px;
-                max-width: 220px;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .action-btn {
-                width: 100%;
-                max-width: 250px;
-            }
-        }
-        
-        /* Very small screens */
-        @media (max-width: 350px) {
-            .container {
-                padding: 12px;
-            }
-            
-            h1 {
-                font-size: 1.4rem;
-            }
-            
-            #qrcode {
-                min-height: 160px;
-                min-width: 160px;
-                max-width: 200px;
-            }
-        }
-        
-        /* Landscape orientation */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .container {
-                max-width: 90%;
-            }
-            
-            .form-container {
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-            
-            .input-group {
-                flex: 1 1 45%;
-            }
+        .delete-btn {
+            color: #dc3545;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>UPI QR Code Generator</h1>
-        <p class="subtitle">Create your personalized UPI QR code to receive payments instantly</p>
+
+<div class="dialer-container">
+    <input type="text" id="display" placeholder="Number dial karein" readonly>
+    
+    <div class="keypad">
+        <button class="key" onclick="press('1')">1</button>
+        <button class="key" onclick="press('2')">2</button>
+        <button class="key" onclick="press('3')">3</button>
+        <button class="key" onclick="press('4')">4</button>
+        <button class="key" onclick="press('5')">5</button>
+        <button class="key" onclick="press('6')">6</button>
+        <button class="key" onclick="press('7')">7</button>
+        <button class="key" onclick="press('8')">8</button>
+        <button class="key" onclick="press('9')">9</button>
+        <button class="key" onclick="press('*')">*</button>
+        <button class="key" onclick="press('0')">0</button>
+        <button class="key" onclick="press('#')">#</button>
         
-        <!-- Authentication Section -->
-        <div class="auth-container" id="authContainer">
-            <div class="user-info" id="userInfo">
-                <img class="user-avatar" id="userAvatar" src="" alt="User Avatar">
-                <div class="user-details">
-                    <div class="user-name" id="userName"></div>
-                    <div class="user-email" id="userEmail"></div>
-                </div>
-                <button class="logout-btn" id="logoutBtn">Logout</button>
-            </div>
-            
-            <div class="auth-message" id="authMessage">
-                <p>Please sign in with Google to use the UPI QR Code Generator</p>
-                <button class="login-btn" id="loginBtn">
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Sign in with Google
-                </button>
-            </div>
-        </div>
-        
-        <!-- Main App Content (shown after login) -->
-        <div class="app-content" id="appContent">
-            <div class="form-container">
-                <div class="input-group">
-                    <label for="upiId">Your UPI ID <span class="required">*</span></label>
-                    <input type="text" id="upiId" placeholder="e.g., yourname@paytm" value="test@ybl">
-                    <p class="small-text">Required field</p>
-                </div>
-                
-                <div class="input-group">
-                    <label for="amount">Amount (₹)</label>
-                    <input type="number" id="amount" placeholder="Enter amount (optional)" min="1">
-                </div>
-                
-                <div class="input-group">
-                    <label for="name">Your Name</label>
-                    <input type="text" id="name" placeholder="Enter your name" value="Your Name">
-                </div>
-                
-                <div class="input-group">
-                    <label for="purpose">Payment Purpose</label>
-                    <select id="purpose">
-                        <option value="">Select purpose (optional)</option>
-                        <option value="Shopping">Shopping</option>
-                        <option value="Services">Services</option>
-                        <option value="Donation">Donation</option>
-                        <option value="Personal">Personal</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-            </div>
-            
-            <button id="generateBtn" class="btn">Generate QR Code</button>
-            
-            <div class="success-message" id="successMessage">
-                ✓ QR Code generated successfully!
-            </div>
-            
-            <div class="qr-container">
-                <div id="qrcode">
-                    <p class="placeholder-text">Your QR code will appear here after you click the generate button</p>
-                </div>
-                <div class="amount-display" id="amountDisplay">Scan to Pay</div>
-                <p class="note">Scan this QR code with any UPI app to make payment</p>
-                
-                <div class="action-buttons">
-                    <button id="downloadBtn" class="action-btn download-btn" disabled>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Download
-                    </button>
-                    <button id="shareBtn" class="action-btn share-btn" disabled>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="18" cy="5" r="3"></circle>
-                            <circle cx="6" cy="12" r="3"></circle>
-                            <circle cx="18" cy="19" r="3"></circle>
-                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                        </svg>
-                        Share
-                    </button>
-                    <button id="saveBtn" class="action-btn save-btn" disabled>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                            <polyline points="7 3 7 8 15 8"></polyline>
-                        </svg>
-                        Save to Profile
-                    </button>
-                </div>
-                
-                <div class="share-options" id="shareOptions">
-                    <h4>Share via</h4>
-                    <div class="share-icons">
-                        <div class="share-icon whatsapp" id="whatsappShare">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                            </svg>
-                        </div>
-                        <div class="share-icon telegram" id="telegramShare">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.139c-.202.01-.508.105-.856.293-.948.513-2.095 1.106-4.503 2.271-.533.255-.941.467-1.216.633-.552.333-.945.625-1.178.874-.297.317-.052.492.178.692.191.166.633.518.902.749.301.26.605.494.909.723.105.08.213.158.323.234.188.129.373.257.552.388.168.123.327.25.474.383.195.175.313.346.355.51.045.169-.009.345-.162.524-.328.385-.793.727-1.371 1.014-.103.052-.21.102-.318.149-.333.146-.72.273-1.146.377-.427.104-.861.172-1.287.2-.418.027-.834.017-1.231-.027l-.096-.015c-.365-.065-.771-.173-1.008-.293-.214-.109-.345-.267-.393-.471-.046-.198.001-.431.139-.691.436-.821 1.067-1.661 1.855-2.479l.08-.083c.035-.036.072-.071.11-.105.495-.468 1.048-.927 1.644-1.365.133-.098.268-.195.404-.29.178-.124.359-.246.541-.366.202-.135.407-.267.613-.397.57-.363 1.156-.705 1.747-1.017.521-.274 1.046-.523 1.565-.739.459-.189.916-.354 1.363-.488.443-.133.873-.233 1.279-.294.402-.06.776-.079 1.112-.051.332.028.617.104.847.225.229.121.395.288.493.497.098.209.12.451.065.719-.055.268-.183.549-.383.837-.2.289-.465.579-.789.863-.324.285-.702.558-1.127.813-.425.256-.891.488-1.392.688-.501.201-1.031.365-1.583.485-.552.12-1.121.192-1.697.208-.576.017-1.153-.023-1.715-.113l-.227-.037c-.242-.046-.54-.115-.634-.161-.094-.045-.161-.113-.201-.201-.40-.089-.051-.195-.034-.315.018-.121.073-.252.166-.389.093-.138.221-.279.384-.419.163-.141.358-.279.585-.409.227-.131.483-.251.767-.354.284-.104.592-.188.921-.247.329-.06.677-.092 1.038-.092.361 0 .722.032 1.076.092.354.06.694.144 1.013.247.319.104.611.223.871.354.26.131.483.268.663.409.18.141.312.281.397.419.085.138.121.268.109.389-.012.121-.073.227-.183.315-.111.089-.272.161-.483.214-.211.053-.467.089-.767.107-.3.019-.639.019-1.008-.008z"/>
-                            </svg>
-                        </div>
-                        <div class="share-icon facebook" id="facebookShare">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                            </svg>
-                        </div>
-                        <div class="share-icon twitter" id="twitterShare">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723 10.054 10.054 0 01-3.127 1.184 4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.937 4.937 0 004.604 3.417 9.868 9.868 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.054 0 13.999-7.496 13.999-13.986 0-.209 0-.42-.015-.63a9.936 9.936 0 002.46-2.543l-.047-.02z"/>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="instructions">
-                <h3>How to use this QR code:</h3>
-                <ol>
-                    <li>Fill in your UPI ID and other details above</li>
-                    <li>Click "Generate QR Code" to create your personalized QR</li>
-                    <li>Download or Share the QR code with anyone who needs to pay you</li>
-                    <li>They can scan it with any UPI app to send money directly to your account</li>
-                </ol>
-                <p class="small-text" style="margin-top: 10px;"><strong>Note:</strong> For testing, you can use a UPI ID like "test@ybl" or "test@paytm"</p>
-            </div>
-        </div>
+        <button class="call-btn" onclick="makeCall()">📞 Call</button>
     </div>
 
-    <script>
-const firebaseConfig = {
-    apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
-    authDomain: "white-drack-fd1ee.firebaseapp.com",
-    databaseURL: "https://white-drack-fd1ee-default-rtdb.firebaseio.com",
-    projectId: "white-drack-fd1ee",
-    storageBucket: "white-drack-fd1ee.firebasestorage.app",
-    messagingSenderId: "151227903888",
-    appId: "1:151227903888:web:02a2d7ab14f7d1e152cd15"
-};
+    <span class="delete-btn" onclick="backspace()">Mitaayein (Backspace)</span>
+</div>
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+<script>
+    let display = document.getElementById('display');
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // DOM Elements
-            const authContainer = document.getElementById('authContainer');
-            const userInfo = document.getElementById('userInfo');
-            const userAvatar = document.getElementById('userAvatar');
-            const userName = document.getElementById('userName');
-            const userEmail = document.getElementById('userEmail');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const authMessage = document.getElementById('authMessage');
-            const loginBtn = document.getElementById('loginBtn');
-            const appContent = document.getElementById('appContent');
-            
-            const upiIdInput = document.getElementById('upiId');
-            const amountInput = document.getElementById('amount');
-            const nameInput = document.getElementById('name');
-            const purposeInput = document.getElementById('purpose');
-            const generateBtn = document.getElementById('generateBtn');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const shareBtn = document.getElementById('shareBtn');
-            const saveBtn = document.getElementById('saveBtn');
-            const qrcodeDiv = document.getElementById('qrcode');
-            const amountDisplay = document.getElementById('amountDisplay');
-            const successMessage = document.getElementById('successMessage');
-            const shareOptions = document.getElementById('shareOptions');
-            const whatsappShare = document.getElementById('whatsappShare');
-            const telegramShare = document.getElementById('telegramShare');
-            const facebookShare = document.getElementById('facebookShare');
-            const twitterShare = document.getElementById('twitterShare');
-            
-            let currentQRCodeCanvas = null;
-            let currentUser = null;
+    function press(num) {
+        display.value += num;
+    }
 
-            // Authentication State Observer
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    // User is signed in
-                    currentUser = user;
-                    showUserInfo(user);
-                    showAppContent();
-                } else {
-                    // User is signed out
-                    currentUser = null;
-                    showLoginPrompt();
-                }
-            });
+    function backspace() {
+        display.value = display.value.slice(0, -1);
+    }
 
-            // Login with Google
-            loginBtn.addEventListener('click', signInWithGoogle);
+    function makeCall() {
+        let number = display.value;
+        if (number) {
+            // Yeh command asal mein phone dialer open kar degi
+            window.location.href = "tel:" + number;
+        } else {
+            alert("Kripya pehle ek number dial karein!");
+        }
+    }
+</script>
 
-            // Logout
-            logoutBtn.addEventListener('click', signOut);
-
-            function signInWithGoogle() {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                auth.signInWithPopup(provider)
-                    .then((result) => {
-                        // User signed in successfully
-                        console.log('User signed in:', result.user);
-                    })
-                    .catch((error) => {
-                        console.error('Error signing in:', error);
-                        alert('Error signing in: ' + error.message);
-                    });
-            }
-
-            function signOut() {
-                auth.signOut()
-                    .then(() => {
-                        console.log('User signed out');
-                    })
-                    .catch((error) => {
-                        console.error('Error signing out:', error);
-                    });
-            }
-
-            function showUserInfo(user) {
-                userAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
-                userName.textContent = user.displayName || 'User';
-                userEmail.textContent = user.email;
-                userInfo.style.display = 'flex';
-                authMessage.style.display = 'none';
-                
-                // Pre-fill name field with user's display name
-                if (user.displayName) {
-                    nameInput.value = user.displayName;
-                }
-            }
-
-            function showLoginPrompt() {
-                userInfo.style.display = 'none';
-                authMessage.style.display = 'block';
-                appContent.style.display = 'none';
-            }
-
-            function showAppContent() {
-                appContent.style.display = 'block';
-            }
-
-            // Generate QR code when button is clicked
-            generateBtn.addEventListener('click', generateQRCode);
-            
-            // Also generate when Enter key is pressed in any input
-            [upiIdInput, amountInput, nameInput, purposeInput].forEach(input => {
-                input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        generateQRCode();
-                    }
-                });
-            });
-            
-            // Download button event
-            downloadBtn.addEventListener('click', downloadQRCode);
-            
-            // Share button event
-            shareBtn.addEventListener('click', function() {
-                shareOptions.style.display = shareOptions.style.display === 'block' ? 'none' : 'block';
-            });
-            
-            // Save to profile button event
-            saveBtn.addEventListener('click', saveQRCodeToProfile);
-            
-            // Share via different platforms
-            whatsappShare.addEventListener('click', function() {
-                shareQRCode('whatsapp');
-            });
-            
-            telegramShare.addEventListener('click', function() {
-                shareQRCode('telegram');
-            });
-            
-            facebookShare.addEventListener('click', function() {
-                shareQRCode('facebook');
-            });
-            
-            twitterShare.addEventListener('click', function() {
-                shareQRCode('twitter');
-            });
-            
-            function generateQRCode() {
-                if (!currentUser) {
-                    alert('Please sign in to generate QR codes');
-                    return;
-                }
-                
-                const upiId = upiIdInput.value.trim();
-                const amount = amountInput.value.trim();
-                const name = nameInput.value.trim();
-                const purpose = purposeInput.value;
-                
-                if (!upiId) {
-                    alert('Please enter your UPI ID');
-                    upiIdInput.focus();
-                    return;
-                }
-                
-                // Clear previous QR code
-                qrcodeDiv.innerHTML = '';
-                
-                // Build UPI payment URL
-                let upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}`;
-                
-                if (name) {
-                    upiUrl += `&pn=${encodeURIComponent(name)}`;
-                }
-                
-                if (amount) {
-                    upiUrl += `&am=${amount}`;
-                    amountDisplay.textContent = `Amount: ₹${amount}`;
-                } else {
-                    amountDisplay.textContent = 'Scan to Pay';
-                }
-                
-                if (purpose) {
-                    upiUrl += `&tn=${encodeURIComponent(purpose)}`;
-                }
-                
-                upiUrl += '&cu=INR';
-                
-                // Generate QR code using qrcode-generator library
-                try {
-                    const typeNumber = 0; // Auto detect
-                    const errorCorrectionLevel = 'H'; // High error correction
-                    const qr = qrcode(typeNumber, errorCorrectionLevel);
-                    qr.addData(upiUrl);
-                    qr.make();
-                    
-                    // Create canvas element for QR code
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Calculate size based on screen width
-                    const screenWidth = window.innerWidth;
-                    const cellSize = screenWidth < 400 ? 4 : 5;
-                    const margin = 8;
-                    const size = qr.getModuleCount() * cellSize + margin * 2;
-                    
-                    canvas.width = size;
-                    canvas.height = size;
-                    
-                    // Draw white background
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, size, size);
-                    
-                    // Draw QR code
-                    ctx.fillStyle = '#000000';
-                    for (let row = 0; row < qr.getModuleCount(); row++) {
-                        for (let col = 0; col < qr.getModuleCount(); col++) {
-                            if (qr.isDark(row, col)) {
-                                ctx.fillRect(
-                                    col * cellSize + margin,
-                                    row * cellSize + margin,
-                                    cellSize, cellSize
-                                );
-                            }
-                        }
-                    }
-                    
-                    // Add canvas to DOM
-                    qrcodeDiv.appendChild(canvas);
-                    currentQRCodeCanvas = canvas;
-                    
-                    // Enable download and share buttons
-                    downloadBtn.disabled = false;
-                    shareBtn.disabled = false;
-                    saveBtn.disabled = false;
-                    
-                    // Show success message
-                    successMessage.style.display = 'block';
-                    setTimeout(() => {
-                        successMessage.style.display = 'none';
-                    }, 3000);
-                    
-                } catch (error) {
-                    console.error('QR Code generation error:', error);
-                    qrcodeDiv.innerHTML = '<p class="placeholder-text" style="color: red;">Error generating QR code. Please try again.</p>';
-                    
-                    // Disable download and share buttons
-                    downloadBtn.disabled = true;
-                    shareBtn.disabled = true;
-                    saveBtn.disabled = true;
-                }
-            }
-            
-            function downloadQRCode() {
-                if (!currentQRCodeCanvas) {
-                    alert('Please generate a QR code first');
-                    return;
-                }
-                
-                try {
-                    // Create a temporary link for download
-                    const link = document.createElement('a');
-                    link.download = 'upi-qr-code.png';
-                    link.href = currentQRCodeCanvas.toDataURL('image/png');
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    // Show success message
-                    showTempMessage('QR Code downloaded successfully!', '#27ae60');
-                    
-                } catch (error) {
-                    console.error('Download error:', error);
-                    alert('Error downloading QR code. Please try again.');
-                }
-            }
-            
-            function saveQRCodeToProfile() {
-                if (!currentUser || !currentQRCodeCanvas) {
-                    alert('Please sign in and generate a QR code first');
-                    return;
-                }
-                
-                try {
-                    const upiId = upiIdInput.value.trim();
-                    const amount = amountInput.value.trim();
-                    const name = nameInput.value.trim();
-                    const purpose = purposeInput.value;
-                    
-                    const qrData = {
-                        upiId: upiId,
-                        amount: amount || null,
-                        name: name || null,
-                        purpose: purpose || null,
-                        qrCodeData: currentQRCodeCanvas.toDataURL('image/png'),
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        upiUrl: `upi://pay?pa=${encodeURIComponent(upiId)}${name ? `&pn=${encodeURIComponent(name)}` : ''}${amount ? `&am=${amount}` : ''}${purpose ? `&tn=${encodeURIComponent(purpose)}` : ''}&cu=INR`
-                    };
-                    
-                    // Save to Firestore
-                    db.collection('users').doc(currentUser.uid).collection('qrCodes').add(qrData)
-                        .then((docRef) => {
-                            console.log('QR code saved with ID: ', docRef.id);
-                            showTempMessage('QR Code saved to your profile!', '#9b59b6');
-                        })
-                        .catch((error) => {
-                            console.error('Error saving QR code: ', error);
-                            alert('Error saving QR code: ' + error.message);
-                        });
-                    
-                } catch (error) {
-                    console.error('Save error:', error);
-                    alert('Error saving QR code. Please try again.');
-                }
-            }
-            
-            function shareQRCode(platform) {
-                if (!currentQRCodeCanvas) {
-                    alert('Please generate a QR code first');
-                    return;
-                }
-                
-                const upiId = upiIdInput.value.trim();
-                const amount = amountInput.value.trim();
-                const name = nameInput.value.trim();
-                
-                let text = `Scan this UPI QR code to pay ${name || 'me'}`;
-                if (amount) {
-                    text += ` ₹${amount}`;
-                }
-                text += `\nUPI ID: ${upiId}`;
-                
-                const qrCodeDataURL = currentQRCodeCanvas.toDataURL('image/png');
-                
-                // For native sharing (mobile devices)
-                if (navigator.share) {
-                    // Convert data URL to blob
-                    fetch(qrCodeDataURL)
-                        .then(res => res.blob())
-                        .then(blob => {
-                            const file = new File([blob], 'upi-qr-code.png', { type: 'image/png' });
-                            
-                            navigator.share({
-                                title: 'UPI QR Code',
-                                text: text,
-                                files: [file]
-                            })
-                            .catch(err => {
-                                console.error('Error sharing:', err);
-                                fallbackShare(platform, text, qrCodeDataURL);
-                            });
-                        })
-                        .catch(err => {
-                            console.error('Error converting QR code:', err);
-                            fallbackShare(platform, text);
-                        });
-                } else {
-                    fallbackShare(platform, text, qrCodeDataURL);
-                }
-            }
-            
-            function fallbackShare(platform, text, qrCodeDataURL = null) {
-                const encodedText = encodeURIComponent(text);
-                let shareUrl = '';
-                
-                switch(platform) {
-                    case 'whatsapp':
-                        shareUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
-                        if (qrCodeDataURL) {
-                            alert('Please download the QR code and share it manually on WhatsApp');
-                            return;
-                        }
-                        break;
-                    case 'telegram':
-                        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodedText}`;
-                        break;
-                    case 'facebook':
-                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodedText}`;
-                        break;
-                    case 'twitter':
-                        shareUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;
-                        break;
-                }
-                
-                if (shareUrl) {
-                    window.open(shareUrl, '_blank', 'width=600,height=400');
-                }
-            }
-            
-            function showTempMessage(message, color) {
-                const tempMsg = document.createElement('div');
-                tempMsg.textContent = message;
-                tempMsg.style.cssText = `position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: ${color}; color: white; padding: 10px 20px; border-radius: 5px; z-index: 1000;`;
-                document.body.appendChild(tempMsg);
-                
-                setTimeout(() => {
-                    document.body.removeChild(tempMsg);
-                }, 2000);
-            }
-        });
-    </script>
 </body>
 </html>
