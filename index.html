@@ -1,88 +1,88 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
-    <title>Real-time Location Share</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Control Hub</title>
     <style>
-        #map { height: 85vh; width: 100%; border-radius: 10px; }
-        .controls { padding: 10px; text-align: center; background: #f4f4f4; }
-        #share-link { font-weight: bold; color: blue; word-break: break-all; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .dashboard {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 320px;
+            text-align: center;
+        }
+        h2 { color: #333; margin-bottom: 20px; font-size: 1.2rem; }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .card {
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .card:hover { transform: translateY(-5px); opacity: 0.9; }
+        
+        .wifi { background: #4285F4; }
+        .bt { background: #34A853; }
+        .hotspot { background: #FBBC05; }
+        .data { background: #EA4335; }
+
+        .icon { font-size: 24px; margin-bottom: 8px; }
+        .status { font-size: 0.7rem; margin-top: 5px; opacity: 0.8; }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <h3 id="status">Location Initialize ho rahi hai...</h3>
-        <p>Aapka Sharing Link: <span id="share-link">Loading...</span></p>
+<div class="dashboard">
+    <h2>Network Control Center</h2>
+    <div class="grid">
+        <a href="intent://settings/wifi#Intent;scheme=android_shortcut;action=android.settings.WIFI_SETTINGS;end" class="card wifi">
+            <span class="icon">📶</span>
+            Wi-Fi
+            <div class="status">Manage</div>
+        </a>
+
+        <a href="intent://settings/bluetooth#Intent;scheme=android_shortcut;action=android.settings.BLUETOOTH_SETTINGS;end" class="card bt">
+            <span class="icon">🎧</span>
+            Bluetooth
+            <div class="status">Connect</div>
+        </a>
+
+        <a href="intent://settings/tethering#Intent;scheme=android_shortcut;action=android.settings.TETHER_SETTINGS;end" class="card hotspot">
+            <span class="icon">🔥</span>
+            Hotspot
+            <div class="status">Sharing</div>
+        </a>
+
+        <a href="intent://settings/network#Intent;scheme=android_shortcut;action=android.settings.DATA_ROAMING_SETTINGS;end" class="card data">
+            <span class="icon">🌐</span>
+            Data
+            <div class="status">Network</div>
+        </a>
     </div>
-    <div id="map"></div>
+</div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        // 1. Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
-            authDomain: "white-drack-fd1ee.firebaseapp.com",
-            databaseURL: "https://white-drack-fd1ee-default-rtdb.firebaseio.com",
-            projectId: "white-drack-fd1ee",
-            storageBucket: "white-drack-fd1ee.firebasestorage.app",
-            messagingSenderId: "151227903888",
-            appId: "1:151227903888:web:02a2d7ab14f7d1e152cd15"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // 2. Map Setup
-        var map = L.map('map').setView([20.5937, 78.9629], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        var marker = L.marker([0, 0]).addTo(map);
-
-        // 3. Get User ID from URL or Create New
-        const urlParams = new URLSearchParams(window.location.search);
-        let userId = urlParams.get('id');
-        let isViewer = !!userId; // Agar URL mein ID hai toh matlab hum dusre ko dekh rahe hain
-
-        if (!userId) {
-            userId = "user-" + Math.floor(Math.random() * 10000);
-            const shareUrl = window.location.href.split('?')[0] + "?id=" + userId;
-            document.getElementById('share-link').innerText = shareUrl;
-            document.getElementById('status').innerText = "Aap apni location bhej rahe hain";
-        } else {
-            document.getElementById('share-link').innerText = "Aap " + userId + " ko track kar rahe hain";
-            document.getElementById('status').innerText = "Tracking Mode";
-        }
-
-        // 4. LOGIC: Send or Receive
-        if (isViewer) {
-            // DUSRE KI LOCATION DEKHNA
-            database.ref('locations/' + userId).on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    marker.setLatLng([data.lat, data.lng]).bindPopup("Target Yahan Hai").openPopup();
-                    map.setView([data.lat, data.lng], 15);
-                }
-            });
-        } else {
-            // APNI LOCATION BHEJNA
-            navigator.geolocation.watchPosition((position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                
-                // Update Firebase
-                database.ref('locations/' + userId).set({
-                    lat: lat,
-                    lng: lng,
-                    timestamp: Date.now()
-                });
-
-                marker.setLatLng([lat, lng]).bindPopup("Aapki Location").openPopup();
-                map.setView([lat, lng], 15);
-            }, (err) => console.log(err), { enableHighAccuracy: true });
-        }
-    </script>
 </body>
 </html>
+
