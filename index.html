@@ -1,175 +1,24 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart AI QR Scanner</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <title>Registration Form</title>
     <style>
-        :root {
-            --primary: #00f2fe;
-            --secondary: #4facfe;
-            --glass: rgba(255, 255, 255, 0.15);
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #0f0c29;
-            background: linear-gradient(to bottom, #24243e, #302b63, #0f0c29);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        .scanner-card {
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            border-radius: 30px;
-            padding: 20px;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid rgba(255,255,255,0.2);
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-
-        #reader {
-            border-radius: 20px;
-            overflow: hidden;
-            border: none !important;
-            position: relative;
-        }
-
-        .controls {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .zoom-slider {
-            width: 100%;
-            accent-color: var(--primary);
-        }
-
-        .btn-smart {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            border: none;
-            padding: 12px;
-            border-radius: 50px;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        #result-box {
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            display: none;
-            font-size: 0.9rem;
-        }
-
-        /* Scan line animation */
-        .scan-line {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 2px;
-            background: var(--primary);
-            box-shadow: 0 0 15px var(--primary);
-            animation: moveScan 2s infinite linear;
-            z-index: 10;
-        }
-
-        @keyframes moveScan {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; padding: 50px; }
+        form { border: 1px solid #ccc; padding: 20px; border-radius: 8px; width: 300px; }
+        input { width: 100%; margin: 10px 0; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="scanner-card">
-    <h3>Smart AI Scanner</h3>
-    <div style="position: relative;">
-        <div class="scan-line"></div>
-        <div id="reader"></div>
-    </div>
-
-    <div class="controls">
-        <label>Zoom Level</label>
-        <input type="range" id="zoom-range" class="zoom-slider" min="1" max="5" step="0.1" value="1">
-        
-        <button id="torch-button" class="btn-smart">🔦 Toggle Flashlight</button>
-    </div>
-
-    <div id="result-box">
-        <b>Scanned Data:</b><br>
-        <span id="scanned-result"></span>
-    </div>
-</div>
-
-<script>
-    let html5QrCode;
-    const zoomInput = document.getElementById('zoom-range');
-    const torchBtn = document.getElementById('torch-button');
-
-    // Scanner initialize karein
-    html5QrCode = new Html5Qrcode("reader");
-
-    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-        document.getElementById('result-box').style.display = 'block';
-        document.getElementById('scanned-result').innerText = decodedText;
-        if(navigator.vibrate) navigator.vibrate(200);
-    };
-
-    const config = { fps: 20, qrbox: { width: 250, height: 250 } };
-
-    // Camera Start karein with Advanced Capabilities
-    html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
-    .then(() => {
-        const track = html5QrCode.getRunningTrack();
-        const capabilities = track.getCapabilities();
-
-        // 1. Zoom Feature
-        if (capabilities.zoom) {
-            zoomInput.min = capabilities.zoom.min;
-            zoomInput.max = capabilities.zoom.max;
-            zoomInput.step = capabilities.zoom.step;
-            
-            zoomInput.addEventListener('input', () => {
-                track.applyConstraints({ advanced: [{ zoom: zoomInput.value }] });
-            });
-        } else {
-            zoomInput.style.display = 'none';
-        }
-
-        // 2. Torch Feature
-        if (capabilities.torch) {
-            let torchOn = false;
-            torchBtn.addEventListener('click', () => {
-                torchOn = !torchOn;
-                track.applyConstraints({ advanced: [{ torch: torchOn }] });
-            });
-        } else {
-            torchBtn.innerText = "Flashlight Not Supported";
-        }
-
-        // 3. Auto-Light Logic (Andhera hone par alert ya auto-flash)
-        // Browser API se direct light sensor har phone mein nahi chalta, 
-        // par hum track ki settings check kar sakte hain.
-    })
-    .catch(err => {
-        console.error("Camera Error: ", err);
-    });
-
-</script>
+    <form action="/register" method="POST">
+        <h2>Register</h2>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Submit</button>
+    </form>
 
 </body>
 </html>
