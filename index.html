@@ -2,54 +2,49 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro QR Scanner</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My QR Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
+        #reader { width: 500px; border: 2px solid #333; border-radius: 8px; overflow: hidden; }
+        #result { margin-top: 20px; font-size: 1.2rem; color: #333; font-weight: bold; }
+        @media (max-width: 600px) { #reader { width: 300px; } }
+    </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <header class="app-header">
-            <i class="material-icons">qr_code_scanner</i>
-            <h1>QR Scanner Pro</h1>
-        </header>
+    <h2>QR Code Scanner</h2>
+    
+    <div id="reader"></div>
+    
+    <div id="result">Result: Yahan dikhega...</div>
 
-        <div class="scanner-wrapper">
-            <div id="reader"></div> <div class="scan-overlay">
-                <div class="corner top-left"></div>
-                <div class="corner top-right"></div>
-                <div class="corner bottom-left"></div>
-                <div class="corner bottom-right"></div>
-                <div class="scanner-line"></div>
-            </div>
-        </div>
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // Jab QR scan ho jaye
+            document.getElementById('result').innerHTML = `
+                <span style="color: green;">Success!</span> <br>
+                Link/Text: <a href="${decodedText}" target="_blank">${decodedText}</a>
+            `;
+            
+            // Scan hone ke baad agar aap stop karna chahte hain:
+            // html5QrcodeScanner.clear();
+        }
 
-        <div class="result-container">
-            <p id="status-text">Scanning for code...</p>
-            <div id="result-box" class="result-box">
-                <span id="scanned-result">No data detected</span>
-            </div>
-        </div>
+        function onScanFailure(error) {
+            // Har frame scan na hone par error handle karne ke liye (Optional)
+            // console.warn(`Code scan error = ${error}`);
+        }
 
-        <footer class="controls">
-            <button class="icon-btn" id="flash-toggle">
-                <i class="material-icons">flashlight_on</i>
-                <span>Flash</span>
-            </button>
-            <button class="icon-btn primary-btn" id="start-btn">
-                <i class="material-icons">sync</i>
-                <span>Restart</span>
-            </button>
-            <button class="icon-btn" id="history-btn">
-                <i class="material-icons">history</i>
-                <span>History</span>
-            </button>
-        </footer>
-    </div>
-
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="script.js"></script>
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { fps: 10, qrbox: {width: 250, height: 250} },
+            /* verbose= */ false
+        );
+        
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
 </body>
 </html>
 
