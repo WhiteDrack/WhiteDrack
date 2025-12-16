@@ -1,1190 +1,227 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>बारकोड और QR कोड स्कैनर</title>
-    <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Call Scanner UI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * {
+        /* General Reset and Mobile Setup */
+        body {
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary: #7209b7;
-            --success: #4cc9f0;
-            --danger: #f72585;
-            --warning: #f8961e;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-            --gray-light: #e9ecef;
-        }
-        
-        body {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: var(--dark);
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-            overflow-x: hidden;
         }
-        
-        .container {
+
+        /* Mobile Screen Container */
+        .call-scanner-container {
             width: 100%;
-            flex: 1;
+            max-width: 375px; /* Mobile width standard */
+            height: 812px; /* Standard mobile height */
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            border-radius: 30px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            background-color: var(--light);
-            border-radius: 0;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
         }
-        
-        @media (min-width: 768px) {
-            body {
-                padding: 20px;
-            }
-            
-            .container {
-                max-width: 1000px;
-                margin: 0 auto;
-                border-radius: 20px;
-            }
-        }
-        
-        header {
-            background: linear-gradient(to right, var(--primary), var(--secondary));
+
+        /* Header Section */
+        .header {
+            background-color: #007bff; /* Primary Blue */
             color: white;
-            padding: 20px 15px;
+            padding: 15px 20px;
             text-align: center;
             position: relative;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            z-index: 10;
         }
-        
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-            font-weight: 700;
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.2em;
         }
-        
-        .subtitle {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            font-weight: 400;
+
+        .header .status {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-top: 5px;
         }
-        
-        .content {
+
+        /* Scan Area */
+        .scan-area {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            padding: 0;
-            flex: 1;
-        }
-        
-        .scanner-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #e9ecef;
             padding: 20px;
-            background-color: #000;
-            position: relative;
+            text-align: center;
         }
-        
-        .scanner-container {
-            position: relative;
-            width: 100%;
-            flex: 1;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        #scanner-view {
-            width: 100%;
-            height: 100%;
-            background-color: #000;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 300px;
-        }
-        
-        #interactive {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .scanner-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 5;
-        }
-        
-        .scan-frame {
-            width: 80%;
-            height: 200px;
-            border: 2px solid rgba(76, 201, 240, 0.8);
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6);
-        }
-        
-        .scanning-line {
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--success), transparent);
-            position: absolute;
-            top: 50%;
-            animation: scan 2s infinite ease-in-out;
-            border-radius: 3px;
-            box-shadow: 0 0 10px var(--success);
-        }
-        
-        @keyframes scan {
-            0% { transform: translateY(-100px); }
-            50% { transform: translateY(100px); }
-            100% { transform: translateY(-100px); }
-        }
-        
-        .corner {
-            position: absolute;
-            width: 25px;
-            height: 25px;
-            border-color: var(--success);
-            border-style: solid;
-        }
-        
-        .corner-tl {
-            top: 0;
-            left: 0;
-            border-width: 3px 0 0 3px;
-            border-radius: 12px 0 0 0;
-        }
-        
-        .corner-tr {
-            top: 0;
-            right: 0;
-            border-width: 3px 3px 0 0;
-            border-radius: 0 12px 0 0;
-        }
-        
-        .corner-bl {
-            bottom: 0;
-            left: 0;
-            border-width: 0 0 3px 3px;
-            border-radius: 0 0 0 12px;
-        }
-        
-        .corner-br {
-            bottom: 0;
-            right: 0;
-            border-width: 0 3px 3px 0;
-            border-radius: 0 0 12px 0;
-        }
-        
-        .scanner-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 12px;
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .status-dot {
-            width: 12px;
-            height: 12px;
+
+        .scan-pulse {
+            width: 150px;
+            height: 150px;
+            background-color: rgba(0, 123, 255, 0.1);
             border-radius: 50%;
-            background-color: var(--gray);
-            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            animation: pulse 2s infinite; /* Active/Scanning Effect */
         }
-        
-        .status-dot.active {
-            background-color: var(--success);
-            box-shadow: 0 0 10px var(--success);
-            animation: pulse 1.5s infinite;
+
+        .scan-icon {
+            font-size: 3em;
+            color: #007bff;
         }
-        
+
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 20px rgba(0, 123, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+            }
         }
-        
-        #status-text {
-            color: white;
-            font-weight: 600;
-            font-size: 0.95rem;
+
+        .scan-message {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
         }
-        
-        .controls {
+
+        .scan-detail {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        /* Action Buttons Area */
+        .actions {
+            padding: 20px;
+            background-color: #ffffff;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .button-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-        
-        .btn {
-            padding: 16px 10px;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn i {
-            font-size: 1.4rem;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
-        }
-        
-        .btn-primary:hover, .btn-primary:active {
-            background: linear-gradient(to bottom, var(--primary-dark), var(--primary));
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(to bottom, var(--gray), #5a6268);
-        }
-        
-        .btn-secondary:hover, .btn-secondary:active {
-            background: linear-gradient(to bottom, #5a6268, var(--gray));
-        }
-        
-        .btn-danger {
-            background: linear-gradient(to bottom, var(--danger), #e3176a);
-        }
-        
-        .btn-danger:hover, .btn-danger:active {
-            background: linear-gradient(to bottom, #e3176a, var(--danger));
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-        }
-        
-        .btn-label {
-            font-size: 0.8rem;
-        }
-        
-        .results-section {
-            background-color: white;
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            margin-top: -20px;
-            position: relative;
-            z-index: 2;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--gray-light);
-        }
-        
-        h2 {
-            color: var(--primary);
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-        
-        .results-count {
-            background-color: var(--primary);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .clear-btn {
-            background-color: transparent;
-            color: var(--danger);
-            border: 2px solid var(--danger);
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .clear-btn:hover, .clear-btn:active {
-            background-color: var(--danger);
-            color: white;
-        }
-        
-        #results-container {
-            flex: 1;
-            overflow-y: auto;
-            max-height: 300px;
-            padding-right: 5px;
-        }
-        
-        .result-item {
-            background-color: white;
-            padding: 15px;
-            margin-bottom: 12px;
-            border-radius: 12px;
-            border-left: 5px solid var(--primary);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
-            position: relative;
-        }
-        
-        .result-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        }
-        
-        .result-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        .result-type {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-right: 10px;
-        }
-        
-        .barcode-type {
-            background-color: rgba(67, 97, 238, 0.15);
-            color: var(--primary);
-        }
-        
-        .qrcode-type {
-            background-color: rgba(114, 9, 183, 0.15);
-            color: var(--secondary);
-        }
-        
-        .result-value {
-            margin-top: 10px;
-            font-size: 1rem;
-            word-break: break-all;
-            font-weight: 500;
-            color: var(--dark);
-        }
-        
-        .timestamp {
-            font-size: 0.75rem;
-            color: var(--gray);
-            margin-top: 8px;
-            text-align: right;
-        }
-        
-        .no-results {
-            text-align: center;
-            color: var(--gray);
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             gap: 15px;
+            text-align: center;
         }
-        
-        .no-results i {
-            font-size: 3rem;
-            color: var(--gray-light);
+
+        .action-button {
+            border: none;
+            background-color: #f8f9fa;
+            padding: 15px 10px;
+            border-radius: 10px;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        
-        .no-results p {
-            font-size: 1rem;
-            line-height: 1.5;
+
+        .action-button:hover {
+            background-color: #e2e6ea;
         }
-        
-        .instructions {
-            background-color: rgba(67, 97, 238, 0.05);
-            border-radius: 15px;
-            padding: 18px;
+
+        .action-button i {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+            display: block;
+            color: #007bff; /* Icon color */
+        }
+
+        .action-button span {
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        /* Special Button for starting/stopping scan */
+        .main-toggle-button {
             margin-top: 20px;
-            border: 1px solid rgba(67, 97, 238, 0.1);
-        }
-        
-        .instructions h3 {
-            color: var(--primary);
-            margin-bottom: 12px;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .instructions ol {
-            padding-left: 20px;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-        
-        .instructions li {
-            margin-bottom: 8px;
-            color: var(--dark);
-        }
-        
-        footer {
-            text-align: center;
             padding: 15px;
+            background-color: #28a745; /* Green for Active/Start */
             color: white;
-            font-size: 0.8rem;
-            background-color: rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--gray-light);
             border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.6rem;
-            }
-            
-            .scanner-section {
-                padding: 15px;
-            }
-            
-            .scan-frame {
-                width: 90%;
-                height: 180px;
-            }
-            
-            .btn {
-                padding: 14px 8px;
-            }
-            
-            .btn i {
-                font-size: 1.2rem;
-            }
-            
-            .btn-label {
-                font-size: 0.75rem;
-            }
-            
-            .results-section {
-                padding: 15px;
-            }
-        }
-        
-        /* Tablet optimizations */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            .scan-frame {
-                width: 70%;
-                height: 250px;
-            }
-            
-            .controls {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 20px;
-            }
-            
-            .btn {
-                padding: 18px 12px;
-                flex-direction: row;
-            }
-        }
-        
-        /* Desktop optimizations */
-        @media (min-width: 1025px) {
-            .scanner-section {
-                flex-direction: row;
-                gap: 30px;
-            }
-            
-            .scanner-container {
-                flex: 2;
-                margin-bottom: 0;
-            }
-            
-            .scanner-controls {
-                flex: 1;
-                justify-content: center;
-            }
-            
-            .scan-frame {
-                width: 70%;
-                height: 250px;
-            }
-        }
-        
-        /* Active scanning animation */
-        .active-scanning {
-            animation: activePulse 0.8s infinite alternate;
-        }
-        
-        @keyframes activePulse {
-            from { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); }
-            to { box-shadow: 0 0 0 10px rgba(76, 201, 240, 0); }
-        }
-        
-        /* Result highlight animation */
-        .highlight-result {
-            animation: highlightFlash 0.5s ease;
-        }
-        
-        @keyframes highlightFlash {
-            0% { background-color: white; }
-            50% { background-color: rgba(76, 201, 240, 0.2); }
-            100% { background-color: white; }
-        }
-        
-        /* Orientation warning */
-        .orientation-warning {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--dark);
-            color: white;
-            z-index: 1000;
-            flex-direction: column;
-            align-items: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            display: flex;
             justify-content: center;
-            text-align: center;
-            padding: 20px;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
-        
-        .orientation-warning i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: var(--warning);
+
+        .main-toggle-button:hover {
+            background-color: #218838;
         }
-        
-        .orientation-warning h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: white;
-        }
-        
-        .orientation-warning p {
-            font-size: 1rem;
-            max-width: 300px;
-            line-height: 1.5;
-        }
-        
-        @media (max-height: 500px) and (orientation: landscape) {
-            .orientation-warning {
-                display: flex;
-            }
+
+        .main-toggle-button i {
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-qrcode"></i> बारकोड और QR कोड स्कैनर</h1>
-            <p class="subtitle">कैमरे का उपयोग करके त्वरित और सटीक स्कैनिंग</p>
-        </header>
-        
-        <div class="content">
-            <div class="scanner-section">
-                <div class="scanner-container">
-                    <div id="scanner-view">
-                        <!-- Camera feed will appear here -->
-                        <div class="scanner-overlay">
-                            <div class="scan-frame">
-                                <div class="scanning-line"></div>
-                                <div class="corner corner-tl"></div>
-                                <div class="corner corner-tr"></div>
-                                <div class="corner corner-bl"></div>
-                                <div class="corner corner-br"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="scanner-controls">
-                    <div class="status-indicator">
-                        <div class="status-dot" id="status-dot"></div>
-                        <span id="status-text">स्कैनर तैयार है</span>
-                    </div>
-                    
-                    <div class="controls">
-                        <button class="btn btn-primary" id="start-btn">
-                            <i class="fas fa-play-circle"></i>
-                            <span class="btn-label">स्कैन शुरू करें</span>
-                        </button>
-                        <button class="btn btn-danger" id="stop-btn" disabled>
-                            <i class="fas fa-stop-circle"></i>
-                            <span class="btn-label">स्कैन रोकें</span>
-                        </button>
-                        <button class="btn btn-secondary" id="switch-camera-btn">
-                            <i class="fas fa-camera-retro"></i>
-                            <span class="btn-label">कैमरा बदलें</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="results-section">
-                <div class="results-header">
-                    <div>
-                        <h2><i class="fas fa-list-alt"></i> स्कैन परिणाम</h2>
-                        <div class="results-count" id="results-count">0 परिणाम</div>
-                    </div>
-                    <button class="clear-btn" id="clear-results-btn">
-                        <i class="fas fa-trash-alt"></i>
-                        साफ करें
-                    </button>
-                </div>
-                
-                <div id="results-container">
-                    <div class="no-results" id="no-results">
-                        <i class="fas fa-search"></i>
-                        <p>अभी तक कोई परिणाम नहीं।<br>स्कैन शुरू करने के लिए ऊपर दिए गए बटन पर क्लिक करें।</p>
-                    </div>
-                </div>
-                
-                <div class="instructions">
-                    <h3><i class="fas fa-info-circle"></i> उपयोग निर्देश</h3>
-                    <ol>
-                        <li>"स्कैन शुरू करें" बटन पर क्लिक करें और कैमरे तक पहुंच की अनुमति दें</li>
-                        <li>बारकोड या QR कोड को स्कैन फ्रेम के अंदर रखें</li>
-                        <li>कोड स्वचालित रूप से स्कैन हो जाएगा और परिणाम नीचे दिखाई देंगे</li>
-                        <li>विभिन्न कैमरे के बीच स्विच करने के लिए "कैमरा बदलें" बटन का उपयोग करें</li>
-                    </ol>
-                </div>
-            </div>
+
+<div class="call-scanner-container">
+    <div class="header">
+        <h1>Call & Spam Scanner</h1>
+        <div class="status">🛡️ Real-Time Protection Active</div>
+    </div>
+
+    <div class="scan-area">
+        <div class="scan-pulse">
+            <i class="fas fa-satellite-dish scan-icon"></i>
+        </div>
+        <div class="scan-message">Scanning Incoming Calls...</div>
+        <div class="scan-detail">Last Scan: 1 minute ago. Database: V2.1</div>
+    </div>
+
+    <div class="actions">
+        <div class="button-grid">
+            <button class="action-button">
+                <i class="fas fa-list-alt"></i>
+                <span>Blacklist</span>
+            </button>
+            <button class="action-button">
+                <i class="fas fa-history"></i>
+                <span>Call Log</span>
+            </button>
+            <button class="action-button">
+                <i class="fas fa-user-shield"></i>
+                <span>Permissions</span>
+            </button>
+            <button class="action-button">
+                <i class="fas fa-cogs"></i>
+                <span>Settings</span>
+            </button>
+            <button class="action-button">
+                <i class="fas fa-cloud-download-alt"></i>
+                <span>Update DB</span>
+            </button>
+            <button class="action-button">
+                <i class="fas fa-headset"></i>
+                <span>Support</span>
+            </button>
+        </div>
+
+        <div class="main-toggle-button">
+            <i class="fas fa-toggle-on"></i>
+            Scanning is ON
         </div>
     </div>
-    
-    <div class="orientation-warning">
-        <i class="fas fa-mobile-alt"></i>
-        <h3>कृपया पोर्ट्रेट मोड में घुमाएं</h3>
-        <p>बेहतर स्कैनिंग अनुभव के लिए कृपया अपने डिवाइस को पोर्ट्रेट मोड में घुमाएं।</p>
-    </div>
-    
-    <footer>
-        बारकोड और QR कोड स्कैनर | QuaggaJS लाइब्रेरी का उपयोग करता है
-    </footer>
+</div>
 
-    <script>
-        // DOM elements
-        const scannerView = document.getElementById('scanner-view');
-        const startBtn = document.getElementById('start-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const switchCameraBtn = document.getElementById('switch-camera-btn');
-        const clearResultsBtn = document.getElementById('clear-results-btn');
-        const resultsContainer = document.getElementById('results-container');
-        const noResults = document.getElementById('no-results');
-        const statusDot = document.getElementById('status-dot');
-        const statusText = document.getElementById('status-text');
-        const resultsCount = document.getElementById('results-count');
-        
-        // State variables
-        let isScanning = false;
-        let cameras = [];
-        let currentCameraIndex = 0;
-        let scanResults = [];
-        let lastScanTime = 0;
-        const SCAN_COOLDOWN = 1000; // 1 second cooldown between scans
-        
-        // Initialize scanner
-        function initScanner() {
-            // Set up QuaggaJS configuration
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: scannerView,
-                    constraints: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: "environment",
-                        frameRate: { ideal: 30 }
-                    },
-                },
-                decoder: {
-                    readers: [
-                        "code_128_reader",
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_39_reader",
-                        "code_39_vin_reader",
-                        "codabar_reader",
-                        "upc_reader",
-                        "upc_e_reader",
-                        "i2of5_reader",
-                        "qrcode_reader"
-                    ],
-                    multiple: false
-                },
-                locate: true,
-                frequency: 10
-            }, function(err) {
-                if (err) {
-                    console.error(err);
-                    updateStatus("स्कैनर लोड करने में त्रुटि", false, "error");
-                    showError("स्कैनर लोड करने में त्रुटि. कृपया पेज रिफ्रेश करें या कैमरा परमिशन की जाँच करें.");
-                    return;
-                }
-                updateStatus("स्कैनर तैयार है", true, "ready");
-                console.log("QuaggaJS initialized successfully");
-                
-                // Try to get available cameras
-                getCameras();
-            });
-            
-            // Set up QuaggaJS event handlers
-            Quagga.onProcessed(function(result) {
-                updateScannerUI(result);
-            });
-            
-            Quagga.onDetected(function(result) {
-                handleDetection(result);
-            });
-        }
-        
-        // Update scanner UI with detection boxes
-        function updateScannerUI(result) {
-            if (!result) return;
-            
-            // Drawing overlay
-            const drawingCtx = Quagga.canvas.ctx.overlay;
-            const drawingCanvas = Quagga.canvas.dom.overlay;
-            
-            if (!drawingCtx || !drawingCanvas) return;
-            
-            drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-            
-            if (result.boxes) {
-                result.boxes.filter(function(box) {
-                    return box !== result.box;
-                }).forEach(function(box) {
-                    Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "rgba(0, 255, 0, 0.3)", lineWidth: 2});
-                });
-            }
-            
-            if (result.box) {
-                Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#4361ee", lineWidth: 3});
-            }
-            
-            if (result && result.codeResult && result.codeResult.code) {
-                Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: '#f72585', lineWidth: 3});
-            }
-        }
-        
-        // Handle barcode detection
-        function handleDetection(result) {
-            if (result && result.codeResult) {
-                const code = result.codeResult.code;
-                const type = result.codeResult.format || "unknown";
-                
-                // Check cooldown to prevent multiple rapid scans
-                const now = Date.now();
-                if (now - lastScanTime < SCAN_COOLDOWN) {
-                    return;
-                }
-                
-                lastScanTime = now;
-                
-                // Check if this code was already scanned recently (within 3 seconds)
-                const isDuplicate = scanResults.some(item => 
-                    item.code === code && 
-                    (now - item.timestamp) < 3000
-                );
-                
-                if (!isDuplicate) {
-                    addScanResult(code, type);
-                    
-                    // Visual and haptic feedback
-                    provideFeedback();
-                    
-                    // Speak result (if supported)
-                    speakResult(code, type);
-                }
-            }
-        }
-        
-        // Provide visual and haptic feedback
-        function provideFeedback() {
-            // Visual feedback on scanner view
-            scannerView.classList.add('active-scanning');
-            
-            // Vibrate if supported (for mobile devices)
-            if (navigator.vibrate) {
-                navigator.vibrate(100);
-            }
-            
-            // Remove animation class after completion
-            setTimeout(() => {
-                scannerView.classList.remove('active-scanning');
-            }, 500);
-        }
-        
-        // Speak result using speech synthesis
-        function speakResult(code, type) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(`स्कैन किया गया ${type.includes('qrcode') ? 'क्यू आर कोड' : 'बारकोड'}`);
-                utterance.lang = 'hi-IN';
-                utterance.rate = 0.9;
-                utterance.volume = 0.8;
-                speechSynthesis.speak(utterance);
-            }
-        }
-        
-        // Start scanning
-        function startScanner() {
-            if (isScanning) return;
-            
-            Quagga.start();
-            isScanning = true;
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-            updateStatus("स्कैनिंग चल रही है...", true, "scanning");
-            
-            // Update button appearance
-            startBtn.classList.remove('btn-primary');
-            startBtn.classList.add('btn-secondary');
-            stopBtn.classList.remove('btn-secondary');
-            stopBtn.classList.add('btn-danger');
-        }
-        
-        // Stop scanning
-        function stopScanner() {
-            if (!isScanning) return;
-            
-            Quagga.stop();
-            isScanning = false;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            updateStatus("स्कैनिंग रोक दी गई", false, "stopped");
-            
-            // Update button appearance
-            startBtn.classList.remove('btn-secondary');
-            startBtn.classList.add('btn-primary');
-            stopBtn.classList.remove('btn-danger');
-            stopBtn.classList.add('btn-secondary');
-        }
-        
-        // Switch between available cameras
-        function switchCamera() {
-            if (cameras.length < 2) {
-                updateStatus("केवल एक कैमरा उपलब्ध है", true, "warning");
-                return;
-            }
-            
-            stopScanner();
-            updateStatus("कैमरा बदल रहा है...", false, "switching");
-            
-            // Switch to next camera
-            currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-            const cameraId = cameras[currentCameraIndex].deviceId;
-            
-            // Reinitialize Quagga with new camera
-            setTimeout(() => {
-                Quagga.stop();
-                
-                Quagga.init({
-                    inputStream: {
-                        name: "Live",
-                        type: "LiveStream",
-                        target: scannerView,
-                        constraints: {
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 },
-                            deviceId: cameraId ? { exact: cameraId } : undefined,
-                            frameRate: { ideal: 30 }
-                        },
-                    },
-                    decoder: {
-                        readers: [
-                            "code_128_reader",
-                            "ean_reader",
-                            "ean_8_reader",
-                            "code_39_reader",
-                            "code_39_vin_reader",
-                            "codabar_reader",
-                            "upc_reader",
-                            "upc_e_reader",
-                            "i2of5_reader",
-                            "qrcode_reader"
-                        ]
-                    },
-                    locate: true
-                }, function(err) {
-                    if (err) {
-                        console.error(err);
-                        updateStatus("कैमरा स्विच करने में त्रुटि", false, "error");
-                        return;
-                    }
-                    
-                    updateStatus("कैमरा बदल गया", true, "ready");
-                    
-                    // Restart scanning if it was active before
-                    if (isScanning) {
-                        setTimeout(startScanner, 500);
-                    }
-                });
-            }, 500);
-        }
-        
-        // Get available cameras
-        function getCameras() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-                console.log("enumerateDevices() not supported.");
-                return;
-            }
-            
-            navigator.mediaDevices.enumerateDevices()
-                .then(function(devices) {
-                    cameras = devices.filter(function(device) {
-                        return device.kind === "videoinput";
-                    });
-                    
-                    console.log(`Found ${cameras.length} camera(s)`);
-                    
-                    if (cameras.length > 1) {
-                        switchCameraBtn.disabled = false;
-                        updateStatus(`${cameras.length} कैमरे उपलब्ध`, true, "ready");
-                    }
-                })
-                .catch(function(err) {
-                    console.log("Error enumerating devices: " + err);
-                });
-        }
-        
-        // Add scan result to UI
-        function addScanResult(code, type) {
-            // Remove "no results" message if present
-            if (noResults.style.display !== 'none') {
-                noResults.style.display = 'none';
-            }
-            
-            // Create result element
-            const resultItem = document.createElement('div');
-            resultItem.className = 'result-item highlight-result';
-            
-            const typeClass = type.toLowerCase().includes('qrcode') ? 'qrcode-type' : 'barcode-type';
-            const typeText = type.toLowerCase().includes('qrcode') ? 'QR कोड' : 'बारकोड';
-            
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('hi-IN', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            
-            resultItem.innerHTML = `
-                <div>
-                    <span class="result-type ${typeClass}">${typeText}</span>
-                    <span class="timestamp">${timeString}</span>
-                </div>
-                <div class="result-value">${code}</div>
-            `;
-            
-            // Add to results container (at the top)
-            resultsContainer.insertBefore(resultItem, resultsContainer.firstChild);
-            
-            // Store result
-            scanResults.unshift({
-                code: code,
-                type: type,
-                timestamp: Date.now()
-            });
-            
-            // Update results count
-            updateResultsCount();
-            
-            // Limit to 50 results
-            if (scanResults.length > 50) {
-                scanResults.pop();
-                if (resultsContainer.children.length > 50) {
-                    resultsContainer.removeChild(resultsContainer.lastChild);
-                }
-            }
-            
-            // Remove highlight class after animation
-            setTimeout(() => {
-                resultItem.classList.remove('highlight-result');
-            }, 500);
-        }
-        
-        // Update results count display
-        function updateResultsCount() {
-            const count = scanResults.length;
-            resultsCount.textContent = `${count} परिणाम`;
-            
-            // Update color based on count
-            if (count === 0) {
-                resultsCount.style.backgroundColor = var('--gray');
-            } else if (count < 5) {
-                resultsCount.style.backgroundColor = var('--primary');
-            } else {
-                resultsCount.style.backgroundColor = var('--secondary');
-            }
-        }
-        
-        // Clear all results
-        function clearResults() {
-            scanResults = [];
-            resultsContainer.innerHTML = '';
-            noResults.style.display = 'flex';
-            updateResultsCount();
-            
-            // Show confirmation message
-            updateStatus("सभी परिणाम साफ कर दिए गए", true, "info");
-            setTimeout(() => {
-                if (isScanning) {
-                    updateStatus("स्कैनिंग चल रही है...", true, "scanning");
-                } else {
-                    updateStatus("स्कैनर तैयार है", true, "ready");
-                }
-            }, 2000);
-        }
-        
-        // Update status indicator
-        function updateStatus(message, isActive, type = "info") {
-            statusText.textContent = message;
-            statusDot.className = "status-dot";
-            
-            if (isActive) {
-                statusDot.classList.add("active");
-                
-                // Add color based on type
-                if (type === "scanning") {
-                    statusDot.style.backgroundColor = "var(--success)";
-                } else if (type === "error") {
-                    statusDot.style.backgroundColor = "var(--danger)";
-                } else if (type === "warning") {
-                    statusDot.style.backgroundColor = "var(--warning)";
-                } else {
-                    statusDot.style.backgroundColor = "var(--success)";
-                }
-            } else {
-                statusDot.style.backgroundColor = "var(--gray)";
-            }
-        }
-        
-        // Show error message
-        function showError(message) {
-            // Create error element
-            const errorEl = document.createElement('div');
-            errorEl.className = 'result-item';
-            errorEl.style.borderLeftColor = 'var(--danger)';
-            errorEl.innerHTML = `
-                <div>
-                    <span class="result-type" style="background-color: rgba(247, 37, 133, 0.15); color: var(--danger);">त्रुटि</span>
-                </div>
-                <div class="result-value">${message}</div>
-            `;
-            
-            resultsContainer.insertBefore(errorEl, resultsContainer.firstChild);
-            
-            // Remove after 5 seconds
-            setTimeout(() => {
-                if (errorEl.parentNode) {
-                    errorEl.parentNode.removeChild(errorEl);
-                }
-            }, 5000);
-        }
-        
-        // Event listeners
-        startBtn.addEventListener('click', startScanner);
-        stopBtn.addEventListener('click', stopScanner);
-        switchCameraBtn.addEventListener('click', switchCamera);
-        clearResultsBtn.addEventListener('click', clearResults);
-        
-        // Initialize on page load
-        window.addEventListener('DOMContentLoaded', initScanner);
-        
-        // Handle page visibility change
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden && isScanning) {
-                stopScanner();
-            }
-        });
-        
-        // Handle orientation change
-        window.addEventListener('orientationchange', function() {
-            // Small delay to allow orientation to settle
-            setTimeout(() => {
-                if (isScanning) {
-                    // Restart scanner on orientation change
-                    Quagga.stop();
-                    setTimeout(() => {
-                        Quagga.start();
-                    }, 300);
-                }
-            }, 500);
-        });
-        
-        // Prevent pinch zoom on mobile
-        document.addEventListener('touchmove', function(e) {
-            if(e.scale !== 1) { e.preventDefault(); }
-        }, { passive: false });
-        
-        // Update results count initially
-        updateResultsCount();
-    </script>
 </body>
-    </html>
+</html>
+
