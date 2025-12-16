@@ -1,50 +1,119 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My QR Scanner</title>
+    <title>Modern QR Scanner</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
-        #reader { width: 500px; border: 2px solid #333; border-radius: 8px; overflow: hidden; }
-        #result { margin-top: 20px; font-size: 1.2rem; color: #333; font-weight: bold; }
-        @media (max-width: 600px) { #reader { width: 300px; } }
+        :root {
+            --primary-color: #6366f1;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #fff;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+        }
+
+        h2 { margin-bottom: 1.5rem; font-weight: 300; letter-spacing: 1px; }
+
+        /* Scanner Styling */
+        #reader {
+            border: none !important;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* Library Buttons Styling */
+        #reader button {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            border: none !important;
+            padding: 10px 20px !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            margin-top: 10px !important;
+            transition: 0.3s;
+        }
+
+        #reader button:hover { opacity: 0.8; }
+
+        #result-card {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: none; /* Shuru mein chhupa rahega */
+            word-break: break-all;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .footer-text { margin-top: 20px; font-size: 0.8rem; opacity: 0.7; }
     </style>
 </head>
 <body>
 
-    <h2>QR Code Scanner</h2>
-    
-    <div id="reader"></div>
-    
-    <div id="result">Result: Yahan dikhega...</div>
+    <div class="container">
+        <h2>QR Scanner Pro</h2>
+        
+        <div id="reader"></div>
+
+        <div id="result-card">
+            <strong style="display: block; margin-bottom: 5px;">Scanned Result:</strong>
+            <div id="result-text"></div>
+        </div>
+
+        <p class="footer-text">Apna QR code frame ke andar rakhein</p>
+    </div>
 
     <script>
-        function onScanSuccess(decodedText, decodedResult) {
-            // Jab QR scan ho jaye
-            document.getElementById('result').innerHTML = `
-                <span style="color: green;">Success!</span> <br>
-                Link/Text: <a href="${decodedText}" target="_blank">${decodedText}</a>
-            `;
-            
-            // Scan hone ke baad agar aap stop karna chahte hain:
-            // html5QrcodeScanner.clear();
-        }
+        const resultCard = document.getElementById('result-card');
+        const resultText = document.getElementById('result-text');
 
-        function onScanFailure(error) {
-            // Har frame scan na hone par error handle karne ke liye (Optional)
-            // console.warn(`Code scan error = ${error}`);
+        function onScanSuccess(decodedText, decodedResult) {
+            resultCard.style.display = 'block';
+            resultText.innerHTML = `<a href="${decodedText}" target="_blank" style="color: #fff; text-decoration: underline;">${decodedText}</a>`;
+            
+            // Beep sound ya vibration add karne ke liye:
+            if (navigator.vibrate) navigator.vibrate(100);
         }
 
         let html5QrcodeScanner = new Html5QrcodeScanner(
             "reader", 
-            { fps: 10, qrbox: {width: 250, height: 250} },
-            /* verbose= */ false
+            { 
+                fps: 20, 
+                qrbox: {width: 250, height: 250},
+                aspectRatio: 1.0 
+            }
         );
         
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        html5QrcodeScanner.render(onScanSuccess);
     </script>
 </body>
 </html>
-
