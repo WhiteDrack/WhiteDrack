@@ -1,39 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Barcode Scanner</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro QR Scanner</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="scanner-container">
-        <div class="camera-view">
-            <div class="scan-line"></div>
-            <video id="cameraFeed" class="video-preview"></video>
-            <div class="overlay-text" id="statusMessage">Scanning for Barcodes...</div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <i class="material-icons">qr_code_scanner</i>
+            <h1>QR Scanner Pro</h1>
+        </header>
+
+        <div class="scanner-wrapper">
+            <div id="reader"></div> <div class="scan-overlay">
+                <div class="corner top-left"></div>
+                <div class="corner top-right"></div>
+                <div class="corner bottom-left"></div>
+                <div class="corner bottom-right"></div>
+                <div class="scanner-line"></div>
+            </div>
         </div>
 
-        <div class="result-area">
-            <p><strong>Result:</strong> <span id="barcodeResult">N/A</span></p>
+        <div class="result-container">
+            <p id="status-text">Scanning for code...</p>
+            <div id="result-box" class="result-box">
+                <span id="scanned-result">No data detected</span>
+            </div>
         </div>
 
-        <div class="controls">
-            <button id="toggleCamera" class="control-btn">
-                <i class="material-icons">camera_alt</i> <span class="btn-text">Start/Stop</span>
+        <footer class="controls">
+            <button class="icon-btn" id="flash-toggle">
+                <i class="material-icons">flashlight_on</i>
+                <span>Flash</span>
             </button>
-            
-            <button id="toggleFlash" class="control-btn" disabled>
-                <i class="material-icons">flash_on</i> <span class="btn-text">Flash</span>
+            <button class="icon-btn primary-btn" id="start-btn">
+                <i class="material-icons">sync</i>
+                <span>Restart</span>
             </button>
-
-            <button id="manualEntry" class="control-btn">
-                <i class="material-icons">keyboard</i> <span class="btn-text">Manual</span>
+            <button class="icon-btn" id="history-btn">
+                <i class="material-icons">history</i>
+                <span>History</span>
             </button>
-        </div>
+        </footer>
     </div>
 
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="script.js"></script>
 </body>
 </html>
