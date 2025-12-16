@@ -3,225 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Active Call Scanner UI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        /* General Reset and Mobile Setup */
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* Mobile Screen Container */
-        .call-scanner-container {
-            width: 100%;
-            max-width: 375px; /* Mobile width standard */
-            height: 812px; /* Standard mobile height */
-            background-color: #ffffff;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-            border-radius: 30px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Header Section */
-        .header {
-            background-color: #007bff; /* Primary Blue */
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            position: relative;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.2em;
-        }
-
-        .header .status {
-            font-size: 0.8em;
-            opacity: 0.8;
-            margin-top: 5px;
-        }
-
-        /* Scan Area */
-        .scan-area {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: #e9ecef;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .scan-pulse {
-            width: 150px;
-            height: 150px;
-            background-color: rgba(0, 123, 255, 0.1);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            animation: pulse 2s infinite; /* Active/Scanning Effect */
-        }
-
-        .scan-icon {
-            font-size: 3em;
-            color: #007bff;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 20px rgba(0, 123, 255, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-            }
-        }
-
-        .scan-message {
-            margin-top: 20px;
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .scan-detail {
-            font-size: 0.9em;
-            color: #6c757d;
-        }
-
-        /* Action Buttons Area */
-        .actions {
-            padding: 20px;
-            background-color: #ffffff;
-            border-top: 1px solid #dee2e6;
-        }
-
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            text-align: center;
-        }
-
-        .action-button {
-            border: none;
-            background-color: #f8f9fa;
-            padding: 15px 10px;
-            border-radius: 10px;
-            color: #333;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .action-button:hover {
-            background-color: #e2e6ea;
-        }
-
-        .action-button i {
-            font-size: 1.5em;
-            margin-bottom: 5px;
-            display: block;
-            color: #007bff; /* Icon color */
-        }
-
-        .action-button span {
-            font-size: 0.75em;
-            font-weight: bold;
-        }
-
-        /* Special Button for starting/stopping scan */
-        .main-toggle-button {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #28a745; /* Green for Active/Start */
-            color: white;
-            border-radius: 10px;
-            font-size: 1.1em;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-
-        .main-toggle-button:hover {
-            background-color: #218838;
-        }
-
-        .main-toggle-button i {
-            margin-right: 10px;
-        }
-    </style>
+    <title>Mobile Barcode Scanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-
-<div class="call-scanner-container">
-    <div class="header">
-        <h1>Call & Spam Scanner</h1>
-        <div class="status">🛡️ Real-Time Protection Active</div>
-    </div>
-
-    <div class="scan-area">
-        <div class="scan-pulse">
-            <i class="fas fa-satellite-dish scan-icon"></i>
-        </div>
-        <div class="scan-message">Scanning Incoming Calls...</div>
-        <div class="scan-detail">Last Scan: 1 minute ago. Database: V2.1</div>
-    </div>
-
-    <div class="actions">
-        <div class="button-grid">
-            <button class="action-button">
-                <i class="fas fa-list-alt"></i>
-                <span>Blacklist</span>
-            </button>
-            <button class="action-button">
-                <i class="fas fa-history"></i>
-                <span>Call Log</span>
-            </button>
-            <button class="action-button">
-                <i class="fas fa-user-shield"></i>
-                <span>Permissions</span>
-            </button>
-            <button class="action-button">
-                <i class="fas fa-cogs"></i>
-                <span>Settings</span>
-            </button>
-            <button class="action-button">
-                <i class="fas fa-cloud-download-alt"></i>
-                <span>Update DB</span>
-            </button>
-            <button class="action-button">
-                <i class="fas fa-headset"></i>
-                <span>Support</span>
-            </button>
+    <div class="scanner-container">
+        <div class="camera-view">
+            <div class="scan-line"></div>
+            <video id="cameraFeed" class="video-preview"></video>
+            <div class="overlay-text" id="statusMessage">Scanning for Barcodes...</div>
         </div>
 
-        <div class="main-toggle-button">
-            <i class="fas fa-toggle-on"></i>
-            Scanning is ON
+        <div class="result-area">
+            <p><strong>Result:</strong> <span id="barcodeResult">N/A</span></p>
+        </div>
+
+        <div class="controls">
+            <button id="toggleCamera" class="control-btn">
+                <i class="material-icons">camera_alt</i> <span class="btn-text">Start/Stop</span>
+            </button>
+            
+            <button id="toggleFlash" class="control-btn" disabled>
+                <i class="material-icons">flash_on</i> <span class="btn-text">Flash</span>
+            </button>
+
+            <button id="manualEntry" class="control-btn">
+                <i class="material-icons">keyboard</i> <span class="btn-text">Manual</span>
+            </button>
         </div>
     </div>
-</div>
 
+    <script src="script.js"></script>
 </body>
 </html>
 
