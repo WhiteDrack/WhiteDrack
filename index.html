@@ -1,88 +1,108 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phone Jump Tracker</title>
+    <title>Pro Jump Tracker</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
-        .container { margin-top: 50px; }
-        #height { font-size: 48px; color: #00ffcc; margin: 20px 0; }
-        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #00ffcc; border: none; border-radius: 10px; font-weight: bold; }
-        p { color: #888; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #0f172a; color: white; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .card { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 80%; max-width: 400px; }
+        #height { font-size: 64px; font-weight: bold; color: #38bdf8; margin: 20px 0; }
+        button { padding: 15px 40px; font-size: 18px; cursor: pointer; background: #38bdf8; border: none; border-radius: 50px; color: #0f172a; font-weight: bold; transition: 0.3s; }
+        button:active { transform: scale(0.95); }
+        .status-box { margin-top: 20px; font-size: 14px; color: #94a3b8; }
+        .indicator { width: 15px; height: 15px; border-radius: 50%; display: inline-block; background: #64748b; margin-right: 5px; }
+        .active-jump { background: #f43f5e; animation: blink 0.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Uchaai Tracker 🚀</h1>
-        <p>Phone ko upar uchhalein aur catch karein</p>
+    <div class="card">
+        <h2>Phone Jump 🚀</h2>
+        <div id="height">0.00m</div>
+        <button id="startBtn">START SENSOR</button>
         
-        <div id="height">0.00 m</div>
-        
-        <button onclick="requestPermission()">Start Sensor</button>
-        <p id="status">Status: Ready</p>
+        <div class="status-box">
+            <span id="indicator" class="indicator"></span>
+            <span id="status">Ready to track</span>
+        </div>
     </div>
 
     <script>
         let isFreeFalling = false;
         let startTime = 0;
-        const statusText = document.getElementById('status');
-        const heightDisplay = document.getElementById('height');
+        let lastJumpTime = 0;
+        const DEBOUNCE_TIME = 1000; // 1 second gap between jumps
 
-        function requestPermission() {
-            // iOS 13+ ke liye permission chahiye hoti hai
+        const heightDisplay = document.getElementById('height');
+        const statusText = document.getElementById('status');
+        const indicator = document.getElementById('indicator');
+        const startBtn = document.getElementById('startBtn');
+
+        function startTracking() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission()
-                    .then(response => {
-                        if (response == 'granted') {
-                            window.addEventListener('devicemotion', handleMotion);
-                            statusText.innerText = "Status: Tracking...";
-                        }
-                    })
-                    .catch(console.error);
+                DeviceMotionEvent.requestPermission().then(permissionState => {
+                    if (permissionState === 'granted') {
+                        setupListener();
+                    }
+                });
             } else {
-                // Android aur purane browsers ke liye
-                window.addEventListener('devicemotion', handleMotion);
-                statusText.innerText = "Status: Tracking...";
+                setupListener();
             }
+            startBtn.style.display = 'none';
+            statusText.innerText = "Monitoring Motion...";
         }
 
-        function handleMotion(event) {
-            let acc = event.accelerationIncludingGravity;
-            if (!acc) return;
+        function setupListener() {
+            window.addEventListener('devicemotion', (event) => {
+                let acc = event.accelerationIncludingGravity;
+                if (!acc.x) return;
 
-            // Total acceleration (Net Force)
-            let totalAcc = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+                // Magnitude calculate karna
+                let totalAcc = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+                
+                let now = performance.now();
 
-            // Freefall detect karna (Jab gravity 0 ke kareeb ho jaye)
-            // Normal gravity ~9.8 hoti hai, freefall mein ye 2 se kam ho jati hai
-            if (totalAcc < 2.5 && !isFreeFalling) {
-                isFreeFalling = true;
-                startTime = performance.now();
-                statusText.innerText = "Status: Hawa mein hai!";
-            }
+                // 1. FREEFALL DETECT (Jump start)
+                // Gravity 9.8 hoti hai, agar 3 se niche jaye matlab phone hawa mein hai
+                if (totalAcc < 3.0 && !isFreeFalling && (now - lastJumpTime > DEBOUNCE_TIME)) {
+                    isFreeFalling = true;
+                    startTime = now;
+                    indicator.classList.add('active-jump');
+                    statusText.innerText = "AIRBORNE!";
+                }
 
-            // Jab phone catch kiya jaye (Freefall khatam)
-            if (totalAcc > 12 && isFreeFalling) {
-                let duration = (performance.now() - startTime) / 1000; // seconds
-                isFreeFalling = false;
-                calculateHeight(duration);
-                statusText.innerText = "Status: Captured!";
-            }
+                // 2. CATCH DETECT (Jump end)
+                // Jab phone hath mein wapas aaye, impact 13+ acceleration generate karega
+                if (isFreeFalling && totalAcc > 13.0) {
+                    let duration = (now - startTime) / 1000; // Seconds mein
+                    
+                    // Valid jump duration check (0.1s se 3s tak)
+                    if (duration > 0.15 && duration < 3.0) {
+                        calculateHeight(duration);
+                        lastJumpTime = now;
+                    }
+                    
+                    isFreeFalling = false;
+                    indicator.classList.remove('active-jump');
+                    statusText.innerText = "Landed & Saved";
+                }
+            });
         }
 
         function calculateHeight(t) {
-            // Physics Formula: h = 1/8 * g * t^2 
-            // Kyunki t total time hai (upar jane + niche aane ka)
+            // Formula: Height = 1/2 * g * (t/2)^2
+            // Simplifies to: h = 1.226 * t^2
             const g = 9.81;
-            let h = 0.125 * g * Math.pow(t, 2);
+            let h = (1/8) * g * Math.pow(t, 2);
             
-            if (h > 0.05) { // Choti errors ko ignore karne ke liye
-                heightDisplay.innerText = h.toFixed(2) + " m";
-            }
+            // Output display
+            heightDisplay.innerText = h.toFixed(2) + "m";
         }
+
+        startBtn.addEventListener('click', startTracking);
     </script>
 </body>
 </html>
+
