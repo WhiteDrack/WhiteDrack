@@ -4,40 +4,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Anti-Shake Jump Tracker</title>
+    <title>Jump Tracker + Google Login</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #000; color: #fff; margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .box { background: #111; padding: 40px; border-radius: 30px; border: 2px solid #333; width: 85%; max-width: 400px; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #000; color: #fff; margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .box { background: #111; padding: 30px; border-radius: 30px; border: 2px solid #333; width: 85%; max-width: 400px; position: relative; }
         #height { font-size: 80px; font-weight: 800; color: #00ff88; margin: 0; }
         .unit { font-size: 20px; color: #666; margin-bottom: 20px; }
-        #status { font-size: 14px; color: #ffcc00; font-weight: bold; height: 20px; margin-bottom: 20px; }
-        button { background: #00ff88; color: #000; border: none; padding: 18px 45px; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:active { transform: scale(0.9); }
-        .info { font-size: 12px; color: #444; margin-top: 20px; line-height: 1.5; }
+        #status { font-size: 14px; color: #ffcc00; font-weight: bold; margin-bottom: 20px; min-height: 20px; }
+        
+        button { border: none; padding: 15px 30px; border-radius: 50px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin: 10px; }
+        .btn-activate { background: #00ff88; color: #000; width: 80%; }
+        .btn-google { background: #fff; color: #000; display: flex; align-items: center; justify-content: center; gap: 10px; width: 80%; margin: 10px auto; }
+        .user-info { margin-bottom: 20px; font-size: 14px; color: #00ff88; display: none; }
+        #logoutBtn { background: transparent; color: #ff3300; border: 1px solid #ff3300; padding: 5px 15px; font-size: 12px; position: absolute; top: 10px; right: 10px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="box">
+        <button id="logoutBtn">Logout</button>
+        <div id="userInfo" class="user-info">Swagat hai, <span id="userName">User</span></div>
+        
         <div id="height">0.00</div>
         <div class="unit">METERS</div>
-        <div id="status">PRESS ACTIVATE</div>
-        <button id="startBtn">ACTIVATE SENSOR</button>
-        <div class="info">Sirf hawa mein uchhalne par measure hoga.<br>Phone hilane par false reading nahi aayegi.</div>
+        <div id="status">PLEASE LOGIN FIRST</div>
+
+        <button id="googleBtn" class="btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/02-google-logo.png" width="20" alt="G">
+            Login with Google
+        </button>
+
+        <button id="startBtn" class="btn-activate" style="display:none;">ACTIVATE SENSOR</button>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Aapki Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
+            authDomain: "white-drack-fd1ee.firebaseapp.com",
+            databaseURL: "https://white-drack-fd1ee-default-rtdb.firebaseio.com",
+            projectId: "white-drack-fd1ee",
+            storageBucket: "white-drack-fd1ee.firebasestorage.app",
+            messagingSenderId: "151227903888",
+            appId: "1:151227903888:web:02a2d7ab14f7d1e152cd15"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // UI Elements
+        const googleBtn = document.getElementById('googleBtn');
+        const startBtn = document.getElementById('startBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfo = document.getElementById('userInfo');
+        const userNameText = document.getElementById('userName');
+        const statusText = document.getElementById('status');
+        const heightDisplay = document.getElementById('height');
+
+        // --- AUTH LOGIC ---
+
+        googleBtn.onclick = () => {
+            signInWithPopup(auth, provider)
+                .then(() => console.log("Logged In"))
+                .catch((error) => alert("Login Failed: " + error.message));
+        };
+
+        logoutBtn.onclick = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User Logged In
+                googleBtn.style.display = 'none';
+                startBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'block';
+                userInfo.style.display = 'block';
+                userNameText.innerText = user.displayName;
+                statusText.innerText = "SENSOR READY";
+            } else {
+                // User Logged Out
+                googleBtn.style.display = 'flex';
+                startBtn.style.display = 'none';
+                logoutBtn.style.display = 'none';
+                userInfo.style.display = 'none';
+                statusText.innerText = "PLEASE LOGIN FIRST";
+                heightDisplay.innerText = "0.00";
+            }
+        });
+
+        // --- SENSOR LOGIC (Anti-Shake) ---
         let isFreeFalling = false;
         let startTime = 0;
         let lastAcc = 9.8;
-        const FREEFALL_THRESHOLD = 2.5; // Gravity 2.5 se niche matlab freefall
-        const IMPACT_THRESHOLD = 15.0;  // 15 se upar matlab catch kiya
 
-        const heightDisplay = document.getElementById('height');
-        const statusText = document.getElementById('status');
-        const startBtn = document.getElementById('startBtn');
-
-        function init() {
+        startBtn.onclick = () => {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 DeviceMotionEvent.requestPermission().then(state => {
                     if (state === 'granted') startTracking();
@@ -45,61 +109,40 @@
             } else {
                 startTracking();
             }
-            startBtn.style.display = 'none';
-        }
+            startBtn.disabled = true;
+            startBtn.innerText = "SENSOR ACTIVE";
+            startBtn.style.opacity = "0.5";
+        };
 
         function startTracking() {
-            statusText.innerText = "READY: THROW & CATCH";
-            statusText.style.color = "#00ff88";
-
             window.addEventListener('devicemotion', (e) => {
                 let acc = e.accelerationIncludingGravity;
-                if (!acc.x) return;
+                if (!acc || !acc.x) return;
 
-                // Total Acceleration calculation
                 let rawAcc = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-                
-                // Low-pass filter to remove small shakes
                 lastAcc = (lastAcc * 0.8) + (rawAcc * 0.2);
-
                 let now = performance.now();
 
-                // 1. FREEFALL DETECT (Phone hawa mein hai)
-                if (lastAcc < FREEFALL_THRESHOLD && !isFreeFalling) {
-                    // Ek aur check: Phone sach mein stable freefall mein hona chahiye
-                    // Vibration (shaking) se bachne ke liye
+                if (lastAcc < 2.8 && !isFreeFalling) {
                     isFreeFalling = true;
                     startTime = now;
                     statusText.innerText = "AIRBORNE...";
-                    statusText.style.color = "#ff3300";
                 }
 
-                // 2. LANDING DETECT (Phone catch kiya)
-                if (isFreeFalling && lastAcc > IMPACT_THRESHOLD) {
+                if (isFreeFalling && lastAcc > 15.0) {
                     let duration = (now - startTime) / 1000;
-                    
-                    // VALIDATION: Agar phone 0.25 sec se kam hawa mein raha to wo sirf ek 'jhatka' tha
                     if (duration > 0.25 && duration < 2.5) {
-                        let g = 9.81;
-                        let h = 0.125 * g * Math.pow(duration, 2);
+                        let h = 0.125 * 9.81 * Math.pow(duration, 2);
                         heightDisplay.innerText = h.toFixed(2);
-                        statusText.innerText = "SUCCESSFUL JUMP!";
+                        statusText.innerText = "JUMP DETECTED!";
                     } else {
-                        statusText.innerText = "SHAKE DETECTED - IGNORED";
+                        statusText.innerText = "SHAKE IGNORED";
                     }
-
                     isFreeFalling = false;
-                    setTimeout(() => {
-                        if(!isFreeFalling) {
-                            statusText.innerText = "READY FOR NEXT JUMP";
-                            statusText.style.color = "#00ff88";
-                        }
-                    }, 1500);
+                    setTimeout(() => { statusText.innerText = "READY FOR NEXT"; }, 1500);
                 }
             });
         }
-
-        startBtn.addEventListener('click', init);
     </script>
 </body>
 </html>
