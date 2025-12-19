@@ -1,129 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AR Camera Scale</title>
+    <title>AR Measure Tool</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: sans-serif; }
-        #video { width: 100vw; height: 100vh; object-fit: cover; }
-        #canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
-        
-        .ui-overlay {
-            position: absolute; top: 20px; width: 100%; text-align: center; color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none;
+        body { margin: 0; font-family: sans-serif; }
+        model-viewer { width: 100vw; height: 100vh; background-color: #eee; }
+        .ar-button {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 15px 30px; background: #007bff; color: white; border-radius: 30px;
+            border: none; font-weight: bold; font-size: 16px; cursor: pointer;
         }
-
-        .controls {
-            position: absolute; bottom: 30px; width: 100%; display: flex;
-            justify-content: space-around; align-items: center;
+        #info {
+            position: absolute; top: 10px; width: 100%; text-align: center;
+            color: #333; background: rgba(255,255,255,0.7); padding: 10px 0;
         }
-
-        button {
-            padding: 15px 25px; border-radius: 50px; border: none;
-            background: rgba(255, 255, 255, 0.9); font-weight: bold; cursor: pointer;
-        }
-
-        .info { font-size: 1.2rem; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; display: inline-block; }
     </style>
 </head>
 <body>
 
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas"></canvas>
+    <div id="info">iPhone jaisa AR mode start karne ke liye button dabayein</div>
 
-    <div class="ui-overlay">
-        <div class="info" id="result">Screen par do points par tap karein</div>
-    </div>
+    <model-viewer 
+        ar 
+        ar-modes="webxr scene-viewer quick-look" 
+        camera-controls 
+        touch-action="none" 
+        alt="AR Measurement Tool">
+        
+        <button slot="ar-button" class="ar-button">
+            START CAMERA MEASURE
+        </button>
 
-    <div class="controls">
-        <button onclick="resetPoints()">Reset</button>
-        <button onclick="switchCamera()">Switch Camera</button>
-    </div>
+    </model-viewer>
 
     <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const resultDisplay = document.getElementById('result');
-        
-        let points = [];
-        let pixelsPerCm = 37.8; // Standard estimate
-
-        // Camera Start Karein
-        async function startCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "environment" }, 
-                    audio: false 
-                });
-                video.srcObject = stream;
-            } catch (err) {
-                alert("Camera access nahi mila: " + err);
-            }
-        }
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        window.addEventListener('resize', resize);
-        resize();
-
-        // Screen par tap karne par points lagayen
-        canvas.addEventListener('click', (e) => {
-            if (points.length < 2) {
-                points.push({ x: e.clientX, y: e.clientY });
-                draw();
-            }
-            
-            if (points.length === 2) {
-                calculateDistance();
-            }
-        });
-
-        function calculateDistance() {
-            const dx = points[1].x - points[0].x;
-            const dy = points[1].y - points[0].y;
-            const pixelDist = Math.sqrt(dx*dx + dy*dy);
-            
-            // Note: Phone camera mein bina sensor ke exact CM nikalna mushkil hai
-            // Ye ek anumanit (estimated) value dikhayega
-            const cm = (pixelDist / pixelsPerCm).toFixed(1);
-            const m = (cm / 100).toFixed(2);
-            
-            resultDisplay.innerHTML = `Height: ${cm} cm / ${m} m`;
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = '#00ff00';
-            ctx.lineWidth = 3;
-            ctx.fillStyle = '#fff';
-
-            points.forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-            });
-
-            if (points.length === 2) {
-                ctx.beginPath();
-                ctx.moveTo(points[0].x, points[0].y);
-                ctx.lineTo(points[1].x, points[1].y);
-                ctx.stroke();
-            }
-        }
-
-        function resetPoints() {
-            points = [];
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            resultDisplay.innerText = "Screen par do points par tap karein";
-        }
-
-        startCamera();
+        // Note: Ye feature sirf un phones par chalega jo ARCore support karte hain (Android/iPhone)
+        // Ise 'HTTPS' server par hi run karna hoga (jaise GitHub Pages ya Vercel)
     </script>
 </body>
 </html>
