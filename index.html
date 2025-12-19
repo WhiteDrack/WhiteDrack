@@ -4,44 +4,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Tracker + Google Login</title>
+    <title>Jump Pro - Precision Tracker</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #000; color: #fff; margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        .box { background: #111; padding: 30px; border-radius: 30px; border: 2px solid #333; width: 85%; max-width: 400px; position: relative; }
-        #height { font-size: 80px; font-weight: 800; color: #00ff88; margin: 0; }
-        .unit { font-size: 20px; color: #666; margin-bottom: 20px; }
-        #status { font-size: 14px; color: #ffcc00; font-weight: bold; margin-bottom: 20px; min-height: 20px; }
+        :root { --primary: #00ff88; --bg: #000; --card: #111; --text: #fff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         
-        button { border: none; padding: 15px 30px; border-radius: 50px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin: 10px; }
-        .btn-activate { background: #00ff88; color: #000; width: 80%; }
-        .btn-google { background: #fff; color: #000; display: flex; align-items: center; justify-content: center; gap: 10px; width: 80%; margin: 10px auto; }
-        .user-info { margin-bottom: 20px; font-size: 14px; color: #00ff88; display: none; }
-        #logoutBtn { background: transparent; color: #ff3300; border: 1px solid #ff3300; padding: 5px 15px; font-size: 12px; position: absolute; top: 10px; right: 10px; display: none; }
+        /* UI Containers */
+        .page { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; animation: fadeIn 0.5s; }
+        .active { display: flex; }
+
+        .card { background: var(--card); padding: 40px 30px; border-radius: 30px; border: 2px solid #333; width: 85%; max-width: 380px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+
+        /* Login UI */
+        h1 { color: var(--primary); margin-bottom: 10px; font-size: 28px; }
+        p { color: #888; margin-bottom: 30px; font-size: 14px; }
+        .btn-google { background: #fff; color: #000; border: none; padding: 15px; border-radius: 50px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; font-size: 16px; box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
+
+        /* Tracker UI */
+        #height { font-size: 90px; font-weight: 800; color: var(--primary); margin: 0; text-shadow: 0 0 30px rgba(0,255,136,0.3); }
+        .unit { font-size: 18px; color: #555; letter-spacing: 2px; margin-bottom: 25px; }
+        #status { font-size: 13px; color: #ffcc00; font-weight: bold; margin-bottom: 25px; text-transform: uppercase; }
+        .btn-activate { background: var(--primary); color: #000; border: none; padding: 18px; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+        
+        #logoutBtn { position: absolute; top: 15px; right: 20px; color: #ff3300; background: none; border: none; font-size: 12px; cursor: pointer; font-weight: bold; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <button id="logoutBtn">Logout</button>
-        <div id="userInfo" class="user-info">Swagat hai, <span id="userName">User</span></div>
-        
-        <div id="height">0.00</div>
-        <div class="unit">METERS</div>
-        <div id="status">PLEASE LOGIN FIRST</div>
+    <div id="loginPage" class="page active">
+        <div class="card">
+            <h1>Jump Pro 🚀</h1>
+            <p>Apni uchayi track karne ke liye login karein</p>
+            <button id="googleBtn" class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/02-google-logo.png" width="20">
+                Google Login
+            </button>
+        </div>
+    </div>
 
-        <button id="googleBtn" class="btn-google">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/02-google-logo.png" width="20" alt="G">
-            Login with Google
-        </button>
-
-        <button id="startBtn" class="btn-activate" style="display:none;">ACTIVATE SENSOR</button>
+    <div id="trackerPage" class="page">
+        <div class="card">
+            <button id="logoutBtn">LOGOUT</button>
+            <div id="height">0.00</div>
+            <div class="unit">METERS</div>
+            <div id="status">SENSOR READY</div>
+            <button id="startBtn" class="btn-activate">ACTIVATE SENSOR</button>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Aapki Firebase Config
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
             authDomain: "white-drack-fd1ee.firebaseapp.com",
@@ -52,56 +69,36 @@
             appId: "1:151227903888:web:02a2d7ab14f7d1e152cd15"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // UI Elements
-        const googleBtn = document.getElementById('googleBtn');
-        const startBtn = document.getElementById('startBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const userInfo = document.getElementById('userInfo');
-        const userNameText = document.getElementById('userName');
-        const statusText = document.getElementById('status');
-        const heightDisplay = document.getElementById('height');
+        const loginPage = document.getElementById('loginPage');
+        const trackerPage = document.getElementById('trackerPage');
 
         // --- AUTH LOGIC ---
-
-        googleBtn.onclick = () => {
-            signInWithPopup(auth, provider)
-                .then(() => console.log("Logged In"))
-                .catch((error) => alert("Login Failed: " + error.message));
-        };
-
-        logoutBtn.onclick = () => signOut(auth);
-
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // User Logged In
-                googleBtn.style.display = 'none';
-                startBtn.style.display = 'inline-block';
-                logoutBtn.style.display = 'block';
-                userInfo.style.display = 'block';
-                userNameText.innerText = user.displayName;
-                statusText.innerText = "SENSOR READY";
+                loginPage.classList.remove('active');
+                trackerPage.classList.add('active');
             } else {
-                // User Logged Out
-                googleBtn.style.display = 'flex';
-                startBtn.style.display = 'none';
-                logoutBtn.style.display = 'none';
-                userInfo.style.display = 'none';
-                statusText.innerText = "PLEASE LOGIN FIRST";
-                heightDisplay.innerText = "0.00";
+                trackerPage.classList.remove('active');
+                loginPage.classList.add('active');
             }
         });
 
-        // --- SENSOR LOGIC (Anti-Shake) ---
+        document.getElementById('googleBtn').onclick = () => {
+            signInWithPopup(auth, provider).catch(e => alert("Error: " + e.message));
+        };
+
+        document.getElementById('logoutBtn').onclick = () => signOut(auth);
+
+        // --- SENSOR LOGIC ---
         let isFreeFalling = false;
         let startTime = 0;
         let lastAcc = 9.8;
 
-        startBtn.onclick = () => {
+        document.getElementById('startBtn').onclick = function() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 DeviceMotionEvent.requestPermission().then(state => {
                     if (state === 'granted') startTracking();
@@ -109,9 +106,10 @@
             } else {
                 startTracking();
             }
-            startBtn.disabled = true;
-            startBtn.innerText = "SENSOR ACTIVE";
-            startBtn.style.opacity = "0.5";
+            this.innerText = "ACTIVE MODE";
+            this.style.background = "#333";
+            this.style.color = "#00ff88";
+            this.disabled = true;
         };
 
         function startTracking() {
@@ -120,26 +118,32 @@
                 if (!acc || !acc.x) return;
 
                 let rawAcc = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-                lastAcc = (lastAcc * 0.8) + (rawAcc * 0.2);
+                lastAcc = (lastAcc * 0.8) + (rawAcc * 0.2); // Noise filter
                 let now = performance.now();
 
+                // Freefall detection
                 if (lastAcc < 2.8 && !isFreeFalling) {
                     isFreeFalling = true;
                     startTime = now;
-                    statusText.innerText = "AIRBORNE...";
+                    document.getElementById('status').innerText = "FLYING...";
+                    document.getElementById('status').style.color = "#00ff88";
                 }
 
+                // Impact detection
                 if (isFreeFalling && lastAcc > 15.0) {
                     let duration = (now - startTime) / 1000;
-                    if (duration > 0.25 && duration < 2.5) {
+                    if (duration > 0.25 && duration < 3.0) {
                         let h = 0.125 * 9.81 * Math.pow(duration, 2);
-                        heightDisplay.innerText = h.toFixed(2);
-                        statusText.innerText = "JUMP DETECTED!";
+                        document.getElementById('height').innerText = h.toFixed(2);
+                        document.getElementById('status').innerText = "LOCKED!";
                     } else {
-                        statusText.innerText = "SHAKE IGNORED";
+                        document.getElementById('status').innerText = "SHAKE IGNORED";
                     }
                     isFreeFalling = false;
-                    setTimeout(() => { statusText.innerText = "READY FOR NEXT"; }, 1500);
+                    setTimeout(() => {
+                        document.getElementById('status').innerText = "READY FOR NEXT";
+                        document.getElementById('status').style.color = "#ffcc00";
+                    }, 1500);
                 }
             });
         }
