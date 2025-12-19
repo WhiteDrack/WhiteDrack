@@ -4,57 +4,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mera Step Counter</title>
+    <title>Neon Step Tracker</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f4; padding-top: 50px; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; }
-        h1 { color: #333; }
-        #step-count { font-size: 5rem; color: #2ecc71; margin: 10px 0; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border-radius: 5px; border: none; background: #3498db; color: white; }
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --bg-dark: #080b12;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Card */
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            width: 320px;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            z-index: -1;
+            border-radius: 32px;
+            filter: blur(10px);
+            opacity: 0.3;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: var(--neon-blue);
+        }
+
+        /* Circular Progress Area */
+        .progress-box {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+        }
+
+        .steps-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #step-count {
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px var(--neon-blue);
+            margin: 0;
+        }
+
+        .label { font-size: 0.8rem; opacity: 0.6; }
+
+        /* Stats Grid */
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+        }
+
+        .stat-val { color: var(--neon-purple); font-weight: bold; font-size: 1.1rem; }
+
+        /* Futuristic Button */
+        button {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            text-transform: uppercase;
+            margin-top: 25px;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        button:hover {
+            background: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 30px var(--neon-blue);
+        }
+
+        #status { font-size: 10px; margin-top: 15px; opacity: 0.5; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>Aaj ke Steps</h1>
-        <div id="step-count">0</div>
-        <button onclick="startCounter()">Counter Shuru Karein</button>
-        <p id="status" style="color: gray; margin-top: 15px;">Permission ki zaroorat hai.</p>
+    <div class="container">
+        <h1>Activity Tracker</h1>
+        
+        <div class="progress-box">
+            <div class="steps-display">
+                <p id="step-count">0</p>
+                <p class="label">STEPS</p>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div>
+                <div class="stat-val" id="km">0.00</div>
+                <div class="label">Distance (KM)</div>
+            </div>
+            <div>
+                <div class="stat-val" id="calories">0</div>
+                <div class="label">Calories</div>
+            </div>
+        </div>
+
+        <button onclick="initTracker()">Initialize System</button>
+        <p id="status">Sensors: Standby</p>
     </div>
 
     <script>
         let steps = 0;
-        let isCounting = false;
+        let lastAccel = 0;
 
-        function startCounter() {
+        function initTracker() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                // iOS devices ke liye permission
-                DeviceMotionEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            window.addEventListener('devicemotion', countSteps);
-                            document.getElementById('status').innerText = "Counter chal raha hai...";
-                        }
-                    })
-                    .catch(console.error);
+                DeviceMotionEvent.requestPermission().then(state => {
+                    if (state === 'granted') startListening();
+                });
             } else {
-                // Android ya normal browsers ke liye
-                window.addEventListener('devicemotion', countSteps);
-                document.getElementById('status').innerText = "Counter chal raha hai...";
+                startListening();
             }
         }
 
-        let lastAccel = 0;
-        function countSteps(event) {
-            let acc = event.accelerationIncludingGravity;
-            let totalAcc = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
+        function startListening() {
+            window.addEventListener('devicemotion', (event) => {
+                let acc = event.accelerationIncludingGravity;
+                let totalAcc = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+                
+                // Sensitivity threshold
+                if (totalAcc > 13 && (totalAcc - lastAccel) > 5) {
+                    steps++;
+                    updateUI();
+                }
+                lastAccel = totalAcc;
+            });
+            document.getElementById('status').innerText = "SYSTEM ONLINE";
+            document.getElementById('status').style.color = "#00f3ff";
+        }
+
+        function updateUI() {
+            document.getElementById('step-count').innerText = steps;
             
-            // Jab phone hilega (threshold 12-15 ke beech rakha hai)
-            if (totalAcc > 13 && (totalAcc - lastAccel) > 5) {
-                steps++;
-                document.getElementById('step-count').innerText = steps;
-            }
-            lastAccel = totalAcc;
+            // Average Calculation: 1 step ≈ 0.0008 km
+            let distance = (steps * 0.0008).toFixed(2);
+            document.getElementById('km').innerText = distance;
+            
+            // Average Calculation: 1 step ≈ 0.04 calories
+            let cals = Math.round(steps * 0.04);
+            document.getElementById('calories').innerText = cals;
         }
     </script>
 </body>
