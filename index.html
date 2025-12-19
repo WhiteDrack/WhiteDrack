@@ -1,94 +1,136 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Scale Tool</title>
+    <title>Digital Scale - Meter & Centimeter</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
+            padding: 20px;
+            background-color: #f0f0f0;
         }
-        .container {
-            text-align: center;
+
+        .controls {
+            margin-bottom: 20px;
             background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 80%;
-            max-width: 400px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        #weight-display {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 20px 0;
+
+        /* Scale Container */
+        .ruler-container {
+            width: 95%;
+            overflow-x: auto;
+            background: white;
+            padding: 50px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .sensor-area {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, #3498db, #2980b9);
-            border-radius: 50%;
-            margin: 20px auto;
+
+        /* Ruler Styling */
+        .ruler {
+            position: relative;
+            height: 100px;
+            border-bottom: 2px solid #333;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
-            transition: transform 0.1s;
+            align-items: flex-end;
+            /* 1cm is approximately 37.8px at 96 DPI */
+            width: fit-content;
         }
-        .sensor-area:active {
-            transform: scale(0.95);
+
+        .cm-mark {
+            position: relative;
+            width: 37.795px; /* 1cm in pixels */
+            height: 40px;
+            border-left: 2px solid #333;
         }
-        p { color: #7f8c8d; }
+
+        .cm-mark::after {
+            content: attr(data-cm);
+            position: absolute;
+            top: -30px;
+            left: -5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .mm-mark {
+            position: absolute;
+            bottom: 0;
+            width: 1px;
+            background: #666;
+        }
+
+        .mm-5 { height: 25px; background: #333; } /* 5mm mark */
+        .mm-small { height: 15px; } /* 1mm mark */
+
+        .unit-display {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #333;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Digital Scale</h2>
-    <p>Chij ko screen ke center mein rakhein</p>
-    
-    <div class="sensor-area" id="touch-area">
-        Yahan Rakhein
+    <h2>📏 Digital Measuring Scale</h2>
+
+    <div class="controls">
+        <label>Kitne Centimeter tak scale chahiye? </label>
+        <input type="number" id="cmInput" value="30" min="1">
+        <button onclick="generateScale()">Update Scale</button>
     </div>
 
-    <div id="weight-display">0.00g</div>
-    
-    <p><i>Note: Yeh tool sirf Pressure-Sensitive screens par kaam karega.</i></p>
-    <button onclick="resetScale()">Reset</button>
-</div>
+    <div class="ruler-container">
+        <div id="ruler" class="ruler">
+            </div>
+    </div>
 
-<script>
-    const display = document.getElementById('weight-display');
-    const area = document.getElementById('touch-area');
+    <div class="unit-display" id="info">
+        Total Length: <span id="totalLen">30 cm / 0.3 m</span>
+    </div>
 
-    // Touch event to detect pressure (Mostly for iOS 3D Touch)
-    area.addEventListener('touchmove', function(e) {
-        e.preventDefault();
-        let force = e.touches[0].force || 0; // Force value (0 to 1)
-        
-        // Maa lijiye 1 unit force = 400 grams (Calibration)
-        let weight = (force * 400).toFixed(2);
-        
-        display.innerText = weight + "g";
-    });
+    <script>
+        function generateScale() {
+            const cmCount = document.getElementById('cmInput').value;
+            const ruler = document.getElementById('ruler');
+            const totalLenDisplay = document.getElementById('totalLen');
+            
+            ruler.innerHTML = ''; // Purana scale clear karein
 
-    area.addEventListener('touchend', function() {
-        // Weight screen se hatne ke baad bhi dikhta rahega jab tak reset na karein
-    });
+            for (let i = 0; i <= cmCount; i++) {
+                // CM Mark
+                const cmMark = document.createElement('div');
+                cmMark.className = 'cm-mark';
+                cmMark.setAttribute('data-cm', i);
 
-    function resetScale() {
-        display.innerText = "0.00g";
-    }
-</script>
+                // MM Marks (1cm ke andar 10mm)
+                if (i < cmCount) {
+                    for (let j = 1; j < 10; j++) {
+                        const mmMark = document.createElement('div');
+                        mmMark.className = 'mm-mark ' + (j === 5 ? 'mm-5' : 'mm-small');
+                        mmMark.style.left = (j * 3.7795) + 'px';
+                        cmMark.appendChild(mmMark);
+                    }
+                }
+                
+                ruler.appendChild(cmMark);
+            }
+
+            // Meter conversion
+            const meters = (cmCount / 100).toFixed(2);
+            totalLenDisplay.innerText = `${cmCount} cm / ${meters} m`;
+        }
+
+        // Shuruat mein 30cm ka scale dikhayen
+        generateScale();
+    </script>
 
 </body>
 </html>
+
