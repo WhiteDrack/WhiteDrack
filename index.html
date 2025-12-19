@@ -1,44 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AR Measure Tool</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Height Meter (Angle Based)</title>
     <style>
-        body { margin: 0; font-family: sans-serif; }
-        model-viewer { width: 100vw; height: 100vh; background-color: #eee; }
-        .ar-button {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 15px 30px; background: #007bff; color: white; border-radius: 30px;
-            border: none; font-weight: bold; font-size: 16px; cursor: pointer;
+        body { margin: 0; overflow: hidden; font-family: sans-serif; background: #000; }
+        video { width: 100vw; height: 100vh; object-fit: cover; }
+        .crosshair {
+            position: absolute; top: 50%; left: 50%;
+            width: 30px; height: 30px; border: 2px solid white;
+            border-radius: 50%; transform: translate(-50%, -50%);
         }
-        #info {
-            position: absolute; top: 10px; width: 100%; text-align: center;
-            color: #333; background: rgba(255,255,255,0.7); padding: 10px 0;
+        .ui {
+            position: absolute; bottom: 50px; width: 100%; text-align: center;
+            color: white; z-index: 10;
         }
+        .result { font-size: 2rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 10px; }
+        button { padding: 15px 30px; font-size: 1.2rem; border-radius: 10px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="info">iPhone jaisa AR mode start karne ke liye button dabayein</div>
+    <video id="video" autoplay playsinline></video>
+    <div class="crosshair"></div>
 
-    <model-viewer 
-        ar 
-        ar-modes="webxr scene-viewer quick-look" 
-        camera-controls 
-        touch-action="none" 
-        alt="AR Measurement Tool">
-        
-        <button slot="ar-button" class="ar-button">
-            START CAMERA MEASURE
-        </button>
-
-    </model-viewer>
+    <div class="ui">
+        <div class="result" id="display">Height: 0.00 m</div><br>
+        <button id="btnBase">Set Base (Niche)</button>
+        <button id="btnTop">Set Top (Upar)</button>
+    </div>
 
     <script>
-        // Note: Ye feature sirf un phones par chalega jo ARCore support karte hain (Android/iPhone)
-        // Ise 'HTTPS' server par hi run karna hoga (jaise GitHub Pages ya Vercel)
+        let baseAngle = 0;
+        let currentAngle = 0;
+        const phoneHeight = 1.5; // Maan lijiye aap 1.5 meter ki height par phone pakde hain
+
+        // Camera Start
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(s => document.getElementById('video').srcObject = s);
+
+        // Angle detect karna
+        window.addEventListener('deviceorientation', (e) => {
+            currentAngle = e.beta; // Phone kitna jhuka hai
+        });
+
+        document.getElementById('btnBase').onclick = () => {
+            baseAngle = currentAngle;
+            alert("Base Set! Ab object ke top par nishana lagayein.");
+        };
+
+        document.getElementById('btnTop').onclick = () => {
+            let angleDiff = Math.abs(currentAngle - baseAngle);
+            // Trigonometry: Height = Distance * tan(angle)
+            // Yahan hum angle ke difference se ek estimate nikal rahe hain
+            let height = Math.abs(Math.tan(angleDiff * Math.PI / 180) * 2).toFixed(2); 
+            document.getElementById('display').innerText = "Height: " + height + " m";
+        };
+
+        // Permission mangna (iPhone ke liye zaroori)
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            document.body.onclick = () => {
+                DeviceOrientationEvent.requestPermission();
+            };
+        }
     </script>
 </body>
 </html>
