@@ -1,136 +1,130 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Scale - Meter & Centimeter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AR Camera Scale</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            background-color: #f0f0f0;
+        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #video { width: 100vw; height: 100vh; object-fit: cover; }
+        #canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
+        
+        .ui-overlay {
+            position: absolute; top: 20px; width: 100%; text-align: center; color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none;
         }
 
         .controls {
-            margin-bottom: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: absolute; bottom: 30px; width: 100%; display: flex;
+            justify-content: space-around; align-items: center;
         }
 
-        /* Scale Container */
-        .ruler-container {
-            width: 95%;
-            overflow-x: auto;
-            background: white;
-            padding: 50px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        button {
+            padding: 15px 25px; border-radius: 50px; border: none;
+            background: rgba(255, 255, 255, 0.9); font-weight: bold; cursor: pointer;
         }
 
-        /* Ruler Styling */
-        .ruler {
-            position: relative;
-            height: 100px;
-            border-bottom: 2px solid #333;
-            display: flex;
-            align-items: flex-end;
-            /* 1cm is approximately 37.8px at 96 DPI */
-            width: fit-content;
-        }
-
-        .cm-mark {
-            position: relative;
-            width: 37.795px; /* 1cm in pixels */
-            height: 40px;
-            border-left: 2px solid #333;
-        }
-
-        .cm-mark::after {
-            content: attr(data-cm);
-            position: absolute;
-            top: -30px;
-            left: -5px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .mm-mark {
-            position: absolute;
-            bottom: 0;
-            width: 1px;
-            background: #666;
-        }
-
-        .mm-5 { height: 25px; background: #333; } /* 5mm mark */
-        .mm-small { height: 15px; } /* 1mm mark */
-
-        .unit-display {
-            margin-top: 20px;
-            font-size: 1.2rem;
-            color: #333;
-        }
+        .info { font-size: 1.2rem; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; display: inline-block; }
     </style>
 </head>
 <body>
 
-    <h2>📏 Digital Measuring Scale</h2>
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <div class="ui-overlay">
+        <div class="info" id="result">Screen par do points par tap karein</div>
+    </div>
 
     <div class="controls">
-        <label>Kitne Centimeter tak scale chahiye? </label>
-        <input type="number" id="cmInput" value="30" min="1">
-        <button onclick="generateScale()">Update Scale</button>
-    </div>
-
-    <div class="ruler-container">
-        <div id="ruler" class="ruler">
-            </div>
-    </div>
-
-    <div class="unit-display" id="info">
-        Total Length: <span id="totalLen">30 cm / 0.3 m</span>
+        <button onclick="resetPoints()">Reset</button>
+        <button onclick="switchCamera()">Switch Camera</button>
     </div>
 
     <script>
-        function generateScale() {
-            const cmCount = document.getElementById('cmInput').value;
-            const ruler = document.getElementById('ruler');
-            const totalLenDisplay = document.getElementById('totalLen');
-            
-            ruler.innerHTML = ''; // Purana scale clear karein
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const resultDisplay = document.getElementById('result');
+        
+        let points = [];
+        let pixelsPerCm = 37.8; // Standard estimate
 
-            for (let i = 0; i <= cmCount; i++) {
-                // CM Mark
-                const cmMark = document.createElement('div');
-                cmMark.className = 'cm-mark';
-                cmMark.setAttribute('data-cm', i);
-
-                // MM Marks (1cm ke andar 10mm)
-                if (i < cmCount) {
-                    for (let j = 1; j < 10; j++) {
-                        const mmMark = document.createElement('div');
-                        mmMark.className = 'mm-mark ' + (j === 5 ? 'mm-5' : 'mm-small');
-                        mmMark.style.left = (j * 3.7795) + 'px';
-                        cmMark.appendChild(mmMark);
-                    }
-                }
-                
-                ruler.appendChild(cmMark);
+        // Camera Start Karein
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" }, 
+                    audio: false 
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                alert("Camera access nahi mila: " + err);
             }
-
-            // Meter conversion
-            const meters = (cmCount / 100).toFixed(2);
-            totalLenDisplay.innerText = `${cmCount} cm / ${meters} m`;
         }
 
-        // Shuruat mein 30cm ka scale dikhayen
-        generateScale();
-    </script>
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
 
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Screen par tap karne par points lagayen
+        canvas.addEventListener('click', (e) => {
+            if (points.length < 2) {
+                points.push({ x: e.clientX, y: e.clientY });
+                draw();
+            }
+            
+            if (points.length === 2) {
+                calculateDistance();
+            }
+        });
+
+        function calculateDistance() {
+            const dx = points[1].x - points[0].x;
+            const dy = points[1].y - points[0].y;
+            const pixelDist = Math.sqrt(dx*dx + dy*dy);
+            
+            // Note: Phone camera mein bina sensor ke exact CM nikalna mushkil hai
+            // Ye ek anumanit (estimated) value dikhayega
+            const cm = (pixelDist / pixelsPerCm).toFixed(1);
+            const m = (cm / 100).toFixed(2);
+            
+            resultDisplay.innerHTML = `Height: ${cm} cm / ${m} m`;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 3;
+            ctx.fillStyle = '#fff';
+
+            points.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            });
+
+            if (points.length === 2) {
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                ctx.lineTo(points[1].x, points[1].y);
+                ctx.stroke();
+            }
+        }
+
+        function resetPoints() {
+            points = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            resultDisplay.innerText = "Screen par do points par tap karein";
+        }
+
+        startCamera();
+    </script>
 </body>
 </html>
 
