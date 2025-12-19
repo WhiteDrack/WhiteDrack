@@ -1,75 +1,90 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Leaderboard Edition</title>
+    <title>Jump Pro - Dashboard</title>
     <style>
-        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow-x: hidden; }
+        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
         
-        .page { display: none; flex-direction: column; align-items: center; width: 100%; text-align: center; padding: 20px; box-sizing: border-box; }
+        /* Pages */
+        .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
         .active { display: flex; }
 
-        .card { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #30363d; width: 100%; max-width: 350px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* Card Styles */
+        .card { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #30363d; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        h1 { color: var(--primary); margin: 0 0 10px 0; font-size: 24px; }
-        .btn-google { background: #fff; color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; font-size: 16px; }
+        /* Navigation Bar */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 100; }
+        .nav-item { background: none; border: none; color: #8b949e; font-size: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .nav-item.active-nav { color: var(--primary); }
+        .nav-icon { font-size: 24px; }
 
-        /* Tracker UI */
+        /* Jump UI */
         #height { font-size: 80px; font-weight: 800; color: var(--primary); margin: 10px 0; }
-        .unit { font-size: 14px; color: #484f58; text-transform: uppercase; margin-bottom: 20px; }
-        
-        /* Leaderboard UI */
-        .leaderboard-list { text-align: left; margin-top: 20px; width: 100%; }
-        .player-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #30363d; font-size: 14px; }
-        .player-row:last-child { border: none; }
-        .rank { font-weight: bold; color: var(--primary); margin-right: 10px; }
-        .score { font-weight: bold; }
+        .btn-activate { background: var(--primary); color: #0d1117; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: bold; width: 100%; margin-top: 20px; }
 
-        /* Navigation Buttons */
-        .nav-btns { margin-top: 20px; display: flex; gap: 10px; width: 100%; max-width: 350px; }
-        .btn-nav { flex: 1; background: #30363d; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
-        .btn-activate { background: var(--primary); color: #0d1117; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        
-        #logoutBtn { position: absolute; top: 15px; right: 20px; color: #f85149; background: none; border: none; font-size: 11px; cursor: pointer; }
+        /* Leaderboard UI */
+        .player-row { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #30363d; width: 100%; box-sizing: border-box; }
+        .rank { font-weight: bold; color: var(--primary); margin-right: 10px; }
+
+        /* Profile UI */
+        .profile-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 15px; }
+        .best-score-label { color: var(--primary); font-size: 24px; font-weight: bold; }
+        .logout-link { color: #f85149; margin-top: 30px; cursor: pointer; font-size: 14px; text-decoration: underline; }
     </style>
 </head>
 <body>
 
     <div id="loginPage" class="page active">
-        <div class="card">
+        <div class="card" style="margin-top: 100px;">
             <h1>Jump Pro 🚀</h1>
-            <p>Login to compete in Leaderboard</p>
-            <button id="googleBtn" class="btn-google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/02-google-logo.png" width="18">
-                Login with Google
-            </button>
+            <p>Apna record banane ke liye login karein</p>
+            <button onclick="login()" style="background:white; color:black; border:none; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">Login with Google</button>
         </div>
     </div>
 
-    <div id="trackerPage" class="page">
+    <div id="jumpPage" class="page">
         <div class="card">
-            <button id="logoutBtn">LOGOUT</button>
             <div id="height">0.00</div>
-            <div class="unit">Meters High</div>
-            <div id="status" style="color:#e3b341; font-size:12px; margin-bottom:15px;">READY</div>
-            <button id="startBtn" class="btn-activate">START TRACKER</button>
-        </div>
-        <div class="nav-btns">
-            <button class="btn-nav" onclick="showPage('leaderboardPage')">🏆 Leaderboard</button>
+            <div style="color:#555; text-transform:uppercase; font-size:14px;">Meters High</div>
+            <div id="status" style="color:#e3b341; margin-top:10px; font-weight:bold;">READY</div>
+            <button id="startBtn" class="btn-activate">ACTIVATE SENSOR</button>
         </div>
     </div>
 
     <div id="leaderboardPage" class="page">
-        <div class="card">
-            <h1>Top 10 Players 🏆</h1>
-            <div id="leaderboardList" class="leaderboard-list">
-                <p style="text-align:center; color:#555;">Loading records...</p>
+        <h2 style="color:var(--primary);">Top 10 Jumpers 🏆</h2>
+        <div class="card" id="lbList" style="padding:10px;">
             </div>
-            <button class="btn-nav" style="margin-top:20px; width:100%;" onclick="showPage('trackerPage')">Back to Jump</button>
+    </div>
+
+    <div id="profilePage" class="page">
+        <div class="card">
+            <img id="pImg" class="profile-img" src="">
+            <h2 id="pName" style="margin:5px 0;">User Name</h2>
+            <p id="pEmail" style="margin:0 0 20px 0; font-size:12px;"></p>
+            <div style="background:#0d1117; padding:20px; border-radius:15px;">
+                <div style="font-size:12px; color:#555;">MY HIGH SCORE</div>
+                <div id="pBest" class="best-score-label">0.00m</div>
+            </div>
+            <div class="logout-link" onclick="logout()">Sign Out</div>
         </div>
     </div>
+
+    <nav class="nav-bar" id="bottomNav" style="display:none;">
+        <button class="nav-item active-nav" onclick="navTo('jumpPage', this)">
+            <span class="nav-icon">🚀</span><span>Jump</span>
+        </button>
+        <button class="nav-item" onclick="navTo('leaderboardPage', this)">
+            <span class="nav-icon">🏆</span><span>Top 10</span>
+        </button>
+        <button class="nav-item" onclick="navTo('profilePage', this)">
+            <span class="nav-icon">👤</span><span>Profile</span>
+        </button>
+    </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -92,96 +107,100 @@
         const provider = new GoogleAuthProvider();
 
         let currentUser = null;
-        let userBestScore = 0;
+        let myBest = 0;
 
-        // Navigation
-        window.showPage = (pageId) => {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            if(pageId === 'leaderboardPage') loadLeaderboard();
-        };
+        // AUTH
+        window.login = () => signInWithPopup(auth, provider);
+        window.logout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                showPage('trackerPage');
-                // Check user's previous best
-                get(ref(db, 'leaderboard/' + user.uid)).then(snapshot => {
-                    if(snapshot.exists()) userBestScore = snapshot.val().score;
-                });
+                document.getElementById('bottomNav').style.display = 'flex';
+                updateProfileUI(user);
+                navTo('jumpPage', document.querySelector('.nav-item'));
             } else {
-                showPage('loginPage');
+                document.getElementById('bottomNav').style.display = 'none';
+                navTo('loginPage');
             }
         });
 
-        document.getElementById('googleBtn').onclick = () => signInWithPopup(auth, provider);
-        document.getElementById('logoutBtn').onclick = () => signOut(auth);
+        // NAVIGATION
+        window.navTo = (pageId, el) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if(el) {
+                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active-nav'));
+                el.classList.add('active-nav');
+            }
+            if(pageId === 'leaderboardPage') loadLB();
+        };
 
-        // Leaderboard Loading
-        function loadLeaderboard() {
+        function updateProfileUI(user) {
+            document.getElementById('pName').innerText = user.displayName;
+            document.getElementById('pEmail').innerText = user.email;
+            document.getElementById('pImg').src = user.photoURL;
+            get(ref(db, 'leaderboard/' + user.uid)).then(s => {
+                if(s.exists()) {
+                    myBest = s.val().score;
+                    document.getElementById('pBest').innerText = myBest.toFixed(2) + "m";
+                }
+            });
+        }
+
+        function loadLB() {
             const lbRef = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(10));
             onValue(lbRef, (snapshot) => {
-                const listDiv = document.getElementById('leaderboardList');
-                listDiv.innerHTML = "";
-                let players = [];
-                snapshot.forEach(child => { players.push(child.val()); });
-                players.reverse().forEach((p, index) => {
-                    listDiv.innerHTML += `
-                        <div class="player-row">
-                            <span><span class="rank">#${index+1}</span> ${p.name}</span>
-                            <span class="score">${p.score.toFixed(2)}m</span>
-                        </div>`;
+                const list = document.getElementById('lbList');
+                list.innerHTML = "";
+                let arr = [];
+                snapshot.forEach(c => arr.push(c.val()));
+                arr.reverse().forEach((p, i) => {
+                    list.innerHTML += `<div class="player-row">
+                        <span><span class="rank">#${i+1}</span> ${p.name}</span>
+                        <span style="font-weight:bold;">${p.score.toFixed(2)}m</span>
+                    </div>`;
                 });
             });
         }
 
-        // Sensor & Scoring
+        // JUMP LOGIC
         let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
         document.getElementById('startBtn').onclick = function() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission().then(state => { if (state === 'granted') startTracking(); });
-            } else { startTracking(); }
-            this.disabled = true; this.innerText = "SENSORS ACTIVE";
+                DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); });
+            } else { start(); }
+            this.innerText = "SENSORS LIVE"; this.disabled = true;
         };
 
-        function startTracking() {
+        function start() {
             window.addEventListener('devicemotion', (e) => {
                 let acc = e.accelerationIncludingGravity;
-                if (!acc || !acc.x) return;
-                let rawAcc = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-                lastAcc = (lastAcc * 0.7) + (rawAcc * 0.3);
+                if(!acc || !acc.x) return;
+                let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+                lastAcc = (lastAcc * 0.7) + (raw * 0.3);
                 let now = performance.now();
 
-                if (lastAcc < 2.5 && !isFreeFalling) {
+                if(lastAcc < 2.5 && !isFreeFalling) {
                     isFreeFalling = true; startTime = now;
-                    document.getElementById('status').innerText = "AIRBORNE!";
+                    document.getElementById('status').innerText = "FLYING!";
                 }
-
-                if (isFreeFalling && lastAcc > 14.0) {
-                    let duration = (now - startTime) / 1000;
-                    if (duration > 0.2 && duration < 3.0) {
-                        let h = 0.125 * 9.81 * Math.pow(duration, 2);
+                if(isFreeFalling && lastAcc > 14) {
+                    let d = (now - startTime)/1000;
+                    if(d > 0.2 && d < 2.5) {
+                        let h = 0.125 * 9.81 * (d**2);
                         document.getElementById('height').innerText = h.toFixed(2);
-                        saveScore(h);
+                        if(h > myBest) {
+                            set(ref(db, 'leaderboard/'+currentUser.uid), {name: currentUser.displayName, score: h});
+                            myBest = h;
+                            document.getElementById('pBest').innerText = h.toFixed(2) + "m";
+                        }
                     }
                     isFreeFalling = false;
+                    setTimeout(()=> document.getElementById('status').innerText = "READY", 1000);
                 }
             });
-        }
-
-        function saveScore(score) {
-            if (score > userBestScore) {
-                userBestScore = score;
-                set(ref(db, 'leaderboard/' + currentUser.uid), {
-                    name: currentUser.displayName,
-                    score: score
-                });
-                document.getElementById('status').innerText = "NEW PERSONAL BEST! 🌟";
-            } else {
-                document.getElementById('status').innerText = "JUMP RECORDED!";
-            }
         }
     </script>
 </body>
 </html>
-
