@@ -1,17 +1,19 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Precision Jump Tracker</title>
+    <title>Anti-Shake Jump Tracker</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #000; color: #fff; margin: 0; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .box { background: #111; padding: 40px; border-radius: 30px; border: 2px solid #333; width: 85%; }
-        #height { font-size: 80px; font-weight: 800; color: #00ff88; margin: 10px 0; text-shadow: 0 0 20px rgba(0,255,136,0.3); }
-        .unit { font-size: 24px; color: #888; }
-        button { background: #00ff88; color: #000; border: none; padding: 15px 40px; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        #status { margin-top: 20px; color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-        .history { margin-top: 15px; font-size: 12px; color: #444; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #000; color: #fff; margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .box { background: #111; padding: 40px; border-radius: 30px; border: 2px solid #333; width: 85%; max-width: 400px; }
+        #height { font-size: 80px; font-weight: 800; color: #00ff88; margin: 0; }
+        .unit { font-size: 20px; color: #666; margin-bottom: 20px; }
+        #status { font-size: 14px; color: #ffcc00; font-weight: bold; height: 20px; margin-bottom: 20px; }
+        button { background: #00ff88; color: #000; border: none; padding: 18px 45px; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:active { transform: scale(0.9); }
+        .info { font-size: 12px; color: #444; margin-top: 20px; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -19,91 +21,85 @@
     <div class="box">
         <div id="height">0.00</div>
         <div class="unit">METERS</div>
-        <div id="status">SENSORS STANDBY</div>
-        <br>
-        <button id="startBtn">ACTIVATE</button>
-        <div class="history" id="history">Best: 0.00m</div>
+        <div id="status">PRESS ACTIVATE</div>
+        <button id="startBtn">ACTIVATE SENSOR</button>
+        <div class="info">Sirf hawa mein uchhalne par measure hoga.<br>Phone hilane par false reading nahi aayegi.</div>
     </div>
 
     <script>
         let isFreeFalling = false;
         let startTime = 0;
-        let bestHeight = 0;
-        let lastAcc = 9.8; // Smoothing ke liye
+        let lastAcc = 9.8;
+        const FREEFALL_THRESHOLD = 2.5; // Gravity 2.5 se niche matlab freefall
+        const IMPACT_THRESHOLD = 15.0;  // 15 se upar matlab catch kiya
 
         const heightDisplay = document.getElementById('height');
         const statusText = document.getElementById('status');
         const startBtn = document.getElementById('startBtn');
-        const historyDisplay = document.getElementById('history');
 
-        function start() {
+        function init() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 DeviceMotionEvent.requestPermission().then(state => {
-                    if (state === 'granted') initSensor();
+                    if (state === 'granted') startTracking();
                 });
             } else {
-                initSensor();
+                startTracking();
             }
             startBtn.style.display = 'none';
         }
 
-        function initSensor() {
-            statusText.innerText = "READY: THROW UP & CATCH";
+        function startTracking() {
+            statusText.innerText = "READY: THROW & CATCH";
+            statusText.style.color = "#00ff88";
+
             window.addEventListener('devicemotion', (e) => {
                 let acc = e.accelerationIncludingGravity;
                 if (!acc.x) return;
 
-                // 1. RAW DATA CALCULATION
+                // Total Acceleration calculation
                 let rawAcc = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
                 
-                // 2. LOW-PASS FILTER (Glitches hatane ke liye)
-                // Nayi value ko purani value ke saath mix karte hain taaki sudden "jerk" ignore ho jaye
-                lastAcc = (lastAcc * 0.7) + (rawAcc * 0.3);
+                // Low-pass filter to remove small shakes
+                lastAcc = (lastAcc * 0.8) + (rawAcc * 0.2);
 
                 let now = performance.now();
 
-                // 3. FREEFALL DETECTION (Jump Shuru)
-                // Hawa mein gravity 0 ke kareeb hoti hai. 3.5 se niche matlab hawa mein.
-                if (lastAcc < 3.5 && !isFreeFalling) {
+                // 1. FREEFALL DETECT (Phone hawa mein hai)
+                if (lastAcc < FREEFALL_THRESHOLD && !isFreeFalling) {
+                    // Ek aur check: Phone sach mein stable freefall mein hona chahiye
+                    // Vibration (shaking) se bachne ke liye
                     isFreeFalling = true;
                     startTime = now;
-                    statusText.innerText = "IN THE AIR...";
-                    statusText.style.color = "#00ff88";
+                    statusText.innerText = "AIRBORNE...";
+                    statusText.style.color = "#ff3300";
                 }
 
-                // 4. LANDING/CATCH DETECTION (Jump Khatam)
-                // Catch karte waqt shock 13 se zyada hota hai
-                if (isFreeFalling && lastAcc > 13.5) {
+                // 2. LANDING DETECT (Phone catch kiya)
+                if (isFreeFalling && lastAcc > IMPACT_THRESHOLD) {
                     let duration = (now - startTime) / 1000;
                     
-                    // Filter: Minimum 0.2s hawa mein rehna chahiye (vibration protection)
-                    if (duration > 0.2) {
-                        updateHeight(duration);
+                    // VALIDATION: Agar phone 0.25 sec se kam hawa mein raha to wo sirf ek 'jhatka' tha
+                    if (duration > 0.25 && duration < 2.5) {
+                        let g = 9.81;
+                        let h = 0.125 * g * Math.pow(duration, 2);
+                        heightDisplay.innerText = h.toFixed(2);
+                        statusText.innerText = "SUCCESSFUL JUMP!";
+                    } else {
+                        statusText.innerText = "SHAKE DETECTED - IGNORED";
                     }
-                    
+
                     isFreeFalling = false;
-                    statusText.innerText = "CAPTURED!";
-                    statusText.style.color = "#666";
-                    setTimeout(() => { if(!isFreeFalling) statusText.innerText = "READY AGAIN"; }, 1000);
+                    setTimeout(() => {
+                        if(!isFreeFalling) {
+                            statusText.innerText = "READY FOR NEXT JUMP";
+                            statusText.style.color = "#00ff88";
+                        }
+                    }, 1500);
                 }
             });
         }
 
-        function updateHeight(t) {
-            // Physics: h = (1/8) * g * t^2
-            const g = 9.81;
-            let h = 0.125 * g * Math.pow(t, 2);
-            
-            heightDisplay.innerText = h.toFixed(2);
-            
-            if (h > bestHeight) {
-                bestHeight = h;
-                historyDisplay.innerText = "Best: " + h.toFixed(2) + "m";
-            }
-        }
-
-        startBtn.addEventListener('click', start);
+        startBtn.addEventListener('click', init);
     </script>
 </body>
 </html>
-
