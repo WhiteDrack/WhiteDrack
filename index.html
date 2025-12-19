@@ -1,25 +1,61 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Registration Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mera Step Counter</title>
     <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; padding: 50px; }
-        form { border: 1px solid #ccc; padding: 20px; border-radius: 8px; width: 300px; }
-        input { width: 100%; margin: 10px 0; padding: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
+        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f4; padding-top: 50px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; }
+        h1 { color: #333; }
+        #step-count { font-size: 5rem; color: #2ecc71; margin: 10px 0; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border-radius: 5px; border: none; background: #3498db; color: white; }
     </style>
 </head>
 <body>
 
-    <form action="/register" method="POST">
-        <h2>Register</h2>
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Submit</button>
-    </form>
+    <div class="card">
+        <h1>Aaj ke Steps</h1>
+        <div id="step-count">0</div>
+        <button onclick="startCounter()">Counter Shuru Karein</button>
+        <p id="status" style="color: gray; margin-top: 15px;">Permission ki zaroorat hai.</p>
+    </div>
 
+    <script>
+        let steps = 0;
+        let isCounting = false;
+
+        function startCounter() {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                // iOS devices ke liye permission
+                DeviceMotionEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener('devicemotion', countSteps);
+                            document.getElementById('status').innerText = "Counter chal raha hai...";
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Android ya normal browsers ke liye
+                window.addEventListener('devicemotion', countSteps);
+                document.getElementById('status').innerText = "Counter chal raha hai...";
+            }
+        }
+
+        let lastAccel = 0;
+        function countSteps(event) {
+            let acc = event.accelerationIncludingGravity;
+            let totalAcc = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
+            
+            // Jab phone hilega (threshold 12-15 ke beech rakha hai)
+            if (totalAcc > 13 && (totalAcc - lastAccel) > 5) {
+                steps++;
+                document.getElementById('step-count').innerText = steps;
+            }
+            lastAccel = totalAcc;
+        }
+    </script>
 </body>
 </html>
-
