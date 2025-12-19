@@ -1,34 +1,38 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Precision Tracker</title>
+    <title>Jump Pro - Leaderboard Edition</title>
     <style>
-        :root { --primary: #00ff88; --bg: #000; --card: #111; --text: #fff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow-x: hidden; }
         
-        /* UI Containers */
-        .page { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; animation: fadeIn 0.5s; }
+        .page { display: none; flex-direction: column; align-items: center; width: 100%; text-align: center; padding: 20px; box-sizing: border-box; }
         .active { display: flex; }
 
-        .card { background: var(--card); padding: 40px 30px; border-radius: 30px; border: 2px solid #333; width: 85%; max-width: 380px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .card { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #30363d; width: 100%; max-width: 350px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        /* Login UI */
-        h1 { color: var(--primary); margin-bottom: 10px; font-size: 28px; }
-        p { color: #888; margin-bottom: 30px; font-size: 14px; }
-        .btn-google { background: #fff; color: #000; border: none; padding: 15px; border-radius: 50px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; font-size: 16px; box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
+        h1 { color: var(--primary); margin: 0 0 10px 0; font-size: 24px; }
+        .btn-google { background: #fff; color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; font-size: 16px; }
 
         /* Tracker UI */
-        #height { font-size: 90px; font-weight: 800; color: var(--primary); margin: 0; text-shadow: 0 0 30px rgba(0,255,136,0.3); }
-        .unit { font-size: 18px; color: #555; letter-spacing: 2px; margin-bottom: 25px; }
-        #status { font-size: 13px; color: #ffcc00; font-weight: bold; margin-bottom: 25px; text-transform: uppercase; }
-        .btn-activate { background: var(--primary); color: #000; border: none; padding: 18px; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+        #height { font-size: 80px; font-weight: 800; color: var(--primary); margin: 10px 0; }
+        .unit { font-size: 14px; color: #484f58; text-transform: uppercase; margin-bottom: 20px; }
         
-        #logoutBtn { position: absolute; top: 15px; right: 20px; color: #ff3300; background: none; border: none; font-size: 12px; cursor: pointer; font-weight: bold; }
+        /* Leaderboard UI */
+        .leaderboard-list { text-align: left; margin-top: 20px; width: 100%; }
+        .player-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #30363d; font-size: 14px; }
+        .player-row:last-child { border: none; }
+        .rank { font-weight: bold; color: var(--primary); margin-right: 10px; }
+        .score { font-weight: bold; }
+
+        /* Navigation Buttons */
+        .nav-btns { margin-top: 20px; display: flex; gap: 10px; width: 100%; max-width: 350px; }
+        .btn-nav { flex: 1; background: #30363d; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+        .btn-activate { background: var(--primary); color: #0d1117; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #logoutBtn { position: absolute; top: 15px; right: 20px; color: #f85149; background: none; border: none; font-size: 11px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -36,10 +40,10 @@
     <div id="loginPage" class="page active">
         <div class="card">
             <h1>Jump Pro 🚀</h1>
-            <p>Apni uchayi track karne ke liye login karein</p>
+            <p>Login to compete in Leaderboard</p>
             <button id="googleBtn" class="btn-google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/02-google-logo.png" width="20">
-                Google Login
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/02-google-logo.png" width="18">
+                Login with Google
             </button>
         </div>
     </div>
@@ -48,21 +52,34 @@
         <div class="card">
             <button id="logoutBtn">LOGOUT</button>
             <div id="height">0.00</div>
-            <div class="unit">METERS</div>
-            <div id="status">SENSOR READY</div>
-            <button id="startBtn" class="btn-activate">ACTIVATE SENSOR</button>
+            <div class="unit">Meters High</div>
+            <div id="status" style="color:#e3b341; font-size:12px; margin-bottom:15px;">READY</div>
+            <button id="startBtn" class="btn-activate">START TRACKER</button>
+        </div>
+        <div class="nav-btns">
+            <button class="btn-nav" onclick="showPage('leaderboardPage')">🏆 Leaderboard</button>
+        </div>
+    </div>
+
+    <div id="leaderboardPage" class="page">
+        <div class="card">
+            <h1>Top 10 Players 🏆</h1>
+            <div id="leaderboardList" class="leaderboard-list">
+                <p style="text-align:center; color:#555;">Loading records...</p>
+            </div>
+            <button class="btn-nav" style="margin-top:20px; width:100%;" onclick="showPage('trackerPage')">Back to Jump</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
             authDomain: "white-drack-fd1ee.firebaseapp.com",
-            databaseURL: "https://whitedrack.github.io/WhiteDrack/",
+            databaseURL: "https://white-drack-fd1ee-default-rtdb.firebaseio.com",
             projectId: "white-drack-fd1ee",
             storageBucket: "white-drack-fd1ee.firebasestorage.app",
             messagingSenderId: "151227903888",
@@ -71,82 +88,100 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
 
-        const loginPage = document.getElementById('loginPage');
-        const trackerPage = document.getElementById('trackerPage');
+        let currentUser = null;
+        let userBestScore = 0;
 
-        // --- AUTH LOGIC ---
+        // Navigation
+        window.showPage = (pageId) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if(pageId === 'leaderboardPage') loadLeaderboard();
+        };
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                loginPage.classList.remove('active');
-                trackerPage.classList.add('active');
+                currentUser = user;
+                showPage('trackerPage');
+                // Check user's previous best
+                get(ref(db, 'leaderboard/' + user.uid)).then(snapshot => {
+                    if(snapshot.exists()) userBestScore = snapshot.val().score;
+                });
             } else {
-                trackerPage.classList.remove('active');
-                loginPage.classList.add('active');
+                showPage('loginPage');
             }
         });
 
-        document.getElementById('googleBtn').onclick = () => {
-            signInWithPopup(auth, provider).catch(e => alert("Error: " + e.message));
-        };
-
+        document.getElementById('googleBtn').onclick = () => signInWithPopup(auth, provider);
         document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
-        // --- SENSOR LOGIC ---
-        let isFreeFalling = false;
-        let startTime = 0;
-        let lastAcc = 9.8;
+        // Leaderboard Loading
+        function loadLeaderboard() {
+            const lbRef = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(10));
+            onValue(lbRef, (snapshot) => {
+                const listDiv = document.getElementById('leaderboardList');
+                listDiv.innerHTML = "";
+                let players = [];
+                snapshot.forEach(child => { players.push(child.val()); });
+                players.reverse().forEach((p, index) => {
+                    listDiv.innerHTML += `
+                        <div class="player-row">
+                            <span><span class="rank">#${index+1}</span> ${p.name}</span>
+                            <span class="score">${p.score.toFixed(2)}m</span>
+                        </div>`;
+                });
+            });
+        }
 
+        // Sensor & Scoring
+        let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
         document.getElementById('startBtn').onclick = function() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission().then(state => {
-                    if (state === 'granted') startTracking();
-                });
-            } else {
-                startTracking();
-            }
-            this.innerText = "ACTIVE MODE";
-            this.style.background = "#333";
-            this.style.color = "#00ff88";
-            this.disabled = true;
+                DeviceMotionEvent.requestPermission().then(state => { if (state === 'granted') startTracking(); });
+            } else { startTracking(); }
+            this.disabled = true; this.innerText = "SENSORS ACTIVE";
         };
 
         function startTracking() {
             window.addEventListener('devicemotion', (e) => {
                 let acc = e.accelerationIncludingGravity;
                 if (!acc || !acc.x) return;
-
                 let rawAcc = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-                lastAcc = (lastAcc * 0.8) + (rawAcc * 0.2); // Noise filter
+                lastAcc = (lastAcc * 0.7) + (rawAcc * 0.3);
                 let now = performance.now();
 
-                // Freefall detection
-                if (lastAcc < 2.8 && !isFreeFalling) {
-                    isFreeFalling = true;
-                    startTime = now;
-                    document.getElementById('status').innerText = "FLYING...";
-                    document.getElementById('status').style.color = "#00ff88";
+                if (lastAcc < 2.5 && !isFreeFalling) {
+                    isFreeFalling = true; startTime = now;
+                    document.getElementById('status').innerText = "AIRBORNE!";
                 }
 
-                // Impact detection
-                if (isFreeFalling && lastAcc > 15.0) {
+                if (isFreeFalling && lastAcc > 14.0) {
                     let duration = (now - startTime) / 1000;
-                    if (duration > 0.25 && duration < 3.0) {
+                    if (duration > 0.2 && duration < 3.0) {
                         let h = 0.125 * 9.81 * Math.pow(duration, 2);
                         document.getElementById('height').innerText = h.toFixed(2);
-                        document.getElementById('status').innerText = "LOCKED!";
-                    } else {
-                        document.getElementById('status').innerText = "SHAKE IGNORED";
+                        saveScore(h);
                     }
                     isFreeFalling = false;
-                    setTimeout(() => {
-                        document.getElementById('status').innerText = "READY FOR NEXT";
-                        document.getElementById('status').style.color = "#ffcc00";
-                    }, 1500);
                 }
             });
+        }
+
+        function saveScore(score) {
+            if (score > userBestScore) {
+                userBestScore = score;
+                set(ref(db, 'leaderboard/' + currentUser.uid), {
+                    name: currentUser.displayName,
+                    score: score
+                });
+                document.getElementById('status').innerText = "NEW PERSONAL BEST! 🌟";
+            } else {
+                document.getElementById('status').innerText = "JUMP RECORDED!";
+            }
         }
     </script>
 </body>
 </html>
+
