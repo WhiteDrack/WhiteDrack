@@ -4,92 +4,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Dashboard</title>
+    <title>Jump Pro - Professional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; --accent: #58a6ff; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* Pages */
         .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
-        .active { display: flex; }
+        .active { display: flex; animation: fadeIn 0.3s ease; }
 
-        /* Card Styles */
-        .card { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #30363d; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
 
-        /* Navigation Bar */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 100; }
-        .nav-item { background: none; border: none; color: #8b949e; font-size: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        /* Professional Nav Bar */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
+        .nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: 0.2s; }
+        .nav-item i { font-size: 20px; }
         .nav-item.active-nav { color: var(--primary); }
-        .nav-icon { font-size: 24px; }
 
-        /* Jump UI */
-        #height { font-size: 80px; font-weight: 800; color: var(--primary); margin: 10px 0; }
-        .btn-activate { background: var(--primary); color: #0d1117; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: bold; width: 100%; margin-top: 20px; }
+        /* Leaderboard Style */
+        .lb-container { width: 100%; max-width: 400px; }
+        .player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; }
+        .rank-circle { width: 28px; height: 28px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; margin-right: 15px; color: var(--primary); }
+        .player-info { flex-grow: 1; text-align: left; }
+        .player-name { font-weight: 600; font-size: 14px; display: block; }
+        .player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
 
-        /* Leaderboard UI */
-        .player-row { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #30363d; width: 100%; box-sizing: border-box; }
-        .rank { font-weight: bold; color: var(--primary); margin-right: 10px; }
+        /* Profile Details */
+        .uid-box { background: #0d1117; padding: 8px; border-radius: 8px; font-family: monospace; font-size: 10px; color: #8b949e; margin-top: 10px; word-break: break-all; border: 1px dashed #30363d; }
+        .profile-img { width: 90px; height: 90px; border-radius: 50%; border: 2px solid var(--primary); padding: 3px; }
 
-        /* Profile UI */
-        .profile-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 15px; }
-        .best-score-label { color: var(--primary); font-size: 24px; font-weight: bold; }
-        .logout-link { color: #f85149; margin-top: 30px; cursor: pointer; font-size: 14px; text-decoration: underline; }
+        #height { font-size: 72px; font-weight: 900; color: var(--primary); margin: 0; }
+        .btn-main { background: var(--primary); color: #000; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="loginPage" class="page active">
-        <div class="card" style="margin-top: 100px;">
-            <h1>Jump Pro 🚀</h1>
-            <p>Apna record banane ke liye login karein</p>
-            <button onclick="login()" style="background:white; color:black; border:none; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">Login with Google</button>
+        <div class="card" style="margin-top: 80px;">
+            <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary); margin-bottom: 20px;"></i>
+            <h2>Jump Pro</h2>
+            <p>Login to sync your data globally</p>
+            <button onclick="login()" class="btn-main" style="background: #fff; color: #000;">
+                <i class="fab fa-google"></i> Continue with Google
+            </button>
         </div>
     </div>
 
     <div id="jumpPage" class="page">
         <div class="card">
+            <h3 style="margin:0; font-size: 14px; color: #8b949e;">CURRENT JUMP</h3>
             <div id="height">0.00</div>
-            <div style="color:#555; text-transform:uppercase; font-size:14px;">Meters High</div>
-            <div id="status" style="color:#e3b341; margin-top:10px; font-weight:bold;">READY</div>
-            <button id="startBtn" class="btn-activate">ACTIVATE SENSOR</button>
+            <div style="font-size: 12px; letter-spacing: 2px; color: #484f58;">METERS</div>
+            <div id="status" style="margin: 20px 0; font-weight: bold; color: #e3b341;">SENSORS OFF</div>
+            <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
         </div>
     </div>
 
     <div id="leaderboardPage" class="page">
-        <h2 style="color:var(--primary);">Top 10 Jumpers 🏆</h2>
-        <div class="card" id="lbList" style="padding:10px;">
+        <h2 style="margin-bottom: 20px;"><i class="fas fa-trophy" style="color: #ffd700;"></i> Global Top 10</h2>
+        <div id="lbList" class="lb-container">
             </div>
     </div>
 
     <div id="profilePage" class="page">
         <div class="card">
             <img id="pImg" class="profile-img" src="">
-            <h2 id="pName" style="margin:5px 0;">User Name</h2>
-            <p id="pEmail" style="margin:0 0 20px 0; font-size:12px;"></p>
-            <div style="background:#0d1117; padding:20px; border-radius:15px;">
-                <div style="font-size:12px; color:#555;">MY HIGH SCORE</div>
-                <div id="pBest" class="best-score-label">0.00m</div>
+            <h2 id="pName" style="margin: 15px 0 5px 0;">Name</h2>
+            <p id="pEmail" style="color: #8b949e; font-size: 13px; margin: 0;"></p>
+            
+            <div class="uid-box">UID: <span id="pUid">---</span></div>
+
+            <div style="margin-top: 25px; background: #0d1117; padding: 15px; border-radius: 15px;">
+                <span style="font-size: 11px; color: #8b949e; display: block; margin-bottom: 5px;">PERSONAL RECORD</span>
+                <span id="pBest" style="font-size: 28px; font-weight: 800; color: var(--primary);">0.00m</span>
             </div>
-            <div class="logout-link" onclick="logout()">Sign Out</div>
+
+            <button onclick="logout()" style="margin-top: 25px; background:none; border:none; color: #f85149; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </button>
         </div>
     </div>
 
     <nav class="nav-bar" id="bottomNav" style="display:none;">
         <button class="nav-item active-nav" onclick="navTo('jumpPage', this)">
-            <span class="nav-icon">🚀</span><span>Jump</span>
+            <i class="fas fa-bolt"></i><span>JUMP</span>
         </button>
         <button class="nav-item" onclick="navTo('leaderboardPage', this)">
-            <span class="nav-icon">🏆</span><span>Top 10</span>
+            <i class="fas fa-chart-line"></i><span>TOP 10</span>
         </button>
         <button class="nav-item" onclick="navTo('profilePage', this)">
-            <span class="nav-icon">👤</span><span>Profile</span>
+            <i class="fas fa-user-circle"></i><span>PROFILE</span>
         </button>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
@@ -109,7 +122,6 @@
         let currentUser = null;
         let myBest = 0;
 
-        // AUTH
         window.login = () => signInWithPopup(auth, provider);
         window.logout = () => signOut(auth);
 
@@ -125,7 +137,6 @@
             }
         });
 
-        // NAVIGATION
         window.navTo = (pageId, el) => {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -133,14 +144,17 @@
                 document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active-nav'));
                 el.classList.add('active-nav');
             }
-            if(pageId === 'leaderboardPage') loadLB();
+            if(pageId === 'leaderboardPage') loadLeaderboard();
         };
 
         function updateProfileUI(user) {
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pEmail').innerText = user.email;
             document.getElementById('pImg').src = user.photoURL;
-            get(ref(db, 'leaderboard/' + user.uid)).then(s => {
+            document.getElementById('pUid').innerText = user.uid;
+            
+            // Initial score load
+            onValue(ref(db, 'leaderboard/' + user.uid), (s) => {
                 if(s.exists()) {
                     myBest = s.val().score;
                     document.getElementById('pBest').innerText = myBest.toFixed(2) + "m";
@@ -148,32 +162,40 @@
             });
         }
 
-        function loadLB() {
+        function loadLeaderboard() {
             const lbRef = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(10));
             onValue(lbRef, (snapshot) => {
                 const list = document.getElementById('lbList');
                 list.innerHTML = "";
-                let arr = [];
-                snapshot.forEach(c => arr.push(c.val()));
-                arr.reverse().forEach((p, i) => {
-                    list.innerHTML += `<div class="player-row">
-                        <span><span class="rank">#${i+1}</span> ${p.name}</span>
-                        <span style="font-weight:bold;">${p.score.toFixed(2)}m</span>
-                    </div>`;
+                let players = [];
+                snapshot.forEach(child => players.push(child.val()));
+                
+                players.sort((a, b) => b.score - a.score).forEach((p, i) => {
+                    list.innerHTML += `
+                        <div class="player-row">
+                            <div class="rank-circle">${i+1}</div>
+                            <div class="player-info">
+                                <span class="player-name">${p.name}</span>
+                            </div>
+                            <div class="player-score">${p.score.toFixed(2)}m</div>
+                        </div>`;
                 });
             });
         }
 
-        // JUMP LOGIC
+        // --- SENSOR LOGIC ---
         let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
         document.getElementById('startBtn').onclick = function() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); });
             } else { start(); }
-            this.innerText = "SENSORS LIVE"; this.disabled = true;
+            this.innerText = "SENSORS ACTIVE";
+            this.style.background = "#21262d";
+            this.style.color = "#8b949e";
         };
 
         function start() {
+            document.getElementById('status').innerText = "READY TO THROW";
             window.addEventListener('devicemotion', (e) => {
                 let acc = e.accelerationIncludingGravity;
                 if(!acc || !acc.x) return;
@@ -183,21 +205,25 @@
 
                 if(lastAcc < 2.5 && !isFreeFalling) {
                     isFreeFalling = true; startTime = now;
-                    document.getElementById('status').innerText = "FLYING!";
+                    document.getElementById('status').innerText = "AIRBORNE";
+                    document.getElementById('status').style.color = "#00ff88";
                 }
                 if(isFreeFalling && lastAcc > 14) {
                     let d = (now - startTime)/1000;
-                    if(d > 0.2 && d < 2.5) {
+                    if(d > 0.25 && d < 2.5) {
                         let h = 0.125 * 9.81 * (d**2);
                         document.getElementById('height').innerText = h.toFixed(2);
                         if(h > myBest) {
-                            set(ref(db, 'leaderboard/'+currentUser.uid), {name: currentUser.displayName, score: h});
-                            myBest = h;
-                            document.getElementById('pBest').innerText = h.toFixed(2) + "m";
+                            set(ref(db, 'leaderboard/' + currentUser.uid), {
+                                name: currentUser.displayName,
+                                score: h,
+                                uid: currentUser.uid
+                            });
                         }
                     }
                     isFreeFalling = false;
-                    setTimeout(()=> document.getElementById('status').innerText = "READY", 1000);
+                    document.getElementById('status').innerText = "READY";
+                    document.getElementById('status').style.color = "#e3b341";
                 }
             });
         }
