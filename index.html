@@ -1,77 +1,95 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Final Fix</title>
+    <title>Jump Pro - Final Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; --danger: #f85149; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
         
+        /* UI Components */
         .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
         .active { display: flex; animation: fadeIn 0.3s ease; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 
-        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; }
-
-        /* Professional Nav Bar */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
-        .nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        /* Navigation Bar */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
+        .nav-item { background: none; border: none; color: #8b949e; font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: 0.2s; }
         .nav-item i { font-size: 20px; }
         .nav-item.active-nav { color: var(--primary); }
 
-        /* Leaderboard Style - Fixed */
-        .lb-container { width: 100%; max-width: 400px; }
-        .player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; }
-        .rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: var(--primary); }
-        .player-info { flex-grow: 1; text-align: left; }
-        .player-name { font-weight: 600; font-size: 14px; color: #fff; }
-        .player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
+        /* Wallet Section */
+        .wallet-card { background: linear-gradient(135deg, #1f242d 0%, #0d1117 100%); padding: 20px; border-radius: 15px; border: 1px solid #30363d; margin: 15px 0; width: 100%; box-sizing: border-box; }
+        .wallet-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-wallet { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 12px; }
 
+        /* Leaderboard */
+        .player-row { display: flex; align-items: center; padding: 12px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; width: 100%; box-sizing: border-box; }
+        .rank-badge { width: 25px; height: 25px; background: var(--primary); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; margin-right: 12px; }
+
+        /* Jump Style */
         #height { font-size: 80px; font-weight: 900; color: var(--primary); margin: 0; }
-        .btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
-        
-        .uid-box { background: #0d1117; padding: 10px; border-radius: 8px; font-size: 10px; color: #8b949e; margin-top: 10px; word-break: break-all; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; font-size: 16px; }
+
+        .uid-text { font-family: monospace; font-size: 9px; color: #555; background: #000; padding: 5px; border-radius: 5px; margin-top: 10px; word-break: break-all; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="loginPage" class="page active">
-        <div class="card" style="margin-top: 100px;">
-            <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary);"></i>
+        <div class="card" style="margin-top: 80px;">
+            <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary); margin-bottom: 20px;"></i>
             <h2>Jump Pro</h2>
-            <button onclick="login()" class="btn-main" style="margin-top:20px; background:#fff;">Continue with Google</button>
+            <p style="color:#8b949e">Measure. Compete. Earn.</p>
+            <button onclick="login()" class="btn-main" style="background:#fff; margin-top:20px;">
+                <i class="fab fa-google"></i> Continue with Google
+            </button>
         </div>
     </div>
 
     <div id="jumpPage" class="page">
         <div class="card">
+            <h4 style="margin:0; color:#8b949e;">MAX HEIGHT</h4>
             <div id="height">0.00</div>
-            <div style="color: #484f58; font-size: 12px;">METERS</div>
-            <div id="status" style="margin: 20px 0; color: #e3b341; font-weight: bold;">READY</div>
-            <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
+            <div style="font-size:12px; color:#484f58; letter-spacing:3px;">METERS</div>
+            <div id="status" style="margin: 25px 0; font-weight: bold; color: #e3b341;">SENSORS READY</div>
+            <button id="startBtn" class="btn-main"><i class="fas fa-power-off"></i> ACTIVATE TRACKER</button>
         </div>
     </div>
 
     <div id="leaderboardPage" class="page">
-        <h2 style="margin-bottom: 20px;"><i class="fas fa-trophy"></i> Global Top 10</h2>
-        <div id="lbList" class="lb-container">
-            <p style="color:#555">Data loading...</p>
-        </div>
+        <h2 style="margin-bottom:20px;"><i class="fas fa-trophy" style="color:gold;"></i> Top 10 Players</h2>
+        <div id="lbList" style="width:100%; max-width:400px;">
+            </div>
     </div>
 
     <div id="profilePage" class="page">
         <div class="card">
-            <img id="pImg" style="width:80px; border-radius:50%; border:2px solid var(--primary);" src="">
-            <h2 id="pName" style="margin: 10px 0;">Name</h2>
-            <div class="uid-box">UID: <span id="pUid">---</span></div>
-            <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
-                <span style="font-size:11px; color:#555;">MY RECORD</span><br>
-                <span id="pBest" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
+            <img id="pImg" style="width:70px; border-radius:50%; border:2px solid var(--primary);" src="">
+            <h3 id="pName" style="margin:10px 0 5px 0;">Username</h3>
+            <div class="uid-text">UID: <span id="pUid">---</span></div>
+
+            <div class="wallet-card">
+                <span style="font-size:10px; color:#8b949e;">WALLET BALANCE</span><br>
+                <span id="walletBal" style="font-size:24px; font-weight:800; color:var(--primary);">₹0.00</span>
+                <div class="wallet-btns">
+                    <button onclick="handleWallet('deposit')" class="btn-wallet" style="background:var(--primary); color:#000;">DEPOSIT</button>
+                    <button onclick="handleWallet('withdraw')" class="btn-wallet" style="background:none; border:1px solid var(--danger); color:var(--danger);">WITHDRAW</button>
+                </div>
             </div>
-            <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#f85149; cursor:pointer;">Logout</button>
+
+            <div style="background:#0d1117; padding:15px; border-radius:12px; margin-top:10px;">
+                <span style="font-size:10px; color:#555;">BEST RECORD</span><br>
+                <span id="pBest" style="font-size:18px; font-weight:bold; color:var(--primary);">0.00m</span>
+            </div>
+
+            <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:var(--danger); font-weight:bold; cursor:pointer;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
         </div>
     </div>
 
@@ -84,7 +102,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
@@ -104,14 +122,15 @@
         let currentUser = null;
         let myBest = 0;
 
-        window.login = () => signInWithPopup(auth, provider);
+        // AUTH FUNCTIONS
+        window.login = () => signInWithPopup(auth, provider).catch(e => alert(e.message));
         window.logout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('bottomNav').style.display = 'flex';
-                updateProfileUI(user);
+                updateUI(user);
                 navTo('jumpPage', document.querySelector('.nav-item'));
             } else {
                 document.getElementById('bottomNav').style.display = 'none';
@@ -119,6 +138,7 @@
             }
         });
 
+        // NAVIGATION
         window.navTo = (pageId, el) => {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -129,86 +149,95 @@
             if(pageId === 'leaderboardPage') loadLeaderboard();
         };
 
-        function updateProfileUI(user) {
+        function updateUI(user) {
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pImg').src = user.photoURL;
             document.getElementById('pUid').innerText = user.uid;
+            
+            // Sync Best Score
             onValue(ref(db, 'leaderboard/' + user.uid), (s) => {
                 if(s.exists()) {
                     myBest = s.val().score;
                     document.getElementById('pBest').innerText = myBest.toFixed(2) + "m";
                 }
             });
-        }
 
-        // --- FIXED LEADERBOARD FETCH ---
-        function loadLeaderboard() {
-            const lbList = document.getElementById('lbList');
-            const leaderboardRef = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(10));
-            
-            onValue(leaderboardRef, (snapshot) => {
-                if (!snapshot.exists()) {
-                    lbList.innerHTML = "<p style='color:#555'>No scores yet!</p>";
-                    return;
-                }
-                
-                let players = [];
-                snapshot.forEach(child => {
-                    players.push(child.val());
-                });
-
-                // Sort and display
-                players.sort((a, b) => b.score - a.score);
-                lbList.innerHTML = "";
-                players.forEach((p, i) => {
-                    lbList.innerHTML += `
-                        <div class="player-row">
-                            <div class="rank-circle">${i+1}</div>
-                            <div class="player-info">
-                                <span class="player-name">${p.name || 'Anonymous'}</span>
-                            </div>
-                            <div class="player-score">${p.score.toFixed(2)}m</div>
-                        </div>`;
-                });
-            }, (error) => {
-                lbList.innerHTML = `<p style='color:red'>Database Error: Check Rules</p>`;
+            // Sync Wallet
+            onValue(ref(db, 'wallets/' + user.uid), (s) => {
+                const bal = s.val() || 0;
+                document.getElementById('walletBal').innerText = `₹${bal.toFixed(2)}`;
             });
         }
 
-        // Sensor Logic
-        let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
-        document.getElementById('startBtn').onclick = function() {
-            if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); });
-            } else { start(); }
-            this.innerText = "ACTIVE"; this.disabled = true;
+        // WALLET ACTIONS
+        window.handleWallet = (type) => {
+            const val = prompt(`Enter amount to ${type} (₹):`);
+            if(!val || isNaN(val) || val <= 0) return;
+
+            const wRef = ref(db, 'wallets/' + currentUser.uid);
+            runTransaction(wRef, (curr) => {
+                let bal = curr || 0;
+                if(type === 'deposit') return bal + parseFloat(val);
+                if(type === 'withdraw') {
+                    if(bal < val) { alert("Insufficient Balance!"); return; }
+                    return bal - parseFloat(val);
+                }
+            }).then(() => alert("Success!"));
         };
 
-        function start() {
+        // LEADERBOARD
+        function loadLeaderboard() {
+            const list = document.getElementById('lbList');
+            const lbRef = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(10));
+            onValue(lbRef, (snap) => {
+                list.innerHTML = "";
+                let pArr = [];
+                snap.forEach(c => pArr.push(c.val()));
+                pArr.sort((a,b) => b.score - a.score).forEach((p, i) => {
+                    list.innerHTML += `
+                        <div class="player-row">
+                            <div class="rank-badge">${i+1}</div>
+                            <div style="flex:1; text-align:left; font-size:14px;">${p.name}</div>
+                            <div style="font-weight:800; color:var(--primary);">${p.score.toFixed(2)}m</div>
+                        </div>`;
+                });
+            });
+        }
+
+        // SENSOR LOGIC
+        let falling = false; let sTime = 0; let smoothAcc = 9.8;
+        document.getElementById('startBtn').onclick = function() {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') startSensors(); });
+            } else { startSensors(); }
+            this.innerText = "SENSORS LIVE"; this.disabled = true; this.style.opacity = 0.5;
+        };
+
+        function startSensors() {
             window.addEventListener('devicemotion', (e) => {
                 let acc = e.accelerationIncludingGravity;
                 if(!acc || !acc.x) return;
                 let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-                lastAcc = (lastAcc * 0.7) + (raw * 0.3);
+                smoothAcc = (smoothAcc * 0.7) + (raw * 0.3);
                 let now = performance.now();
-                if(lastAcc < 2.5 && !isFreeFalling) {
-                    isFreeFalling = true; startTime = now;
-                    document.getElementById('status').innerText = "AIRBORNE";
+
+                if(smoothAcc < 2.5 && !falling) {
+                    falling = true; sTime = now;
+                    document.getElementById('status').innerText = "FLYING!";
                 }
-                if(isFreeFalling && lastAcc > 14) {
-                    let d = (now - startTime)/1000;
-                    if(d > 0.2 && d < 2.5) {
+                if(falling && smoothAcc > 14) {
+                    let d = (now - sTime)/1000;
+                    if(d > 0.25 && d < 2.5) {
                         let h = 0.125 * 9.81 * (d**2);
                         document.getElementById('height').innerText = h.toFixed(2);
                         if(h > myBest) {
                             set(ref(db, 'leaderboard/' + currentUser.uid), {
                                 name: currentUser.displayName,
-                                score: h,
-                                uid: currentUser.uid
+                                score: h
                             });
                         }
                     }
-                    isFreeFalling = false;
+                    falling = false;
                     document.getElementById('status').innerText = "READY";
                 }
             });
@@ -216,3 +245,4 @@
     </script>
 </body>
 </html>
+
