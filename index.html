@@ -1,148 +1,115 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Final</title>
+    <title>Jump Pro - Fixed</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        :root { --primary: #00ff88; --secondary: #00b8ff; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --danger: #ff4444; }
+        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --danger: #ff4444; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
         
-        /* Layout & Animation */
         .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
         .active { display: flex; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Modern Cards */
-        .card { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; overflow: hidden; margin-bottom: 15px; }
-        .card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 60%); pointer-events: none; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; margin-bottom: 15px; position: relative; overflow: hidden; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(22, 27, 34, 0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
+        .nav-item { background: none; border: none; color: #8b949e; font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .nav-item.active-nav { color: var(--primary); }
+        .nav-item i { font-size: 22px; }
 
-        /* Navigation Bar */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: rgba(22, 27, 34, 0.95); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; padding-bottom: 10px; }
-        .nav-item { background: none; border: none; color: #8b949e; font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: 0.2s; }
-        .nav-item i { font-size: 24px; }
-        .nav-item.active-nav { color: var(--primary); transform: translateY(-3px); }
-        .nav-item.active-nav i { filter: drop-shadow(0 0 8px var(--primary)); }
-
-        /* UI Elements */
-        .btn-main { background: linear-gradient(135deg, var(--primary), #00cc6a); color: #000; border: none; padding: 18px; border-radius: 16px; font-weight: 800; letter-spacing: 1px; width: 100%; cursor: pointer; transition: transform 0.1s; box-shadow: 0 5px 20px rgba(0, 255, 136, 0.2); font-size: 16px; }
-        .btn-main:active { transform: scale(0.96); }
+        .btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        #height { font-size: 80px; font-weight: 900; color: #fff; margin: 0; line-height: 1; }
         
-        #height { font-size: 85px; font-weight: 900; background: linear-gradient(to bottom, #fff, #999); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 5px 0; font-variant-numeric: tabular-nums; line-height: 1; }
-        .rank-badge { background: #21262d; border: 1px solid var(--secondary); color: var(--secondary); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 15px; letter-spacing: 1px; }
+        /* Leaderboard Style */
+        .player-row { display: flex; align-items: center; padding: 12px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; }
+        .rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; color: var(--primary); }
+        .top-rank { background: gold; color: black; }
 
-        /* Leaderboard Styling */
-        .player-row { display: flex; align-items: center; padding: 14px 16px; background: #21262d; margin-bottom: 10px; border-radius: 16px; border: 1px solid #30363d; }
-        .rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-right: 12px; color: var(--primary); font-size: 14px; }
-        .top-rank { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
-
-        select { background: #0d1117; color: #fff; border: 1px solid #30363d; padding: 12px; border-radius: 10px; width: 100%; margin-top: 10px; font-size: 16px; outline: none; }
-
-        /* Safety Modal */
-        #safetyModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(8px); }
+        select { background: #0d1117; color: #fff; padding: 10px; border-radius: 8px; width: 100%; margin-top: 5px; border: 1px solid #333; }
+        
+        #safetyModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
     </style>
 </head>
 <body>
 
     <div id="safetyModal">
-        <div style="background: rgba(255, 68, 68, 0.1); padding: 20px; border-radius: 50%; margin-bottom: 20px;">
-            <i class="fas fa-shield-alt" style="font-size: 50px; color: var(--danger);"></i>
-        </div>
-        <h2 style="color: #fff; margin-bottom: 5px;">ANTI-CHEAT ENABLED</h2>
-        <p style="color: #ccc; line-height: 1.6; font-size: 15px; max-width: 300px;">
-            1. Hold your phone <b>TIGHT</b>.<br>
-            2. Jump on a <b>SOFT</b> surface (Bed).<br>
-            3. Phone must <b>SPIN</b> to count.<br>
-            <span style="font-size: 12px; color: #777;">(Fake hand waves will be blocked)</span>
-        </p>
-        <button onclick="closeSafety()" class="btn-main" style="margin-top: 30px; max-width: 200px;">I UNDERSTAND</button>
+        <i class="fas fa-shield-alt" style="font-size: 50px; color: var(--danger); margin-bottom: 20px;"></i>
+        <h2>ANTI-CHEAT ACTIVE</h2>
+        <p style="color:#ccc;">Phone must <b>SPIN</b> to count.<br>Do not just shake it.</p>
+        <button onclick="document.getElementById('safetyModal').style.display='none'" class="btn-main" style="max-width: 200px;">OK</button>
     </div>
 
     <div id="loginPage" class="page active">
-        <div class="card" style="margin-top: 80px; padding-bottom: 40px;">
-            <i class="fas fa-rocket" style="font-size: 60px; color: var(--primary); margin-bottom:20px; filter: drop-shadow(0 0 20px rgba(0,255,136,0.4));"></i>
+        <div class="card" style="margin-top: 100px;">
+            <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary);"></i>
             <h1>Jump Pro</h1>
-            <p style="color: #8b949e; margin-bottom: 30px;">The Ultimate Throwing Game</p>
-            <button onclick="login()" class="btn-main" style="background: #fff; color:#333;"><i class="fab fa-google"></i> Login with Google</button>
+            <button onclick="login()" class="btn-main" style="background:#fff; color:#000;">Login with Google</button>
         </div>
     </div>
 
     <div id="jumpPage" class="page">
         <div class="card">
-            <div id="rankDisplay" class="rank-badge">READY</div>
+            <div id="rankDisplay" style="color:#00b8ff; font-weight:bold; margin-bottom:10px;">READY</div>
             <div id="height">0.00</div>
-            <div style="color: #484f58; font-size: 12px; font-weight: 800; letter-spacing: 2px;">METERS</div>
-            <div id="msgDisplay" style="color: #888; font-size: 13px; margin-top: 10px; min-height: 20px;">Throw straight up!</div>
-            
-            <div style="display: flex; gap: 10px; margin-top: 30px;">
-                <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
-                <button id="shareBtn" onclick="shareScore()" class="btn-main" style="width: 70px; display:none; background: #21262d; color: #fff;"><i class="fas fa-share-alt"></i></button>
-            </div>
+            <div style="font-size:12px; color:#888;">METERS</div>
+            <div id="msgDisplay" style="font-size:12px; margin-top:5px; color:#666;">Throw straight up</div>
+            <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
+            <button id="shareBtn" onclick="shareScore()" class="btn-main" style="background:#333; color:#fff; display:none; margin-top:10px;">Share Score</button>
         </div>
-        <div style="font-size: 11px; color: #555; margin-top: 20px;">
-            Spin Rate: <span id="spinVal" style="color: var(--secondary);">0</span> RPM
-        </div>
+        <div style="font-size:11px; color:#555; margin-top:20px;">Spin: <span id="spinVal">0</span> RPM</div>
     </div>
 
     <div id="leaderboardPage" class="page">
-        <div style="width:100%; max-width: 400px; display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>Global Top 30</h2>
-            <i class="fas fa-globe" style="color: var(--secondary); font-size: 20px;"></i>
-        </div>
-        <div id="lbList" style="width: 100%; max-width: 400px;">
-            <p style="text-align:center; color:#666;">Loading Rankings...</p>
-        </div>
+        <h2 style="margin-bottom:15px;">Global Top Players</h2>
+        <div id="lbList" style="width:100%; max-width:400px;">Loading...</div>
     </div>
 
     <div id="profilePage" class="page">
         <div class="card">
-            <img id="pImg" style="width:90px; height:90px; border-radius:50%; border:3px solid var(--primary); padding: 3px;" src="">
-            <h3 id="pName" style="margin: 15px 0 5px;">User</h3>
+            <img id="pImg" style="width:80px; border-radius:50%; margin-bottom:10px;" src="">
+            <h3 id="pName">User</h3>
             
-            <div style="text-align: left; margin-bottom: 15px; width: 100%;">
-                <label style="font-size: 11px; color: #888; text-transform: uppercase; font-weight: bold;">Your Flag</label>
+            <div style="text-align:left; margin-bottom:15px;">
+                <label style="font-size:12px; color:#888;">Your Flag:</label>
                 <select id="countrySelect" onchange="updateCountry()">
                     <option value="🌍">🌍 World</option>
                     <option value="🇮🇳">🇮🇳 India</option>
                     <option value="🇺🇸">🇺🇸 USA</option>
-                    <option value="🇦🇪">🇦🇪 UAE</option>
                     <option value="🇬🇧">🇬🇧 UK</option>
-                    <option value="🇨🇦">🇨🇦 Canada</option>
-                    <option value="🇯🇵">🇯🇵 Japan</option>
-                    <option value="🇧🇷">🇧🇷 Brazil</option>
                 </select>
             </div>
 
-            <div style="background: #21262d; padding: 20px; border-radius: 16px; margin-bottom: 20px;">
-                <span style="font-size:11px; color:#8b949e; letter-spacing: 1px;">PERSONAL BEST</span><br>
-                <span id="pBest" style="font-size:32px; font-weight:900; color:var(--primary);">0.00m</span>
+            <div style="background:#21262d; padding:15px; border-radius:10px;">
+                <div style="font-size:10px; color:#888;">BEST SCORE</div>
+                <div id="pBest" style="font-size:30px; font-weight:bold; color:var(--primary);">0.00m</div>
             </div>
             
-            <div style="width: 100%; height: 160px;">
+            <div style="width:100%; height:150px; margin-top:15px;">
                 <canvas id="jumpChart"></canvas>
             </div>
-
-            <button onclick="logout()" style="margin-top:25px; color:#f85149; background:none; border:none; cursor:pointer; font-weight: 600;">Sign Out</button>
+            
+            <button onclick="logout()" style="color:#ff4444; background:none; border:none; margin-top:20px;">Logout</button>
         </div>
     </div>
 
     <nav class="nav-bar" id="bottomNav" style="display:none;">
-        <button class="nav-item active-nav" onclick="navTo('jumpPage', this)"><i class="fas fa-bolt"></i><span>THROW</span></button>
-        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-trophy"></i><span>RANKS</span></button>
-        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user-astronaut"></i><span>PROFILE</span></button>
+        <button class="nav-item active-nav" onclick="navTo('jumpPage', this)"><i class="fas fa-bolt"></i><span>JUMP</span></button>
+        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-trophy"></i><span>RANK</span></button>
+        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user"></i><span>ME</span></button>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, query, orderByChild, limitToLast, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // CONFIG (Replace with your own if needed)
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
             authDomain: "white-drack-fd1ee.firebaseapp.com",
@@ -156,33 +123,29 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        const provider = new GoogleAuthProvider();
-
+        
         let currentUser = null;
         let myBest = 0;
-        let myFlag = "🌍";
-        let sensorActive = false;
         let chartInstance = null;
+        let sensorActive = false;
 
         // AUTH
-        window.login = () => signInWithPopup(auth, provider);
+        window.login = () => signInWithPopup(auth, new GoogleAuthProvider());
         window.logout = () => signOut(auth);
-        window.closeSafety = () => document.getElementById('safetyModal').style.display = 'none';
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('bottomNav').style.display = 'flex';
+                document.getElementById('safetyModal').style.display = 'flex';
                 loadUserData(user);
                 navTo('jumpPage', document.querySelector('.nav-item'));
-                document.getElementById('safetyModal').style.display = 'flex';
             } else {
                 document.getElementById('bottomNav').style.display = 'none';
                 navTo('loginPage');
             }
         });
 
-        // NAVIGATION
         window.navTo = (pageId, el) => {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -194,241 +157,156 @@
             if(pageId === 'profilePage') renderChart();
         };
 
-        // USER DATA & FLAGS
         function loadUserData(user) {
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pImg').src = user.photoURL;
             onValue(ref(db, 'leaderboard/' + user.uid), (s) => {
                 if(s.exists()) {
-                    const data = s.val();
-                    myBest = parseFloat(data.score) || 0;
-                    myFlag = data.country || "🌍";
-                    document.getElementById('pBest').innerText = myBest.toFixed(2) + "m";
-                    document.getElementById('countrySelect').value = myFlag;
+                    myBest = s.val().score || 0;
+                    document.getElementById('pBest').innerText = parseFloat(myBest).toFixed(2) + "m";
+                    document.getElementById('countrySelect').value = s.val().country || "🌍";
                 }
             });
         }
-
+        
         window.updateCountry = () => {
-            const newFlag = document.getElementById('countrySelect').value;
-            update(ref(db, 'leaderboard/' + currentUser.uid), { country: newFlag });
+            update(ref(db, 'leaderboard/' + currentUser.uid), { country: document.getElementById('countrySelect').value });
         };
 
-        // --- FIXED LEADERBOARD LOGIC (Correct Loop) ---
+        // --- NEW WORKING LEADERBOARD (No Rules Needed) ---
         function loadLeaderboard() {
             const lbList = document.getElementById('lbList');
-            lbList.innerHTML = "<p style='text-align:center; color:#666; padding:20px;'>Refreshing...</p>";
+            lbList.innerHTML = "<p style='text-align:center; color:#777'>Refreshing...</p>";
+
+            // Direct Reference (No Query)
+            const dbRef = ref(db, 'leaderboard');
             
-            const q = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(30));
-            onValue(q, (snapshot) => {
-                if (!snapshot.exists()) { lbList.innerHTML = "<p>No players yet.</p>"; return; }
+            onValue(dbRef, (snapshot) => {
+                if (!snapshot.exists()) {
+                    lbList.innerHTML = "<p style='text-align:center'>No Players Yet</p>";
+                    return;
+                }
                 
                 let players = [];
-                snapshot.forEach(child => players.push(child.val()));
-                players.sort((a, b) => parseFloat(b.score) - parseFloat(a.score)); // Sort High to Low
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    if(data.score) players.push(data); // Safety check
+                });
 
-                // ✅ The Fix: Build String first, then update DOM once
+                // Sort in Browser (High to Low)
+                players.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+
                 let allHtml = "";
-                players.forEach((p, i) => {
+                players.slice(0, 50).forEach((p, i) => {
                     let rankClass = i < 3 ? 'top-rank' : '';
+                    let name = p.name ? p.name.split(' ')[0] : 'Anon';
                     let flag = p.country || "🌍";
-                    let name = p.name ? p.name.split(' ')[0] : 'Unknown';
-                    let score = parseFloat(p.score).toFixed(2);
                     
                     allHtml += `
-                        <div class="player-row" style="animation: fadeIn 0.3s ease ${i*0.05}s forwards; opacity:0;">
+                        <div class="player-row">
                             <div class="rank-circle ${rankClass}">${i+1}</div>
-                            <div style="flex-grow:1; text-align:left;">
-                                <div style="font-weight:600; font-size:14px; color:#fff;">${flag} ${name}</div>
-                            </div>
-                            <div style="font-weight:bold; color:var(--primary); font-size:15px;">${score}m</div>
+                            <div style="flex-grow:1;">${flag} ${name}</div>
+                            <div style="font-weight:bold; color:var(--primary);">${parseFloat(p.score).toFixed(2)}m</div>
                         </div>`;
                 });
-                
                 lbList.innerHTML = allHtml;
             });
         }
 
-        // --- SENSOR, PHYSICS & ANTI-CHEAT ---
-        let isFreeFalling = false;
-        let startTime = 0;
-        let lastAcc = 9.8;
-        let maxSpin = 0;
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playTone(freq, type) {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.value = freq;
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
-            osc.stop(audioCtx.currentTime + 0.15);
-        }
-
-        document.getElementById('startBtn').onclick = function() {
+        // --- SENSOR ---
+        let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8; let maxSpin = 0;
+        
+        document.getElementById('startBtn').onclick = () => {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission().then(s => { 
-                    if(s==='granted') initSensor(); 
-                    else alert("Sensor Permission Denied");
-                });
+                DeviceMotionEvent.requestPermission().then(s => { if(s==='granted') initSensor(); });
             } else { initSensor(); }
         };
 
         function initSensor() {
             if(sensorActive) return;
             sensorActive = true;
-            document.getElementById('startBtn').innerText = "ACTIVE - THROW NOW";
+            document.getElementById('startBtn').innerText = "THROW NOW";
             document.getElementById('rankDisplay').innerText = "SENSOR ON";
-            document.getElementById('rankDisplay').style.color = "#00ff88";
-            playTone(600, 'sine');
 
             window.addEventListener('devicemotion', (e) => {
                 let acc = e.accelerationIncludingGravity;
                 if(!acc) return;
-                
-                // 1. Acceleration
                 let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
                 lastAcc = (lastAcc * 0.5) + (raw * 0.5);
 
-                // 2. Anti-Cheat: Rotation
                 let rot = e.rotationRate;
-                if(rot) {
+                if(rot && isFreeFalling) {
                     let totalRot = Math.abs(rot.alpha) + Math.abs(rot.beta) + Math.abs(rot.gamma);
-                    if(isFreeFalling) maxSpin = Math.max(maxSpin, totalRot);
+                    maxSpin = Math.max(maxSpin, totalRot);
                 }
 
-                let now = performance.now();
-
-                // Freefall Detect
                 if(lastAcc < 2.5 && !isFreeFalling) {
-                    isFreeFalling = true;
-                    startTime = now;
-                    maxSpin = 0;
+                    isFreeFalling = true; startTime = performance.now(); maxSpin = 0;
                     document.getElementById('rankDisplay').innerText = "FLYING...";
-                    document.getElementById('rankDisplay').style.color = "#00b8ff";
                 }
 
-                // Landing Detect
                 if(isFreeFalling && lastAcc > 15) {
-                    let duration = (now - startTime) / 1000;
-                    
-                    if(duration > 0.3 && duration < 3.5) {
-                        // Anti-Cheat Check: Must spin > 100 deg/sec
+                    let dur = (performance.now() - startTime) / 1000;
+                    if(dur > 0.3 && dur < 3.5) {
                         if(maxSpin < 100) {
                             document.getElementById('rankDisplay').innerText = "FAKE JUMP";
-                            document.getElementById('msgDisplay').innerText = "Phone didn't spin! Throw properly.";
-                            document.getElementById('rankDisplay').style.color = "var(--danger)";
-                            playTone(150, 'sawtooth');
+                            document.getElementById('msgDisplay').innerText = "Phone didn't spin!";
                         } else {
-                            processJump(duration, maxSpin);
+                            processJump(dur, maxSpin);
                         }
-                    } else {
-                        document.getElementById('rankDisplay').innerText = "TOO FAST";
                     }
                     isFreeFalling = false;
                 }
             });
         }
 
-        function processJump(duration, spin) {
-            let h = (9.81 * (duration**2)) / 8;
-            let rank = getRank(h);
-
-            // Update UI
+        function processJump(dur, spin) {
+            let h = (9.81 * (dur**2)) / 8;
             document.getElementById('height').innerText = h.toFixed(2);
-            document.getElementById('rankDisplay').innerText = rank.title;
-            document.getElementById('rankDisplay').style.color = rank.color;
-            document.getElementById('msgDisplay').innerText = rank.msg;
-            document.getElementById('spinVal').innerText = Math.floor(spin / 6);
-            document.getElementById('shareBtn').style.display = "inline-block";
+            document.getElementById('spinVal').innerText = Math.floor(spin/6);
+            document.getElementById('shareBtn').style.display = 'inline-block';
             
-            // Success Feedback
-            if(navigator.vibrate) navigator.vibrate(200);
-            playTone(200, 'square');
+            if(h < 1) document.getElementById('rankDisplay').innerText = "GOOD START";
+            else if(h < 2) document.getElementById('rankDisplay').innerText = "PRO JUMPER";
+            else document.getElementById('rankDisplay').innerText = "LEGEND";
 
-            // 🎉 CONFETTI & High Score
             if(h > myBest) {
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00ff88', '#00b8ff'] });
-                playTone(800, 'triangle');
+                confetti();
+                // Save to DB
+                const refUrl = ref(db, 'leaderboard/' + currentUser.uid);
+                get(refUrl).then(s => {
+                    let hist = s.val()?.history || [];
+                    hist.unshift(h);
+                    if(hist.length > 10) hist.pop();
+                    
+                    update(refUrl, {
+                        name: currentUser.displayName,
+                        score: h,
+                        country: document.getElementById('countrySelect').value,
+                        history: hist
+                    });
+                    if(chartInstance) updateChart(hist);
+                });
             }
-
-            // Save Data
-            const userRef = ref(db, 'leaderboard/' + currentUser.uid);
-            get(userRef).then((snap) => {
-                let currentHistory = snap.val()?.history || [];
-                currentHistory.unshift(h);
-                if(currentHistory.length > 10) currentHistory.pop();
-
-                const updates = {
-                    history: currentHistory,
-                    country: document.getElementById('countrySelect').value,
-                    lastJumpTime: Date.now()
-                };
-
-                if(h > myBest) {
-                    updates.score = h;
-                    updates.name = currentUser.displayName;
-                }
-                update(userRef, updates);
-                if(chartInstance) updateChart(currentHistory);
-            });
         }
 
-        function getRank(h) {
-            if(h < 0.5) return { title: "🦗 GRASSHOPPER", msg: "Jump higher than a cat!", color: "#888" };
-            if(h < 1.0) return { title: "🐇 RABBIT", msg: "Higher than a table!", color: "#fff" };
-            if(h < 1.5) return { title: "🦘 KANGAROO", msg: "Getting serious now.", color: "#00b8ff" };
-            if(h < 2.0) return { title: "🥷 NINJA", msg: "Impressive airtime!", color: "#00ff88" };
-            if(h < 3.0) return { title: "🚀 ROCKET", msg: "Insane height!", color: "#ffaa00" };
-            return { title: "👽 ALIEN", msg: "NASA wants your location.", color: "#ff4444" };
-        }
-
-        // --- CHART JS ---
         function renderChart() {
             const ctx = document.getElementById('jumpChart').getContext('2d');
             get(ref(db, 'leaderboard/' + currentUser.uid)).then(s => {
                 let data = s.val()?.history || [];
-                let chartData = [...data].reverse(); 
-                
+                let cData = [...data].reverse();
                 if(chartInstance) chartInstance.destroy();
-
                 chartInstance = new Chart(ctx, {
                     type: 'line',
-                    data: {
-                        labels: chartData.map((_, i) => i + 1),
-                        datasets: [{
-                            label: 'History (m)',
-                            data: chartData,
-                            borderColor: '#00ff88',
-                            backgroundColor: 'rgba(0, 255, 136, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: true,
-                            pointRadius: 3
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
-                            x: { display: false }
-                        }
-                    }
+                    data: { labels: cData.map((_, i) => i+1), datasets: [{ label:'History', data: cData, borderColor:'#00ff88', tension:0.4 }] },
+                    options: { plugins:{legend:{display:false}}, scales:{ x:{display:false}, y:{grid:{color:'#333'}} } }
                 });
             });
         }
 
         window.shareScore = async () => {
-            const h = document.getElementById('height').innerText;
-            const text = `🚀 I just jumped ${h}m on Jump Pro! Beat me:`;
-            try { await navigator.share({ title: 'Jump Pro', text: text, url: window.location.href }); } 
-            catch(e) { navigator.clipboard.writeText(text); alert("Link Copied!"); }
+             try { await navigator.share({ title: 'Jump Pro', text: `I jumped ${document.getElementById('height').innerText}m!`, url: window.location.href }); } catch(e){}
         };
     </script>
 </body>
 </html>
-
