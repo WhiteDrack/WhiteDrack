@@ -4,104 +4,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro X - Analytics</title>
+    <title>Jump Pro - Final Fixed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #00ffcc; --bg: #050505; --card: #111; --text: #fff; --graph-line: #00ffcc; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --primary: #00ff88; --secondary: #00b8ff; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --danger: #ff4444; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
         
         .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 90px; }
-        .active { display: flex; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .active { display: flex; animation: fadeIn 0.3s ease; }
 
-        .card { background: var(--card); padding: 20px; border-radius: 24px; border: 1px solid #222; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,255,204,0.05); margin-bottom: 15px; position: relative; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; margin-bottom: 15px; }
         
-        /* Graph Canvas Styling */
-        canvas { width: 100%; height: 120px; background: #0a0a0a; border-radius: 12px; margin-top: 15px; border: 1px solid #333; }
+        /* Glossy Effect */
+        .card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%); pointer-events: none; }
 
-        .btn-main { background: var(--primary); color: #000; border: none; padding: 18px; border-radius: 16px; font-weight: 800; font-size: 16px; width: 100%; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
-        .btn-main:active { transform: scale(0.95); opacity: 0.8; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(22, 27, 34, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
+        .nav-item { background: none; border: none; color: #8b949e; font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: 0.2s; }
+        .nav-item i { font-size: 22px; margin-bottom: 2px; }
+        .nav-item.active-nav { color: var(--primary); transform: translateY(-2px); }
+        .nav-item.active-nav i { filter: drop-shadow(0 0 5px var(--primary)); }
 
-        /* Jump Text */
-        #height { font-size: 72px; font-weight: 900; line-height: 1; margin: 10px 0; color: var(--primary); text-shadow: 0 0 20px rgba(0,255,204,0.3); }
+        /* Buttons */
+        .btn-main { background: linear-gradient(135deg, var(--primary), #00cc6a); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; letter-spacing: 1px; width: 100%; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3); }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-share { background: rgba(255,255,255,0.1); color: #fff; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2); }
+
+        /* Jump Page */
+        #height { font-size: 80px; font-weight: 900; background: linear-gradient(to bottom, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 10px 0; font-variant-numeric: tabular-nums; }
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.1); font-size: 12px; font-weight: bold; margin-bottom: 20px; letter-spacing: 1px; }
+
+        /* Leaderboard Fixed Styles */
+        .player-row { display: flex; align-items: center; padding: 15px; background: #21262d; margin-bottom: 10px; border-radius: 12px; border: 1px solid #30363d; transition: transform 0.2s; }
+        .rank-circle { width: 32px; height: 32px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-right: 15px; color: var(--primary); font-size: 14px; }
+        .top-rank { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
         
-        /* Leaderboard */
-        .player-row { display: flex; align-items: center; padding: 12px; background: #1a1a1a; margin-bottom: 8px; border-radius: 12px; border: 1px solid #2a2a2a; }
-        .rank { font-weight: bold; width: 30px; color: #555; }
-        .rank.top { color: #ffd700; }
+        /* Modal */
+        #safetyModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px); }
         
-        .nav-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 350px; height: 65px; background: rgba(30,30,30,0.8); backdrop-filter: blur(12px); display: flex; justify-content: space-evenly; align-items: center; border-radius: 35px; border: 1px solid #333; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .nav-item { background: none; border: none; color: #666; font-size: 20px; transition: 0.3s; padding: 10px; border-radius: 50%; }
-        .nav-item.active-nav { color: var(--primary); background: rgba(0,255,204,0.1); transform: translateY(-5px); }
-
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
+    <div id="safetyModal">
+        <i class="fas fa-exclamation-triangle" style="font-size: 50px; color: var(--danger); margin-bottom: 20px;"></i>
+        <h2 style="color: #fff;">WARNING</h2>
+        <p style="color: #ccc; line-height: 1.6; font-size: 14px;">
+            Throw your phone in the air carefully.<br>
+            Use a soft surface (Bed/Sofa).<br>
+            <b>We are not responsible for damage.</b>
+        </p>
+        <button onclick="closeSafety()" class="btn-main" style="margin-top: 30px; max-width: 200px;">I AGREE</button>
+    </div>
+
     <div id="loginPage" class="page active">
-        <div class="card" style="margin-top: 100px; border: 1px solid var(--primary);">
-            <i class="fas fa-atom" style="font-size: 50px; color: var(--primary); margin-bottom: 20px;"></i>
-            <h2>JUMP LABS</h2>
-            <p style="color:#777; font-size: 14px;">Advanced Physics Analytics</p>
-            <button onclick="login()" class="btn-main" style="margin-top:30px;">Initialize System</button>
+        <div class="card" style="margin-top: 80px;">
+            <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary); margin-bottom:20px;"></i>
+            <h2>Jump Pro</h2>
+            <p style="color: #8b949e; margin-bottom: 30px;">Compete globally by throwing your phone.</p>
+            <button onclick="login()" class="btn-main" style="background: #fff; color:#333;"><i class="fab fa-google"></i> Login with Google</button>
         </div>
     </div>
 
     <div id="jumpPage" class="page">
         <div class="card">
-            <div style="display:flex; justify-content:space-between; color:#555; font-size:10px; font-weight:bold; letter-spacing:1px;">
-                <span>STATUS: <span id="status" style="color:var(--primary)">IDLE</span></span>
-                <span>MODE: PRO</span>
-            </div>
-            
+            <div id="status" class="status-badge">SENSOR OFF</div>
             <div id="height">0.00</div>
-            <div style="font-size: 12px; color: #666; margin-bottom: 20px;">METERS VERTICAL</div>
+            <div style="color: #484f58; font-size: 12px; font-weight: 700;">METERS</div>
             
-            <canvas id="jumpGraph" width="300" height="100"></canvas>
-            <div style="font-size: 10px; color: #444; margin-top: 5px;">G-FORCE VISUALIZATION</div>
-
-            <button id="startBtn" class="btn-main" style="margin-top: 20px;">ARM SENSOR</button>
-        </div>
-
-        <div class="card" style="padding: 15px; text-align: left;">
-            <div style="font-size: 12px; color: #777; margin-bottom: 10px;">LATEST DATA</div>
-            <div id="debugInfo" style="font-size: 11px; font-family: monospace; color: #444;">
-                Waiting for jump data...
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button id="startBtn" class="btn-main">ACTIVATE</button>
+                <button id="shareBtn" onclick="shareScore()" class="btn-main btn-share" style="width: 60px; display:none;"><i class="fas fa-share-alt"></i></button>
             </div>
         </div>
+        <div style="font-size: 11px; color: #555; margin-top: 20px;">Last Jump: <span id="lastJumpTime">--</span></div>
     </div>
 
     <div id="leaderboardPage" class="page">
-        <h2 style="margin-bottom:20px;">Global Rankings</h2>
-        <div id="lbList" style="width:100%; max-width:400px;">
-            <p style="color:#444">Syncing database...</p>
+        <div style="width:100%; max-width: 400px; display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Global Top 20</h2>
+            <i class="fas fa-trophy" style="color: #ffd700;"></i>
+        </div>
+        <div id="lbList" style="width: 100%; max-width: 400px;">
+            <p style="color:#666">Loading rankings...</p>
         </div>
     </div>
 
     <div id="profilePage" class="page">
         <div class="card">
-            <img id="pImg" src="" style="width:80px; border-radius:50%; margin-bottom:10px;">
-            <h3 id="pName">Pilot</h3>
-            <div style="background:#1a1a1a; padding:15px; border-radius:12px; margin-top:15px;">
-                <div style="font-size:10px; color:#555;">ALL TIME BEST</div>
-                <div id="pBest" style="font-size:30px; font-weight:900; color:var(--primary)">0.00m</div>
+            <img id="pImg" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--primary);" src="">
+            <h3 id="pName" style="margin: 10px 0;">User</h3>
+            <div style="background: #21262d; padding: 15px; border-radius: 12px; margin-top: 20px;">
+                <span style="font-size:10px; color:#8b949e;">MY BEST</span><br>
+                <span id="pBest" style="font-size:30px; font-weight:800; color:var(--primary);">0.00m</span>
             </div>
-            <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#f44; cursor:pointer;">Logout</button>
+            <button onclick="logout()" style="margin-top:20px; color:#f85149; background:none; border:none; cursor:pointer;">Logout</button>
         </div>
     </div>
 
     <nav class="nav-bar" id="bottomNav" style="display:none;">
-        <button class="nav-item active-nav" onclick="navTo('jumpPage', this)"><i class="fas fa-wave-square"></i></button>
-        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-list-ol"></i></button>
-        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user"></i></button>
+        <button class="nav-item active-nav" onclick="navTo('jumpPage', this)"><i class="fas fa-bolt"></i><span>JUMP</span></button>
+        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-chart-line"></i><span>RANK</span></button>
+        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user"></i><span>ME</span></button>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, update, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // CONFIG
+        // Your Config
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
             authDomain: "white-drack-fd1ee.firebaseapp.com",
@@ -119,176 +131,185 @@
 
         let currentUser = null;
         let myBest = 0;
-        
-        // SENSOR VARIABLES
         let sensorActive = false;
-        let accData = []; // To store graph data
-        let isFreeFalling = false;
-        let startTime = 0;
-        let lastAcc = 9.8;
 
-        // AUTH
         window.login = () => signInWithPopup(auth, provider);
         window.logout = () => signOut(auth);
+        window.closeSafety = () => document.getElementById('safetyModal').style.display = 'none';
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('bottomNav').style.display = 'flex';
-                updateProfile(user);
+                updateProfileUI(user);
                 navTo('jumpPage', document.querySelector('.nav-item'));
+                document.getElementById('safetyModal').style.display = 'flex';
             } else {
                 document.getElementById('bottomNav').style.display = 'none';
                 navTo('loginPage');
             }
         });
 
-        // UI NAVIGATION
-        window.navTo = (id, el) => {
+        window.navTo = (pageId, el) => {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            document.getElementById(pageId).classList.add('active');
             if(el) {
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav'));
                 el.classList.add('active-nav');
             }
+            if(pageId === 'leaderboardPage') loadLeaderboard();
         };
 
-        function updateProfile(user) {
+        function updateProfileUI(user) {
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pImg').src = user.photoURL;
-            onValue(ref(db, 'leaderboard/' + user.uid), s => {
+            onValue(ref(db, 'leaderboard/' + user.uid), (s) => {
                 if(s.exists()) {
-                    myBest = s.val().score;
+                    myBest = parseFloat(s.val().score) || 0;
                     document.getElementById('pBest').innerText = myBest.toFixed(2) + "m";
                 }
             });
-            // Auto load leaderboard to fix caching issues
-            loadLeaderboard();
         }
 
         // --- FIXED LEADERBOARD LOGIC ---
         function loadLeaderboard() {
-            const list = document.getElementById('lbList');
-            // Using limitToLast(20) to get top scores (Firebase sorts Ascending)
-            const q = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(20));
+            const lbList = document.getElementById('lbList');
+            lbList.innerHTML = "<p style='color:#777; padding:10px;'>Refreshing...</p>";
+
+            const q = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(30));
             
             onValue(q, (snapshot) => {
-                if(!snapshot.exists()) {
-                    list.innerHTML = "No Data Found. Check Rules.";
+                if (!snapshot.exists()) {
+                    lbList.innerHTML = "<p>No players yet.</p>";
                     return;
                 }
-                let players = [];
-                snapshot.forEach(child => players.push(child.val()));
                 
-                // CRITICAL: Firebase gives [1, 5, 10]. We need [10, 5, 1].
-                players.sort((a,b) => b.score - a.score); 
-
-                list.innerHTML = "";
-                players.forEach((p, i) => {
-                    let rankStyle = i < 3 ? 'top' : '';
-                    let icon = i===0 ? '👑' : (i+1);
-                    list.innerHTML += `
-                        <div class="player-row">
-                            <div class="rank ${rankStyle}">${icon}</div>
-                            <div style="flex:1; margin-left:10px; font-size:14px; font-weight:500;">
-                                ${p.name.split(" ")[0]}
-                            </div>
-                            <div style="font-weight:bold; color:var(--primary)">
-                                ${p.score.toFixed(2)}m
-                            </div>
-                        </div>
-                    `;
+                let players = [];
+                snapshot.forEach(child => {
+                    players.push(child.val());
                 });
+
+                // Sort: High to Low
+                players.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+
+                // BUILD HTML STRING (Correction Applied)
+                let allHtml = ""; 
+                players.forEach((p, i) => {
+                    let rankClass = i < 3 ? 'top-rank' : '';
+                    let name = p.name ? p.name.split(' ')[0] : 'Anon';
+                    let score = parseFloat(p.score).toFixed(2);
+                    
+                    allHtml += `
+                        <div class="player-row" style="animation: fadeIn 0.5s ease ${i*0.05}s forwards; opacity:0;">
+                            <div class="rank-circle ${rankClass}">${i+1}</div>
+                            <div style="flex-grow:1; text-align:left; font-weight:600; font-size:14px;">${name}</div>
+                            <div style="font-weight:bold; color:var(--primary);">${score}m</div>
+                        </div>`;
+                });
+
+                // Insert ONCE
+                lbList.innerHTML = allHtml;
             });
         }
 
-        // --- ADVANCED SENSOR & GRAPH LOGIC ---
-        
-        const canvas = document.getElementById('jumpGraph');
-        const ctx = canvas.getContext('2d');
+        // --- SENSOR LOGIC ---
+        let isFreeFalling = false;
+        let startTime = 0;
+        let lastAcc = 9.8;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        document.getElementById('startBtn').onclick = () => {
-            if(typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission().then(r => { if(r==='granted') initSensor(); });
+        function playTone(freq, type) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        document.getElementById('startBtn').onclick = function() {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission().then(s => { 
+                    if(s==='granted') initSensor(); 
+                    else alert("Permission denied");
+                });
             } else { initSensor(); }
         };
 
         function initSensor() {
             if(sensorActive) return;
             sensorActive = true;
-            document.getElementById('startBtn').innerText = "LISTENING...";
-            document.getElementById('status').innerText = "READY";
-            
+            document.getElementById('startBtn').innerText = "ACTIVE";
+            document.getElementById('status').innerText = "READY TO THROW";
+            document.getElementById('status').style.color = "var(--primary)";
+            playTone(600, 'sine');
+
             window.addEventListener('devicemotion', (e) => {
                 let acc = e.accelerationIncludingGravity;
                 if(!acc) return;
                 
                 let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-                
-                // Store data for Graph (Limit to last 100 frames for performance)
-                accData.push(raw);
-                if(accData.length > 150) accData.shift(); 
-                drawGraph(); // Live Draw
+                lastAcc = (lastAcc * 0.5) + (raw * 0.5); // Filter
 
-                // Smooth Filter
-                lastAcc = (lastAcc * 0.5) + (raw * 0.5); 
                 let now = performance.now();
 
-                // Logic
+                // Detect Freefall (Gravity near 0)
                 if(lastAcc < 2.5 && !isFreeFalling) {
                     isFreeFalling = true;
                     startTime = now;
-                    document.getElementById('status').innerText = "AIRBORNE";
+                    document.getElementById('status').innerText = "FLYING!";
+                    document.getElementById('status').style.color = "#00b8ff";
                 }
 
+                // Detect Impact (High Gravity)
                 if(isFreeFalling && lastAcc > 15) {
                     let duration = (now - startTime) / 1000;
-                    if(duration > 0.25 && duration < 3.0) {
+                    
+                    if(duration > 0.25 && duration < 3.5) {
+                        // Physics: h = (g * t^2) / 8
                         let h = (9.81 * (duration**2)) / 8;
-                        finishJump(h, duration);
+                        
+                        // Result
+                        document.getElementById('height').innerText = h.toFixed(2);
+                        document.getElementById('lastJumpTime').innerText = new Date().toLocaleTimeString();
+                        document.getElementById('shareBtn').style.display = "inline-block";
+                        document.getElementById('status').innerText = "LANDED";
+                        
+                        // Feedback
+                        if(navigator.vibrate) navigator.vibrate(200);
+                        playTone(200, 'square');
+
+                        // Save Score
+                        if(h > myBest) {
+                            update(ref(db, 'leaderboard/' + currentUser.uid), {
+                                name: currentUser.displayName,
+                                score: h,
+                                uid: currentUser.uid,
+                                photo: currentUser.photoURL
+                            });
+                        }
+                    } else {
+                        document.getElementById('status').innerText = "TRY AGAIN";
                     }
                     isFreeFalling = false;
-                    document.getElementById('status').innerText = "READY";
                 }
             });
         }
 
-        function drawGraph() {
-            ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.beginPath();
-            ctx.strokeStyle = '#00ffcc';
-            ctx.lineWidth = 2;
-            
-            let step = canvas.width / 150;
-            
-            for(let i=0; i<accData.length; i++) {
-                // Map Gravity (0-30) to Canvas Height (100-0)
-                let y = 100 - (accData[i] / 30 * 100); 
-                if(i===0) ctx.moveTo(i*step, y);
-                else ctx.lineTo(i*step, y);
+        window.shareScore = async () => {
+            const score = document.getElementById('height').innerText;
+            const text = `🚀 New Record! I jumped ${score}m on Jump Pro. Can you beat me?`;
+            if (navigator.share) {
+                try { await navigator.share({ title: 'Jump Pro', text: text, url: window.location.href }); } catch(e){}
+            } else {
+                navigator.clipboard.writeText(text);
+                alert("Copied to clipboard!");
             }
-            ctx.stroke();
-        }
-
-        function finishJump(h, t) {
-            document.getElementById('height').innerText = h.toFixed(2);
-            document.getElementById('debugInfo').innerText = `Flight Time: ${t.toFixed(3)}s | Force: ${(lastAcc/9.8).toFixed(1)}G`;
-            
-            // Speak Result
-            if('speechSynthesis' in window) {
-                let msg = new SpeechSynthesisUtterance(h.toFixed(2) + " meters");
-                window.speechSynthesis.speak(msg);
-            }
-
-            if(h > myBest) {
-                const updates = {};
-                updates['leaderboard/' + currentUser.uid + '/score'] = h;
-                updates['leaderboard/' + currentUser.uid + '/name'] = currentUser.displayName;
-                update(ref(db), updates);
-            }
-        }
+        };
     </script>
 </body>
 </html>
