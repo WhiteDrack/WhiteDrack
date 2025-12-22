@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Ultimate</title>
+    <title>Jump Pro - Final</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,129 +13,128 @@
         :root { --primary: #00ff88; --secondary: #00b8ff; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --danger: #ff4444; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
         
-        /* Layout */
-        .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 90px; }
-        .active { display: flex; animation: fadeIn 0.3s ease; }
-
-        /* Cards */
-        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; margin-bottom: 15px; }
-        .card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%); pointer-events: none; }
-
-        /* Navigation */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(22, 27, 34, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
-        .nav-item { background: none; border: none; color: #8b949e; font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: 0.2s; }
-        .nav-item i { font-size: 22px; margin-bottom: 2px; }
-        .nav-item.active-nav { color: var(--primary); transform: translateY(-2px); }
-        .nav-item.active-nav i { filter: drop-shadow(0 0 5px var(--primary)); }
-
-        /* Elements */
-        .btn-main { background: linear-gradient(135deg, var(--primary), #00cc6a); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; letter-spacing: 1px; width: 100%; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3); }
-        .btn-main:active { transform: scale(0.98); }
-        
-        /* Jump Screen */
-        #height { font-size: 80px; font-weight: 900; background: linear-gradient(to bottom, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 5px 0; font-variant-numeric: tabular-nums; line-height: 1; }
-        .rank-badge { background: #21262d; border: 1px solid var(--secondary); color: var(--secondary); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
-
-        /* Leaderboard */
-        .player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; }
-        .rank-circle { width: 28px; height: 28px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-right: 12px; color: var(--primary); font-size: 12px; }
-        .top-rank { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; }
-
-        /* Inputs */
-        select { background: #0d1117; color: #fff; border: 1px solid #30363d; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 16px; }
-
-        /* Modal */
-        #safetyModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px); }
-        
+        /* Layout & Animation */
+        .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
+        .active { display: flex; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modern Cards */
+        .card { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; overflow: hidden; margin-bottom: 15px; }
+        .card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 60%); pointer-events: none; }
+
+        /* Navigation Bar */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: rgba(22, 27, 34, 0.95); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; padding-bottom: 10px; }
+        .nav-item { background: none; border: none; color: #8b949e; font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: 0.2s; }
+        .nav-item i { font-size: 24px; }
+        .nav-item.active-nav { color: var(--primary); transform: translateY(-3px); }
+        .nav-item.active-nav i { filter: drop-shadow(0 0 8px var(--primary)); }
+
+        /* UI Elements */
+        .btn-main { background: linear-gradient(135deg, var(--primary), #00cc6a); color: #000; border: none; padding: 18px; border-radius: 16px; font-weight: 800; letter-spacing: 1px; width: 100%; cursor: pointer; transition: transform 0.1s; box-shadow: 0 5px 20px rgba(0, 255, 136, 0.2); font-size: 16px; }
+        .btn-main:active { transform: scale(0.96); }
+        
+        #height { font-size: 85px; font-weight: 900; background: linear-gradient(to bottom, #fff, #999); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 5px 0; font-variant-numeric: tabular-nums; line-height: 1; }
+        .rank-badge { background: #21262d; border: 1px solid var(--secondary); color: var(--secondary); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 15px; letter-spacing: 1px; }
+
+        /* Leaderboard Styling */
+        .player-row { display: flex; align-items: center; padding: 14px 16px; background: #21262d; margin-bottom: 10px; border-radius: 16px; border: 1px solid #30363d; }
+        .rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-right: 12px; color: var(--primary); font-size: 14px; }
+        .top-rank { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+
+        select { background: #0d1117; color: #fff; border: 1px solid #30363d; padding: 12px; border-radius: 10px; width: 100%; margin-top: 10px; font-size: 16px; outline: none; }
+
+        /* Safety Modal */
+        #safetyModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(8px); }
     </style>
 </head>
 <body>
 
     <div id="safetyModal">
-        <i class="fas fa-biohazard" style="font-size: 50px; color: var(--danger); margin-bottom: 20px;"></i>
-        <h2 style="color: #fff;">ANTI-CHEAT ACTIVE</h2>
-        <p style="color: #ccc; line-height: 1.6; font-size: 14px;">
-            1. Hold Phone Tight.<br>
-            2. Jump on a SOFT surface (Bed/Sofa).<br>
-            3. <b>Phone must SPIN to count!</b><br>
-            (Fake hand waves will be rejected)
+        <div style="background: rgba(255, 68, 68, 0.1); padding: 20px; border-radius: 50%; margin-bottom: 20px;">
+            <i class="fas fa-shield-alt" style="font-size: 50px; color: var(--danger);"></i>
+        </div>
+        <h2 style="color: #fff; margin-bottom: 5px;">ANTI-CHEAT ENABLED</h2>
+        <p style="color: #ccc; line-height: 1.6; font-size: 15px; max-width: 300px;">
+            1. Hold your phone <b>TIGHT</b>.<br>
+            2. Jump on a <b>SOFT</b> surface (Bed).<br>
+            3. Phone must <b>SPIN</b> to count.<br>
+            <span style="font-size: 12px; color: #777;">(Fake hand waves will be blocked)</span>
         </p>
-        <button onclick="closeSafety()" class="btn-main" style="margin-top: 30px; max-width: 200px;">I AGREE</button>
+        <button onclick="closeSafety()" class="btn-main" style="margin-top: 30px; max-width: 200px;">I UNDERSTAND</button>
     </div>
 
     <div id="loginPage" class="page active">
-        <div class="card" style="margin-top: 80px;">
-            <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary); margin-bottom:20px;"></i>
-            <h2>Jump Pro</h2>
-            <p style="color: #8b949e;">Ultimate Phone Throwing Game</p>
-            <button onclick="login()" class="btn-main" style="background: #fff; color:#333; margin-top: 20px;"><i class="fab fa-google"></i> Login</button>
+        <div class="card" style="margin-top: 80px; padding-bottom: 40px;">
+            <i class="fas fa-rocket" style="font-size: 60px; color: var(--primary); margin-bottom:20px; filter: drop-shadow(0 0 20px rgba(0,255,136,0.4));"></i>
+            <h1>Jump Pro</h1>
+            <p style="color: #8b949e; margin-bottom: 30px;">The Ultimate Throwing Game</p>
+            <button onclick="login()" class="btn-main" style="background: #fff; color:#333;"><i class="fab fa-google"></i> Login with Google</button>
         </div>
     </div>
 
     <div id="jumpPage" class="page">
         <div class="card">
-            <div id="rankDisplay" class="rank-badge">NO JUMP YET</div>
+            <div id="rankDisplay" class="rank-badge">READY</div>
             <div id="height">0.00</div>
-            <div style="color: #484f58; font-size: 12px; font-weight: 700;">METERS</div>
-            <div id="msgDisplay" style="color: #888; font-size: 12px; margin-top: 5px; height: 15px;"></div>
+            <div style="color: #484f58; font-size: 12px; font-weight: 800; letter-spacing: 2px;">METERS</div>
+            <div id="msgDisplay" style="color: #888; font-size: 13px; margin-top: 10px; min-height: 20px;">Throw straight up!</div>
             
-            <div style="display: flex; gap: 10px; margin-top: 25px;">
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
                 <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
-                <button id="shareBtn" onclick="shareScore()" class="btn-main" style="width: 60px; display:none; background: #333; color: #fff;"><i class="fas fa-share-alt"></i></button>
+                <button id="shareBtn" onclick="shareScore()" class="btn-main" style="width: 70px; display:none; background: #21262d; color: #fff;"><i class="fas fa-share-alt"></i></button>
             </div>
         </div>
-        <div style="font-size: 10px; color: #444; margin-top: 20px;">
-            Last Spin: <span id="spinVal">0</span> RPM
+        <div style="font-size: 11px; color: #555; margin-top: 20px;">
+            Spin Rate: <span id="spinVal" style="color: var(--secondary);">0</span> RPM
         </div>
     </div>
 
     <div id="leaderboardPage" class="page">
         <div style="width:100%; max-width: 400px; display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2>Global Top 30</h2>
-            <i class="fas fa-globe-americas" style="color: #00b8ff;"></i>
+            <i class="fas fa-globe" style="color: var(--secondary); font-size: 20px;"></i>
         </div>
         <div id="lbList" style="width: 100%; max-width: 400px;">
-            <p style="color:#666">Loading...</p>
+            <p style="text-align:center; color:#666;">Loading Rankings...</p>
         </div>
     </div>
 
     <div id="profilePage" class="page">
         <div class="card">
-            <img id="pImg" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--primary);" src="">
-            <h3 id="pName" style="margin: 10px 0;">User</h3>
+            <img id="pImg" style="width:90px; height:90px; border-radius:50%; border:3px solid var(--primary); padding: 3px;" src="">
+            <h3 id="pName" style="margin: 15px 0 5px;">User</h3>
             
-            <div style="text-align: left; margin-bottom: 15px;">
-                <label style="font-size: 12px; color: #888;">Represent Your Country:</label>
+            <div style="text-align: left; margin-bottom: 15px; width: 100%;">
+                <label style="font-size: 11px; color: #888; text-transform: uppercase; font-weight: bold;">Your Flag</label>
                 <select id="countrySelect" onchange="updateCountry()">
                     <option value="🌍">🌍 World</option>
                     <option value="🇮🇳">🇮🇳 India</option>
                     <option value="🇺🇸">🇺🇸 USA</option>
-                    <option value="🇬🇧">🇬🇧 UK</option>
                     <option value="🇦🇪">🇦🇪 UAE</option>
+                    <option value="🇬🇧">🇬🇧 UK</option>
                     <option value="🇨🇦">🇨🇦 Canada</option>
                     <option value="🇯🇵">🇯🇵 Japan</option>
                     <option value="🇧🇷">🇧🇷 Brazil</option>
                 </select>
             </div>
 
-            <div style="background: #21262d; padding: 15px; border-radius: 12px;">
-                <span style="font-size:10px; color:#8b949e;">PERSONAL BEST</span><br>
-                <span id="pBest" style="font-size:30px; font-weight:800; color:var(--primary);">0.00m</span>
+            <div style="background: #21262d; padding: 20px; border-radius: 16px; margin-bottom: 20px;">
+                <span style="font-size:11px; color:#8b949e; letter-spacing: 1px;">PERSONAL BEST</span><br>
+                <span id="pBest" style="font-size:32px; font-weight:900; color:var(--primary);">0.00m</span>
             </div>
             
-            <div style="margin-top: 20px; width: 100%; height: 150px;">
+            <div style="width: 100%; height: 160px;">
                 <canvas id="jumpChart"></canvas>
             </div>
 
-            <button onclick="logout()" style="margin-top:20px; color:#f85149; background:none; border:none; cursor:pointer;">Logout</button>
+            <button onclick="logout()" style="margin-top:25px; color:#f85149; background:none; border:none; cursor:pointer; font-weight: 600;">Sign Out</button>
         </div>
     </div>
 
     <nav class="nav-bar" id="bottomNav" style="display:none;">
-        <button class="nav-item active-nav" onclick="navTo('jumpPage', this)"><i class="fas fa-bolt"></i><span>JUMP</span></button>
-        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-trophy"></i><span>RANK</span></button>
-        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user-astronaut"></i><span>ME</span></button>
+        <button class="nav-item active-nav" onclick="navTo('jumpPage', this)"><i class="fas fa-bolt"></i><span>THROW</span></button>
+        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-trophy"></i><span>RANKS</span></button>
+        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user-astronaut"></i><span>PROFILE</span></button>
     </nav>
 
     <script type="module">
@@ -143,6 +142,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, query, orderByChild, limitToLast, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // CONFIG (Replace with your own if needed)
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
             authDomain: "white-drack-fd1ee.firebaseapp.com",
@@ -164,7 +164,7 @@
         let sensorActive = false;
         let chartInstance = null;
 
-        // --- AUTH & SETUP ---
+        // AUTH
         window.login = () => signInWithPopup(auth, provider);
         window.logout = () => signOut(auth);
         window.closeSafety = () => document.getElementById('safetyModal').style.display = 'none';
@@ -182,6 +182,7 @@
             }
         });
 
+        // NAVIGATION
         window.navTo = (pageId, el) => {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -193,12 +194,11 @@
             if(pageId === 'profilePage') renderChart();
         };
 
+        // USER DATA & FLAGS
         function loadUserData(user) {
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pImg').src = user.photoURL;
-            
-            const userRef = ref(db, 'leaderboard/' + user.uid);
-            onValue(userRef, (s) => {
+            onValue(ref(db, 'leaderboard/' + user.uid), (s) => {
                 if(s.exists()) {
                     const data = s.val();
                     myBest = parseFloat(data.score) || 0;
@@ -214,44 +214,48 @@
             update(ref(db, 'leaderboard/' + currentUser.uid), { country: newFlag });
         };
 
-        // --- LEADERBOARD (With Flags) ---
+        // --- FIXED LEADERBOARD LOGIC (Correct Loop) ---
         function loadLeaderboard() {
             const lbList = document.getElementById('lbList');
-            lbList.innerHTML = "<p style='padding:10px; color:#777'>Refreshing Ranks...</p>";
+            lbList.innerHTML = "<p style='text-align:center; color:#666; padding:20px;'>Refreshing...</p>";
             
             const q = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(30));
             onValue(q, (snapshot) => {
-                if (!snapshot.exists()) { lbList.innerHTML = "<p>No Data</p>"; return; }
+                if (!snapshot.exists()) { lbList.innerHTML = "<p>No players yet.</p>"; return; }
                 
                 let players = [];
                 snapshot.forEach(child => players.push(child.val()));
-                players.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+                players.sort((a, b) => parseFloat(b.score) - parseFloat(a.score)); // Sort High to Low
 
-                let html = "";
+                // ✅ The Fix: Build String first, then update DOM once
+                let allHtml = "";
                 players.forEach((p, i) => {
                     let rankClass = i < 3 ? 'top-rank' : '';
                     let flag = p.country || "🌍";
-                    html += `
+                    let name = p.name ? p.name.split(' ')[0] : 'Unknown';
+                    let score = parseFloat(p.score).toFixed(2);
+                    
+                    allHtml += `
                         <div class="player-row" style="animation: fadeIn 0.3s ease ${i*0.05}s forwards; opacity:0;">
                             <div class="rank-circle ${rankClass}">${i+1}</div>
                             <div style="flex-grow:1; text-align:left;">
-                                <div style="font-weight:600; font-size:14px;">${flag} ${p.name.split(' ')[0]}</div>
+                                <div style="font-weight:600; font-size:14px; color:#fff;">${flag} ${name}</div>
                             </div>
-                            <div style="font-weight:bold; color:var(--primary);">${parseFloat(p.score).toFixed(2)}m</div>
+                            <div style="font-weight:bold; color:var(--primary); font-size:15px;">${score}m</div>
                         </div>`;
                 });
-                lbList.innerHTML = html;
+                
+                lbList.innerHTML = allHtml;
             });
         }
 
-        // --- PHYSICS & ANTI-CHEAT ---
+        // --- SENSOR, PHYSICS & ANTI-CHEAT ---
         let isFreeFalling = false;
         let startTime = 0;
         let lastAcc = 9.8;
-        let maxSpin = 0; // To track rotation speed
-
-        // Sound FX
+        let maxSpin = 0;
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
         function playTone(freq, type) {
             if(audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
@@ -267,7 +271,7 @@
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 DeviceMotionEvent.requestPermission().then(s => { 
                     if(s==='granted') initSensor(); 
-                    else alert("Permission Denied: Can't Measure Jump");
+                    else alert("Sensor Permission Denied");
                 });
             } else { initSensor(); }
         };
@@ -275,55 +279,51 @@
         function initSensor() {
             if(sensorActive) return;
             sensorActive = true;
-            document.getElementById('startBtn').innerText = "THROW NOW";
-            document.getElementById('rankDisplay').innerText = "SENSOR ACTIVE";
+            document.getElementById('startBtn').innerText = "ACTIVE - THROW NOW";
+            document.getElementById('rankDisplay').innerText = "SENSOR ON";
             document.getElementById('rankDisplay').style.color = "#00ff88";
             playTone(600, 'sine');
 
             window.addEventListener('devicemotion', (e) => {
-                // 1. Acceleration Logic (Height)
                 let acc = e.accelerationIncludingGravity;
                 if(!acc) return;
+                
+                // 1. Acceleration
                 let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
                 lastAcc = (lastAcc * 0.5) + (raw * 0.5);
 
-                // 2. Rotation Logic (Anti-Cheat)
+                // 2. Anti-Cheat: Rotation
                 let rot = e.rotationRate;
                 if(rot) {
                     let totalRot = Math.abs(rot.alpha) + Math.abs(rot.beta) + Math.abs(rot.gamma);
-                    if(isFreeFalling) {
-                        maxSpin = Math.max(maxSpin, totalRot);
-                    }
+                    if(isFreeFalling) maxSpin = Math.max(maxSpin, totalRot);
                 }
 
                 let now = performance.now();
 
-                // Detect Freefall
+                // Freefall Detect
                 if(lastAcc < 2.5 && !isFreeFalling) {
                     isFreeFalling = true;
                     startTime = now;
-                    maxSpin = 0; // Reset spin counter
+                    maxSpin = 0;
                     document.getElementById('rankDisplay').innerText = "FLYING...";
                     document.getElementById('rankDisplay').style.color = "#00b8ff";
                 }
 
-                // Detect Landing
+                // Landing Detect
                 if(isFreeFalling && lastAcc > 15) {
                     let duration = (now - startTime) / 1000;
                     
-                    // Filter: Must be > 0.3s and < 3.5s
                     if(duration > 0.3 && duration < 3.5) {
-                        
-                        // 🔥 Anti-Cheat Check: Did it spin?
-                        // A real throw has > 100-200 degrees/sec rotation usually.
-                        // A fake hand wave often has < 50.
+                        // Anti-Cheat Check: Must spin > 100 deg/sec
                         if(maxSpin < 100) {
-                            document.getElementById('rankDisplay').innerText = "FAKE JUMP?";
-                            document.getElementById('msgDisplay').innerText = "Phone didn't rotate. Try throwing it.";
+                            document.getElementById('rankDisplay').innerText = "FAKE JUMP";
+                            document.getElementById('msgDisplay').innerText = "Phone didn't spin! Throw properly.";
+                            document.getElementById('rankDisplay').style.color = "var(--danger)";
+                            playTone(150, 'sawtooth');
                         } else {
-                            processValidJump(duration, maxSpin);
+                            processJump(duration, maxSpin);
                         }
-
                     } else {
                         document.getElementById('rankDisplay').innerText = "TOO FAST";
                     }
@@ -332,40 +332,33 @@
             });
         }
 
-        function processValidJump(duration, spin) {
-            // Physics Formula: h = (g * t^2) / 8
+        function processJump(duration, spin) {
             let h = (9.81 * (duration**2)) / 8;
-            
-            // Dynamic Ranks
             let rank = getRank(h);
-            
-            // UI Update
+
+            // Update UI
             document.getElementById('height').innerText = h.toFixed(2);
             document.getElementById('rankDisplay').innerText = rank.title;
             document.getElementById('rankDisplay').style.color = rank.color;
             document.getElementById('msgDisplay').innerText = rank.msg;
-            document.getElementById('spinVal').innerText = Math.floor(spin / 6); // Approx RPM
-            document.getElementById('shareBtn').style.display = 'inline-block';
-
-            // Feedback
+            document.getElementById('spinVal').innerText = Math.floor(spin / 6);
+            document.getElementById('shareBtn').style.display = "inline-block";
+            
+            // Success Feedback
             if(navigator.vibrate) navigator.vibrate(200);
             playTone(200, 'square');
 
-            // 🎉 CONFETTI if new record
+            // 🎉 CONFETTI & High Score
             if(h > myBest) {
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00ff88', '#00b8ff'] });
                 playTone(800, 'triangle');
             }
 
-            // Save to DB (Score + History)
+            // Save Data
             const userRef = ref(db, 'leaderboard/' + currentUser.uid);
-            
-            // Fetch current history first
             get(userRef).then((snap) => {
                 let currentHistory = snap.val()?.history || [];
-                // Add new jump to start of array
                 currentHistory.unshift(h);
-                // Keep only last 10
                 if(currentHistory.length > 10) currentHistory.pop();
 
                 const updates = {
@@ -374,35 +367,29 @@
                     lastJumpTime: Date.now()
                 };
 
-                // Only update score if it's a High Score
                 if(h > myBest) {
                     updates.score = h;
                     updates.name = currentUser.displayName;
                 }
-                
                 update(userRef, updates);
-                // Also update local chart if on profile
                 if(chartInstance) updateChart(currentHistory);
             });
         }
 
         function getRank(h) {
-            if(h < 0.5) return { title: "🦗 GRASSHOPPER", msg: "Jump higher!", color: "#888" };
-            if(h < 1.0) return { title: "🐇 RABBIT", msg: "Not bad!", color: "#fff" };
-            if(h < 1.5) return { title: "🦘 KANGAROO", msg: "Getting serious.", color: "#00b8ff" };
+            if(h < 0.5) return { title: "🦗 GRASSHOPPER", msg: "Jump higher than a cat!", color: "#888" };
+            if(h < 1.0) return { title: "🐇 RABBIT", msg: "Higher than a table!", color: "#fff" };
+            if(h < 1.5) return { title: "🦘 KANGAROO", msg: "Getting serious now.", color: "#00b8ff" };
             if(h < 2.0) return { title: "🥷 NINJA", msg: "Impressive airtime!", color: "#00ff88" };
             if(h < 3.0) return { title: "🚀 ROCKET", msg: "Insane height!", color: "#ffaa00" };
-            return { title: "👽 ALIEN", msg: "Gravity doesn't apply to you.", color: "#ff4444" };
+            return { title: "👽 ALIEN", msg: "NASA wants your location.", color: "#ff4444" };
         }
 
-        // --- CHART.JS LOGIC ---
+        // --- CHART JS ---
         function renderChart() {
             const ctx = document.getElementById('jumpChart').getContext('2d');
-            
-            // Get history from DB
             get(ref(db, 'leaderboard/' + currentUser.uid)).then(s => {
                 let data = s.val()?.history || [];
-                // Reverse to show oldest to newest on graph
                 let chartData = [...data].reverse(); 
                 
                 if(chartInstance) chartInstance.destroy();
@@ -410,15 +397,16 @@
                 chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: chartData.map((_, i) => i + 1), // 1, 2, 3...
+                        labels: chartData.map((_, i) => i + 1),
                         datasets: [{
-                            label: 'Recent Jumps (m)',
+                            label: 'History (m)',
                             data: chartData,
                             borderColor: '#00ff88',
                             backgroundColor: 'rgba(0, 255, 136, 0.1)',
                             borderWidth: 2,
                             tension: 0.4,
-                            fill: true
+                            fill: true,
+                            pointRadius: 3
                         }]
                     },
                     options: {
@@ -436,10 +424,11 @@
 
         window.shareScore = async () => {
             const h = document.getElementById('height').innerText;
-            const text = `🚀 I just jumped ${h} meters on Jump Pro! Can you beat me?`;
+            const text = `🚀 I just jumped ${h}m on Jump Pro! Beat me:`;
             try { await navigator.share({ title: 'Jump Pro', text: text, url: window.location.href }); } 
-            catch(e) { alert("Score copied!"); navigator.clipboard.writeText(text); }
+            catch(e) { navigator.clipboard.writeText(text); alert("Link Copied!"); }
         };
     </script>
 </body>
 </html>
+
