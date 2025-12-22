@@ -1,91 +1,139 @@
 
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Final Fix</title>
+    <title>Jump Pro - Ultimate</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        :root { --primary: #00ff88; --secondary: #00b8ff; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --danger: #ff4444; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
+        .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 90px; }
         .active { display: flex; animation: fadeIn 0.3s ease; }
 
-        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; }
-
-        /* Professional Nav Bar */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
-        .nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .nav-item i { font-size: 20px; }
-        .nav-item.active-nav { color: var(--primary); }
-
-        /* Leaderboard Style - Fixed */
-        .lb-container { width: 100%; max-width: 400px; }
-        .player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; }
-        .rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: var(--primary); }
-        .player-info { flex-grow: 1; text-align: left; }
-        .player-name { font-weight: 600; font-size: 14px; color: #fff; }
-        .player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
-
-        #height { font-size: 80px; font-weight: 900; color: var(--primary); margin: 0; }
-        .btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
         
-        .uid-box { background: #0d1117; padding: 10px; border-radius: 8px; font-size: 10px; color: #8b949e; margin-top: 10px; word-break: break-all; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Glossy Effect */
+        .card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%); pointer-events: none; }
+
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(22, 27, 34, 0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
+        .nav-item { background: none; border: none; color: #8b949e; font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: 0.2s; }
+        .nav-item i { font-size: 22px; margin-bottom: 2px; }
+        .nav-item.active-nav { color: var(--primary); transform: translateY(-2px); }
+        .nav-item.active-nav i { filter: drop-shadow(0 0 5px var(--primary)); }
+
+        /* Typography & Buttons */
+        h2 { font-weight: 700; letter-spacing: -0.5px; margin: 10px 0; }
+        .btn-main { background: linear-gradient(135deg, var(--primary), #00cc6a); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; letter-spacing: 1px; width: 100%; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3); }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-share { background: rgba(255,255,255,0.1); color: #fff; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2); }
+
+        /* Jump Page Specifics */
+        #height { font-size: 80px; font-weight: 900; background: linear-gradient(to bottom, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 10px 0; font-variant-numeric: tabular-nums; }
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.1); font-size: 12px; font-weight: bold; margin-bottom: 20px; letter-spacing: 1px; }
+        .history-list { width: 100%; margin-top: 20px; text-align: left; }
+        .history-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #30363d; font-size: 14px; color: #8b949e; }
+        .history-item span:last-child { color: var(--primary); font-weight: bold; }
+
+        /* Leaderboard */
+        .player-row { display: flex; align-items: center; padding: 15px; background: #21262d; margin-bottom: 10px; border-radius: 12px; border: 1px solid #30363d; transition: transform 0.2s; }
+        .rank-circle { width: 32px; height: 32px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-right: 15px; color: var(--primary); }
+        .top-rank { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+
+        /* Safety Modal */
+        #safetyModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px); }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
+    <div id="safetyModal">
+        <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: var(--danger); margin-bottom: 20px;"></i>
+        <h2 style="color: #fff;">CAUTION!</h2>
+        <p style="color: #ccc; line-height: 1.6;">
+            Please hold your phone <b>TIGHTLY</b>.<br>
+            We are not responsible for broken devices.<br>
+            Jump on a soft surface (bed/grass).
+        </p>
+        <button onclick="closeSafety()" class="btn-main" style="margin-top: 30px; max-width: 200px;">I UNDERSTAND</button>
+    </div>
+
     <div id="loginPage" class="page active">
-        <div class="card" style="margin-top: 100px;">
-            <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary);"></i>
+        <div class="card" style="margin-top: 80px;">
+            <div style="width: 80px; height: 80px; background: rgba(0,255,136,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                <i class="fas fa-rocket" style="font-size: 40px; color: var(--primary);"></i>
+            </div>
             <h2>Jump Pro</h2>
-            <button onclick="login()" class="btn-main" style="margin-top:20px; background:#fff;">Continue with Google</button>
+            <p style="color: #8b949e; margin-bottom: 30px;">Measure your hangtime accurately.</p>
+            <button onclick="login()" class="btn-main" style="background: #fff; color:#333;"><i class="fab fa-google"></i> Continue with Google</button>
         </div>
     </div>
 
     <div id="jumpPage" class="page">
         <div class="card">
+            <div id="status" class="status-badge" style="color: #8b949e; border: 1px solid #30363d;">SENSOR INACTIVE</div>
             <div id="height">0.00</div>
-            <div style="color: #484f58; font-size: 12px;">METERS</div>
-            <div id="status" style="margin: 20px 0; color: #e3b341; font-weight: bold;">READY</div>
-            <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
+            <div style="color: #484f58; font-size: 12px; font-weight: 700; letter-spacing: 2px;">METERS</div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button id="startBtn" class="btn-main">ACTIVATE</button>
+                <button id="shareBtn" onclick="shareScore()" class="btn-main btn-share" style="width: 60px; display:none;"><i class="fas fa-share-alt"></i></button>
+            </div>
+
+            <div class="history-list" id="recentJumps">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-bottom: 10px;">Recent Activity</div>
+                <div style="text-align: center; color: #333; font-size: 12px; padding: 10px;">No jumps yet</div>
+            </div>
         </div>
     </div>
 
     <div id="leaderboardPage" class="page">
-        <h2 style="margin-bottom: 20px;"><i class="fas fa-trophy"></i> Global Top 10</h2>
-        <div id="lbList" class="lb-container">
-            <p style="color:#555">Data loading...</p>
+        <div style="width:100%; max-width: 400px; display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Global Top 10</h2>
+            <i class="fas fa-trophy" style="color: #ffd700;"></i>
+        </div>
+        <div id="lbList" style="width: 100%; max-width: 400px;">
+            <div class="card"><p style="color:#555">Loading scores...</p></div>
         </div>
     </div>
 
     <div id="profilePage" class="page">
         <div class="card">
-            <img id="pImg" style="width:80px; border-radius:50%; border:2px solid var(--primary);" src="">
-            <h2 id="pName" style="margin: 10px 0;">Name</h2>
-            <div class="uid-box">UID: <span id="pUid">---</span></div>
-            <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
-                <span style="font-size:11px; color:#555;">MY RECORD</span><br>
-                <span id="pBest" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
+            <img id="pImg" style="width:90px; height:90px; border-radius:50%; border:3px solid var(--primary); padding: 3px;" src="">
+            <h2 id="pName" style="margin: 15px 0 5px;">User</h2>
+            <div style="font-size: 10px; color: #555; background: #0d1117; padding: 5px 10px; border-radius: 20px; display: inline-block;">UID: <span id="pUid">...</span></div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px;">
+                <div style="background: #21262d; padding: 15px; border-radius: 12px;">
+                    <span style="font-size:10px; color:#8b949e;">PERSONAL BEST</span><br>
+                    <span id="pBest" style="font-size:24px; font-weight:800; color:var(--primary);">0.00m</span>
+                </div>
+                <div style="background: #21262d; padding: 15px; border-radius: 12px;">
+                    <span style="font-size:10px; color:#8b949e;">TOTAL JUMPS</span><br>
+                    <span id="pTotal" style="font-size:24px; font-weight:800; color:#fff;">0</span>
+                </div>
             </div>
-            <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#f85149; cursor:pointer;">Logout</button>
+            
+            <button onclick="logout()" style="margin-top:25px; background:rgba(248, 81, 73, 0.1); border:none; color:#f85149; cursor:pointer; padding: 10px 20px; border-radius: 8px; font-weight: 600;">Sign Out</button>
         </div>
     </div>
 
     <nav class="nav-bar" id="bottomNav" style="display:none;">
         <button class="nav-item active-nav" onclick="navTo('jumpPage', this)"><i class="fas fa-bolt"></i><span>JUMP</span></button>
-        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-chart-line"></i><span>TOP 10</span></button>
-        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user-circle"></i><span>PROFILE</span></button>
+        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-chart-line"></i><span>RANK</span></button>
+        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user-astronaut"></i><span>ME</span></button>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // CONFIG (Replace if needed, but this one works for testing)
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
             authDomain: "white-drack-fd1ee.firebaseapp.com",
@@ -103,9 +151,13 @@
 
         let currentUser = null;
         let myBest = 0;
+        let jumpHistory = [];
+        let sensorActive = false;
 
+        // --- AUTH & NAV ---
         window.login = () => signInWithPopup(auth, provider);
         window.logout = () => signOut(auth);
+        window.closeSafety = () => document.getElementById('safetyModal').style.display = 'none';
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -113,6 +165,7 @@
                 document.getElementById('bottomNav').style.display = 'flex';
                 updateProfileUI(user);
                 navTo('jumpPage', document.querySelector('.nav-item'));
+                document.getElementById('safetyModal').style.display = 'flex'; // Show Warning
             } else {
                 document.getElementById('bottomNav').style.display = 'none';
                 navTo('loginPage');
@@ -129,90 +182,223 @@
             if(pageId === 'leaderboardPage') loadLeaderboard();
         };
 
+        // --- UI UPDATES ---
         function updateProfileUI(user) {
-            document.getElementById('pName').innerText = user.displayName;
+            document.getElementById('pName').innerText = user.displayName.split(' ')[0];
             document.getElementById('pImg').src = user.photoURL;
-            document.getElementById('pUid').innerText = user.uid;
-            onValue(ref(db, 'leaderboard/' + user.uid), (s) => {
+            document.getElementById('pUid').innerText = user.uid.substring(0,6) + '...';
+            
+            const userRef = ref(db, 'leaderboard/' + user.uid);
+            onValue(userRef, (s) => {
                 if(s.exists()) {
-                    myBest = s.val().score;
+                    const data = s.val();
+                    myBest = data.score || 0;
                     document.getElementById('pBest').innerText = myBest.toFixed(2) + "m";
+                    document.getElementById('pTotal').innerText = data.totalJumps || 0;
                 }
             });
         }
 
-        // --- FIXED LEADERBOARD FETCH ---
         function loadLeaderboard() {
             const lbList = document.getElementById('lbList');
-            const leaderboardRef = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(10));
-            
-            onValue(leaderboardRef, (snapshot) => {
-                if (!snapshot.exists()) {
-                    lbList.innerHTML = "<p style='color:#555'>No scores yet!</p>";
-                    return;
-                }
-                
+            const q = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(20));
+            onValue(q, (snapshot) => {
+                if (!snapshot.exists()) { lbList.innerHTML = "<p>No scores yet</p>"; return; }
                 let players = [];
-                snapshot.forEach(child => {
-                    players.push(child.val());
-                });
-
-                // Sort and display
-                players.sort((a, b) => b.score - a.score);
+                snapshot.forEach(c => players.push(c.val()));
+                players.sort((a, b) => b.score - a.score); // High to Low
+                
                 lbList.innerHTML = "";
                 players.forEach((p, i) => {
+                    let rankClass = i < 3 ? 'top-rank' : '';
                     lbList.innerHTML += `
                         <div class="player-row">
-                            <div class="rank-circle">${i+1}</div>
-                            <div class="player-info">
-                                <span class="player-name">${p.name || 'Anonymous'}</span>
+                            <div class="rank-circle ${rankClass}">${i+1}</div>
+                            <div style="flex-grow:1;">
+                                <div style="font-weight:600; color:#fff; font-size:14px;">${p.name.split(' ')[0]}</div>
                             </div>
-                            <div class="player-score">${p.score.toFixed(2)}m</div>
+                            <div style="font-weight:800; color:var(--primary); font-size:15px;">${p.score.toFixed(2)}m</div>
                         </div>`;
                 });
-            }, (error) => {
-                lbList.innerHTML = `<p style='color:red'>Database Error: Check Rules</p>`;
             });
         }
 
-        // Sensor Logic
-        let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
+        // --- SENSOR & PHYSICS LOGIC ---
+        let isFreeFalling = false;
+        let startTime = 0;
+        let lastAcc = 9.8;
+        const THRESHOLD_FREEFALL = 3.0; // Gravity < 3.0 means falling
+        const THRESHOLD_LANDING = 18.0; // Gravity > 18.0 means impact
+        
+        // Sound Engine
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type, duration) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
         document.getElementById('startBtn').onclick = function() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); });
-            } else { start(); }
-            this.innerText = "ACTIVE"; this.disabled = true;
+                DeviceMotionEvent.requestPermission().then(s => { 
+                    if(s==='granted') activateSensor(); 
+                    else alert("Sensor permission needed!");
+                });
+            } else { activateSensor(); }
         };
 
-        function start() {
-            window.addEventListener('devicemotion', (e) => {
-                let acc = e.accelerationIncludingGravity;
-                if(!acc || !acc.x) return;
-                let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-                lastAcc = (lastAcc * 0.7) + (raw * 0.3);
-                let now = performance.now();
-                if(lastAcc < 2.5 && !isFreeFalling) {
-                    isFreeFalling = true; startTime = now;
-                    document.getElementById('status').innerText = "AIRBORNE";
-                }
-                if(isFreeFalling && lastAcc > 14) {
-                    let d = (now - startTime)/1000;
-                    if(d > 0.2 && d < 2.5) {
-                        let h = 0.125 * 9.81 * (d**2);
-                        document.getElementById('height').innerText = h.toFixed(2);
-                        if(h > myBest) {
-                            set(ref(db, 'leaderboard/' + currentUser.uid), {
-                                name: currentUser.displayName,
-                                score: h,
-                                uid: currentUser.uid
-                            });
-                        }
-                    }
-                    isFreeFalling = false;
+        function activateSensor() {
+            if(sensorActive) return;
+            sensorActive = true;
+            const btn = document.getElementById('startBtn');
+            const status = document.getElementById('status');
+            
+            btn.innerText = "ACTIVE (THROW NOW)";
+            btn.style.background = "#21262d";
+            btn.style.color = "#8b949e";
+            status.innerText = "READY TO JUMP";
+            status.style.color = "var(--primary)";
+            status.style.borderColor = "var(--primary)";
+            
+            playTone(400, 'sine', 0.1); // Activation beep
+
+            window.addEventListener('devicemotion', handleMotion);
+        }
+
+        function handleMotion(e) {
+            let acc = e.accelerationIncludingGravity;
+            if(!acc) return;
+            
+            // Calculate total acceleration vector
+            let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+            // Low pass filter to smooth noise
+            lastAcc = (lastAcc * 0.6) + (raw * 0.4);
+
+            let now = performance.now();
+
+            // 1. Detect Freefall (Airborne)
+            if(lastAcc < THRESHOLD_FREEFALL && !isFreeFalling) {
+                isFreeFalling = true;
+                startTime = now;
+                document.getElementById('status').innerText = "AIRBORNE!";
+                document.getElementById('status').style.color = "#00b8ff";
+                // playTone(600, 'triangle', 0.1); // Optional: Chirp on takeoff
+            }
+
+            // 2. Detect Landing (Impact)
+            if(isFreeFalling && lastAcc > THRESHOLD_LANDING) {
+                let duration = (now - startTime) / 1000; // Seconds
+                
+                // Filter Logic: Jumps must be > 0.2s and < 3.0s
+                if(duration > 0.25 && duration < 3.0) {
+                    processJump(duration);
+                } else {
+                    // False alarm / Shake
                     document.getElementById('status').innerText = "READY";
                 }
-            });
+                isFreeFalling = false;
+            }
         }
+
+        function processJump(duration) {
+            // Physics: h = 1/2 * g * (t/2)^2  => 0.125 * 9.8 * t^2
+            let h = 1.226 * (duration / 2) ** 2 * 4; // Simplified to: 1.226 * duration^2
+            // Actually, standard formula for total airtime T is h = (g*T^2)/8
+            h = (9.81 * (duration**2)) / 8;
+            
+            // Haptics & Sound
+            if(navigator.vibrate) navigator.vibrate(200);
+            playTone(200, 'square', 0.2); // Landing thud sound
+            
+            // Animation
+            animateValue(document.getElementById('height'), 0, h, 500);
+            
+            // UI
+            document.getElementById('status').innerText = "GREAT JUMP!";
+            document.getElementById('status').style.color = "var(--primary)";
+            document.getElementById('shareBtn').style.display = "inline-block";
+
+            // Save to DB
+            const updates = {};
+            // Only update score if it's a new best
+            if(h > myBest) {
+                updates['leaderboard/' + currentUser.uid + '/score'] = h;
+                updates['leaderboard/' + currentUser.uid + '/name'] = currentUser.displayName;
+            }
+            // Always increment jump count
+            update(ref(db, 'leaderboard/' + currentUser.uid), {
+                totalJumps: increment(1),
+                lastJump: h
+            });
+            if(h > myBest) {
+                 update(ref(db, 'leaderboard/' + currentUser.uid), updates);
+            }
+
+            // Add to local history
+            addToHistory(h);
+        }
+
+        function addToHistory(score) {
+            const list = document.getElementById('recentJumps');
+            const now = new Date();
+            const timeStr = now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes();
+            
+            let item = `<div class="history-item">
+                <span>Today, ${timeStr}</span>
+                <span>${score.toFixed(2)}m</span>
+            </div>`;
+            
+            // Remove "No jumps yet" if exists
+            if(list.children.length > 0 && list.children[1]?.innerText === "No jumps yet") {
+                list.removeChild(list.children[1]);
+            }
+            
+            // Insert after title
+            list.insertAdjacentHTML('beforeend', item);
+            
+            // Keep only last 5
+            if(list.children.length > 6) list.removeChild(list.lastChild);
+        }
+
+        // Helper: Number Counter Animation
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = (progress * (end - start) + start).toFixed(2);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        window.shareScore = async () => {
+            const score = document.getElementById('height').innerText;
+            const text = `🚀 I just jumped ${score} meters on Jump Pro! Can you beat my score?`;
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Jump Pro Record',
+                        text: text,
+                        url: window.location.href
+                    });
+                } catch (err) { console.log('Share failed', err); }
+            } else {
+                navigator.clipboard.writeText(text);
+                alert("Score copied to clipboard!");
+            }
+        };
+
     </script>
 </body>
 </html>
