@@ -1,17 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Total Score</title>
+    <title>Jump Pro - Daily Challenge</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --danger: #ff4444; }
+        :root { --primary: #00ff88; --secondary: #00b8ff; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --danger: #ff4444; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
         
         .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
@@ -28,17 +27,12 @@
         .btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; font-size: 16px; margin-top: 10px; }
         #height { font-size: 60px; font-weight: 900; color: #fff; margin: 0; line-height: 1; }
         
-        /* Leaderboard Style */
         .player-row { display: flex; align-items: center; padding: 12px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; }
         .rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; color: var(--primary); }
-        
         select { background: #0d1117; color: #fff; padding: 10px; border-radius: 8px; width: 100%; margin-top: 5px; border: 1px solid #333; }
         
-        /* New Stat Box */
-        .stat-box { display: flex; justify-content: space-between; margin-top: 10px; background: #0d1117; padding: 10px; border-radius: 10px; }
-        .stat-item { text-align: center; width: 48%; }
-        .stat-val { font-size: 18px; font-weight: bold; color: #fff; }
-        .stat-label { font-size: 10px; color: #888; }
+        /* Timer Style */
+        .timer-badge { background: rgba(255, 68, 68, 0.1); color: #ff4444; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 15px; border: 1px solid rgba(255, 68, 68, 0.3); }
 
         #safetyModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
     </style>
@@ -46,49 +40,48 @@
 <body>
 
     <div id="safetyModal">
-        <i class="fas fa-shield-alt" style="font-size: 50px; color: var(--danger); margin-bottom: 20px;"></i>
-        <h2>ANTI-CHEAT ACTIVE</h2>
-        <p style="color:#ccc;">Phone must <b>SPIN</b> to count.<br>Scores are <b>ADDED</b> (Total Distance).</p>
-        <button onclick="document.getElementById('safetyModal').style.display='none'" class="btn-main" style="max-width: 200px;">OK</button>
+        <i class="fas fa-history" style="font-size: 50px; color: var(--primary); margin-bottom: 20px;"></i>
+        <h2>DAILY CHALLENGE</h2>
+        <p style="color:#ccc;">Scores RESET every 24 hours.<br>Be the champion of the day!</p>
+        <button onclick="document.getElementById('safetyModal').style.display='none'" class="btn-main" style="max-width: 200px;">LET'S GO</button>
     </div>
 
     <div id="loginPage" class="page active">
         <div class="card" style="margin-top: 100px;">
             <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary);"></i>
             <h1>Jump Pro</h1>
-            <p style="color:#888;">Build your Total Distance!</p>
+            <p style="color:#888;">Daily Leaderboard Challenge</p>
             <button onclick="login()" class="btn-main" style="background:#fff; color:#000;">Login with Google</button>
         </div>
     </div>
 
     <div id="jumpPage" class="page">
         <div class="card">
-            <div id="rankDisplay" style="color:#00b8ff; font-weight:bold; margin-bottom:10px;">READY</div>
-            
-            <div style="font-size:12px; color:#888; margin-bottom:5px;">CURRENT JUMP</div>
+            <div id="timerDisplay" class="timer-badge">Ends in: --:--:--</div>
+
+            <div id="rankDisplay" style="color:#00b8ff; font-weight:bold; margin-bottom:10px;">TODAY'S SCORE</div>
             <div id="height">0.00</div>
+            <div style="font-size:12px; color:#888;">METERS</div>
             
-            <div class="stat-box">
-                <div class="stat-item">
-                    <div class="stat-val" id="totalScoreDisplay" style="color:var(--primary);">0.00m</div>
-                    <div class="stat-label">TOTAL SCORE</div>
+            <div style="background:#0d1117; padding:10px; border-radius:10px; margin-top:15px; display:flex; justify-content:space-between;">
+                <div>
+                    <div style="font-size:10px; color:#888;">TODAY TOTAL</div>
+                    <div id="todayTotalDisplay" style="font-size:18px; font-weight:bold; color:var(--primary);">0.00m</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-val" id="jumpCountDisplay">0</div>
-                    <div class="stat-label">JUMPS</div>
+                <div>
+                    <div style="font-size:10px; color:#888;">JUMPS</div>
+                    <div id="todayJumpCount">0</div>
                 </div>
             </div>
 
-            <div id="msgDisplay" style="font-size:12px; margin-top:10px; color:#666;">Throw to add to total!</div>
             <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
-            <button id="shareBtn" onclick="shareScore()" class="btn-main" style="background:#333; color:#fff; display:none; margin-top:10px;">Share Total</button>
         </div>
         <div style="font-size:11px; color:#555; margin-top:20px;">Spin: <span id="spinVal">0</span> RPM</div>
     </div>
 
     <div id="leaderboardPage" class="page">
-        <h2 style="margin-bottom:5px;">Top Grinders</h2>
-        <p style="font-size:12px; color:#777; margin-bottom:15px;">Ranked by Total Distance</p>
+        <h2 style="margin-bottom:5px;">Today's Top 50</h2>
+        <div id="lbTimer" style="font-size:12px; color:#ff4444; margin-bottom:15px; font-weight:bold;">Resets in: --:--:--</div>
         <div id="lbList" style="width:100%; max-width:400px;">Loading...</div>
     </div>
 
@@ -97,23 +90,15 @@
             <img id="pImg" style="width:80px; border-radius:50%; margin-bottom:10px;" src="">
             <h3 id="pName">User</h3>
             
-            <div style="text-align:left; margin-bottom:15px;">
-                <label style="font-size:12px; color:#888;">Your Flag:</label>
-                <select id="countrySelect" onchange="updateCountry()">
-                    <option value="🌍">🌍 World</option>
-                    <option value="🇮🇳">🇮🇳 India</option>
-                    <option value="🇺🇸">🇺🇸 USA</option>
-                    <option value="🇬🇧">🇬🇧 UK</option>
-                </select>
-            </div>
+            <select id="countrySelect" onchange="updateCountry()">
+                <option value="🌍">🌍 World</option>
+                <option value="🇮🇳">🇮🇳 India</option>
+                <option value="🇺🇸">🇺🇸 USA</option>
+            </select>
 
-            <div style="background:#21262d; padding:15px; border-radius:10px;">
-                <div style="font-size:10px; color:#888;">LIFETIME DISTANCE</div>
-                <div id="pTotal" style="font-size:30px; font-weight:bold; color:var(--primary);">0.00m</div>
-            </div>
-            
-            <div style="width:100%; height:150px; margin-top:15px;">
-                <canvas id="jumpChart"></canvas>
+            <div style="background:#21262d; padding:15px; border-radius:10px; margin-top:15px;">
+                <div style="font-size:10px; color:#888;">TODAY'S DISTANCE</div>
+                <div id="pToday" style="font-size:30px; font-weight:bold; color:var(--primary);">0.00m</div>
             </div>
             
             <button onclick="logout()" style="color:#ff4444; background:none; border:none; margin-top:20px;">Logout</button>
@@ -146,10 +131,33 @@
         const db = getDatabase(app);
         
         let currentUser = null;
-        let myTotalScore = 0; // ✅ Now tracking TOTAL
-        let myJumpCount = 0;
-        let chartInstance = null;
+        let todayScore = 0;
+        let todayJumps = 0;
         let sensorActive = false;
+
+        // --- DATE LOGIC (The Secret Sauce) ---
+        // Returns "YYYY-MM-DD" based on UTC to keep everyone in sync
+        function getDayId() {
+            const now = new Date();
+            return now.getUTCFullYear() + "-" + (now.getUTCMonth()+1) + "-" + now.getUTCDate();
+        }
+
+        // Countdown Logic
+        setInterval(() => {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setUTCDate(now.getUTCDate() + 1);
+            tomorrow.setUTCHours(0,0,0,0);
+            
+            const diff = tomorrow - now;
+            const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const m = Math.floor((diff / (1000 * 60)) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+            
+            const timeStr = `Ends in: ${h}h ${m}m ${s}s`;
+            document.getElementById('timerDisplay').innerText = timeStr;
+            document.getElementById('lbTimer').innerText = "Resets in: " + h + "h " + m + "m " + s + "s";
+        }, 1000);
 
         // AUTH
         window.login = () => signInWithPopup(auth, new GoogleAuthProvider());
@@ -176,40 +184,55 @@
                 el.classList.add('active-nav');
             }
             if(pageId === 'leaderboardPage') loadLeaderboard();
-            if(pageId === 'profilePage') renderChart();
         };
 
         function loadUserData(user) {
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pImg').src = user.photoURL;
-            onValue(ref(db, 'leaderboard/' + user.uid), (s) => {
+            
+            // ✅ Load Only TODAY'S Data
+            const todayRef = ref(db, 'daily_scores/' + getDayId() + '/' + user.uid);
+            
+            onValue(todayRef, (s) => {
                 if(s.exists()) {
-                    // ✅ LOAD TOTAL SCORE
-                    myTotalScore = parseFloat(s.val().score) || 0;
-                    myJumpCount = s.val().totalJumps || 0;
+                    todayScore = parseFloat(s.val().score) || 0;
+                    todayJumps = s.val().jumps || 0;
+                    const country = s.val().country || "🌍";
                     
-                    document.getElementById('pTotal').innerText = myTotalScore.toFixed(2) + "m";
-                    document.getElementById('totalScoreDisplay').innerText = myTotalScore.toFixed(2) + "m";
-                    document.getElementById('jumpCountDisplay').innerText = myJumpCount;
-                    document.getElementById('countrySelect').value = s.val().country || "🌍";
+                    document.getElementById('todayTotalDisplay').innerText = todayScore.toFixed(2) + "m";
+                    document.getElementById('pToday').innerText = todayScore.toFixed(2) + "m";
+                    document.getElementById('todayJumpCount').innerText = todayJumps;
+                    document.getElementById('countrySelect').value = country;
+                } else {
+                    // New Day = 0 Score
+                    todayScore = 0;
+                    todayJumps = 0;
+                    document.getElementById('todayTotalDisplay').innerText = "0.00m";
+                    document.getElementById('pToday').innerText = "0.00m";
                 }
             });
         }
         
         window.updateCountry = () => {
-            update(ref(db, 'leaderboard/' + currentUser.uid), { country: document.getElementById('countrySelect').value });
+            // Update country for Today
+            if(currentUser) {
+                update(ref(db, 'daily_scores/' + getDayId() + '/' + currentUser.uid), { 
+                    country: document.getElementById('countrySelect').value 
+                });
+            }
         };
 
-        // --- LEADERBOARD (Sort by Total Score) ---
+        // --- DAILY LEADERBOARD ---
         function loadLeaderboard() {
             const lbList = document.getElementById('lbList');
-            lbList.innerHTML = "<p style='text-align:center; color:#777'>Refreshing...</p>";
+            lbList.innerHTML = "<p style='text-align:center; color:#777'>Loading Today's Ranks...</p>";
 
-            const dbRef = ref(db, 'leaderboard');
+            // ✅ Fetch from 'daily_scores/YYYY-MM-DD'
+            const dbRef = ref(db, 'daily_scores/' + getDayId());
             
             onValue(dbRef, (snapshot) => {
                 if (!snapshot.exists()) {
-                    lbList.innerHTML = "<p style='text-align:center'>No Players Yet</p>";
+                    lbList.innerHTML = "<p style='text-align:center; margin-top:20px;'>No scores today.<br>Be the first!</p>";
                     return;
                 }
                 
@@ -219,7 +242,6 @@
                     if(data.score) players.push(data);
                 });
 
-                // Sort: High Total Score to Low
                 players.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
 
                 let allHtml = "";
@@ -276,7 +298,6 @@
                     if(dur > 0.3 && dur < 3.5) {
                         if(maxSpin < 100) {
                             document.getElementById('rankDisplay').innerText = "FAKE JUMP";
-                            document.getElementById('msgDisplay').innerText = "Phone didn't spin!";
                         } else {
                             processJump(dur, maxSpin);
                         }
@@ -287,59 +308,30 @@
         }
 
         function processJump(dur, spin) {
-            let currentJumpHeight = (9.81 * (dur**2)) / 8;
+            let h = (9.81 * (dur**2)) / 8;
             
-            // ✅ ADD TO TOTAL LOGIC
-            let newTotal = myTotalScore + currentJumpHeight;
-            let newCount = myJumpCount + 1;
+            // ✅ Add to TODAY'S Score
+            let newTotal = todayScore + h;
+            let newJumps = todayJumps + 1;
 
-            // UI Update
-            document.getElementById('height').innerText = currentJumpHeight.toFixed(2);
-            document.getElementById('totalScoreDisplay').innerText = newTotal.toFixed(2) + "m";
-            document.getElementById('jumpCountDisplay').innerText = newCount;
+            document.getElementById('height').innerText = h.toFixed(2);
+            document.getElementById('todayTotalDisplay').innerText = newTotal.toFixed(2) + "m";
+            document.getElementById('todayJumpCount').innerText = newJumps;
             document.getElementById('spinVal').innerText = Math.floor(spin/6);
-            document.getElementById('shareBtn').style.display = 'inline-block';
             
-            document.getElementById('rankDisplay').innerText = "+ " + currentJumpHeight.toFixed(2) + "m Added!";
+            document.getElementById('rankDisplay').innerText = "+ " + h.toFixed(2) + "m";
             
-            // Celebration
             confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
 
-            // Save to DB (Always update, because total always increases)
-            const refUrl = ref(db, 'leaderboard/' + currentUser.uid);
-            get(refUrl).then(s => {
-                let hist = s.val()?.history || [];
-                hist.unshift(currentJumpHeight);
-                if(hist.length > 10) hist.pop();
-                
-                update(refUrl, {
-                    name: currentUser.displayName,
-                    score: newTotal, // ✅ Saving Total Score
-                    totalJumps: newCount,
-                    country: document.getElementById('countrySelect').value,
-                    history: hist
-                });
-                if(chartInstance) updateChart(hist);
+            // ✅ Save to Date-Specific Path
+            update(ref(db, 'daily_scores/' + getDayId() + '/' + currentUser.uid), {
+                name: currentUser.displayName,
+                score: newTotal,
+                jumps: newJumps,
+                country: document.getElementById('countrySelect').value
             });
         }
-
-        function renderChart() {
-            const ctx = document.getElementById('jumpChart').getContext('2d');
-            get(ref(db, 'leaderboard/' + currentUser.uid)).then(s => {
-                let data = s.val()?.history || [];
-                let cData = [...data].reverse();
-                if(chartInstance) chartInstance.destroy();
-                chartInstance = new Chart(ctx, {
-                    type: 'line',
-                    data: { labels: cData.map((_, i) => i+1), datasets: [{ label:'Last Jumps', data: cData, borderColor:'#00ff88', tension:0.4 }] },
-                    options: { plugins:{legend:{display:false}}, scales:{ x:{display:false}, y:{grid:{color:'#333'}} } }
-                });
-            });
-        }
-
-        window.shareScore = async () => {
-             try { await navigator.share({ title: 'Jump Pro', text: `I have a total distance of ${document.getElementById('totalScoreDisplay').innerText} on Jump Pro!`, url: window.location.href }); } catch(e){}
-        };
     </script>
 </body>
 </html>
+
