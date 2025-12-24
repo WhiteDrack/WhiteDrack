@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Awards Update</title>
+    <title>Jump Pro - Final Fixed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #00ff88; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
@@ -19,23 +19,19 @@
         .nav-item.active-nav { color: var(--primary); }
 
         .lb-container { width: 100%; max-width: 400px; }
-        .player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; }
+        .player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; animation: fadeIn 0.5s; }
         .rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: var(--primary); }
         .player-info { flex-grow: 1; text-align: left; }
         .player-name { font-weight: 600; font-size: 14px; color: #fff; }
         .player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
 
-        /* --- AWARDS STYLES --- */
+        /* Awards Styles */
         .awards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 15px; }
-        .award-card { background: #0d1117; padding: 10px; border-radius: 10px; border: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; }
-        .award-icon { font-size: 24px; margin-bottom: 5px; }
-        .award-season { font-size: 10px; color: #8b949e; text-transform: uppercase; }
-        .award-rank { font-size: 14px; font-weight: bold; color: #fff; }
-        
-        .rank-1 { color: var(--gold); border-color: var(--gold); box-shadow: 0 0 10px rgba(255, 215, 0, 0.1); }
+        .award-card { background: #0d1117; padding: 10px; border-radius: 10px; border: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; }
+        .rank-1 { color: var(--gold); border-color: var(--gold); }
         .rank-2 { color: var(--silver); border-color: var(--silver); }
         .rank-3 { color: var(--bronze); border-color: var(--bronze); }
-        .rank-top { color: #58a6ff; border-color: #58a6ff; } /* Top 100 */
+        .rank-top { color: #58a6ff; border-color: #58a6ff; }
 
         #height { font-size: 80px; font-weight: 900; color: var(--primary); margin: 0; }
         .btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
@@ -70,8 +66,8 @@
     </div>
 
     <div id="leaderboardPage" class="page">
-        <h2 style="margin-bottom: 5px;"><i class="fas fa-trophy"></i> Season Ranking</h2>
-        <div id="lbList" class="lb-container"><p style="color:#555">Loading...</p></div>
+        <h2 style="margin-bottom: 5px;"><i class="fas fa-trophy"></i> Global Rank</h2>
+        <div id="lbList" class="lb-container"><p style="color:#555">Waiting for data...</p></div>
     </div>
 
     <div id="profilePage" class="page">
@@ -79,12 +75,10 @@
             <img id="pImg" style="width:80px; border-radius:50%; border:2px solid var(--primary);" src="">
             <h2 id="pName" style="margin: 10px 0;">Name</h2>
             <div class="uid-box">UID: <span id="pUid">---</span></div>
-            
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
-                <span style="font-size:11px; color:#555;">CURRENT SEASON SCORE</span><br>
+                <span style="font-size:11px; color:#555;">SEASON TOTAL</span><br>
                 <span id="pTotal" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
             </div>
-
             <div style="margin-top: 30px; width: 100%;">
                 <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
                     <i class="fas fa-medal" style="color: #e3b341;"></i> Trophy Case
@@ -93,7 +87,6 @@
                     <p style="grid-column: span 2; color: #555; font-size: 12px;">No awards earned yet.</p>
                 </div>
             </div>
-
             <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#f85149; cursor:pointer;">Logout</button>
         </div>
     </div>
@@ -107,7 +100,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
@@ -125,12 +118,9 @@
         const provider = new GoogleAuthProvider();
         let currentUser = null; let todayScore = 0;
 
-        // Season Logic
         function getSeasonInfo() {
-            const now = new Date();
-            const d = now.getDate();
-            let round = 1;
-            if (d > 7) round = 2; if (d > 14) round = 3; if (d > 21) round = 4; if (d > 28) round = "FINAL";
+            const now = new Date(); const d = now.getDate();
+            let round = 1; if (d > 7) round = 2; if (d > 14) round = 3; if (d > 21) round = 4; if (d > 28) round = "FINAL";
             return { text: round === "FINAL" ? "Finalizing..." : `Round ${round}`, dateKey: `${now.getFullYear()}-${now.getMonth()+1}-${d}` };
         }
         document.getElementById('roundDisplay').innerText = getSeasonInfo().text;
@@ -161,8 +151,6 @@
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pImg').src = user.photoURL;
             document.getElementById('pUid').innerText = user.uid;
-            
-            // Current Stats
             onValue(ref(db, `season_1/users/${user.uid}/totalScore`), (s) => {
                 document.getElementById('pTotal').innerText = (s.exists() ? s.val() : 0).toFixed(2) + "m";
             });
@@ -170,37 +158,16 @@
                 todayScore = s.exists() ? s.val() : 0;
                 document.getElementById('todayBest').innerText = todayScore.toFixed(2) + "m";
             });
-
-            // --- FETCH AWARDS ---
-            // Database path assumed: users/{uid}/awards/{awardID}
-            // Data structure: { seasonName: "Season 1", rank: 1 }
-            onValue(ref(db, `users/${user.uid}/awards`), (snapshot) => {
+            // Load Awards
+            onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
                 const list = document.getElementById('awardsList');
-                if(!snapshot.exists()) {
-                    list.innerHTML = `<p style="grid-column: span 2; color: #555; font-size: 12px; text-align:center;">No trophies yet. Keep jumping!</p>`;
-                    return;
-                }
-                
+                if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
                 list.innerHTML = "";
-                snapshot.forEach(child => {
-                    const award = child.val();
-                    const rank = parseInt(award.rank);
-                    
-                    // Determine Style based on Rank
-                    let styleClass = 'rank-top';
-                    let icon = 'fa-medal';
-                    
-                    if(rank === 1) { styleClass = 'rank-1'; icon = 'fa-trophy'; }
-                    else if(rank === 2) { styleClass = 'rank-2'; icon = 'fa-trophy'; }
-                    else if(rank === 3) { styleClass = 'rank-3'; icon = 'fa-trophy'; }
-
-                    list.innerHTML += `
-                        <div class="award-card ${styleClass}">
-                            <i class="fas ${icon} award-icon ${styleClass}"></i>
-                            <div class="award-rank">#${rank}</div>
-                            <div class="award-season">${award.seasonName}</div>
-                        </div>
-                    `;
+                snap.forEach(c => {
+                    const a = c.val(); let rank = parseInt(a.rank);
+                    let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
+                    let icn = rank<=3?'fa-trophy':'fa-medal';
+                    list.innerHTML += `<div class="award-card ${cls}"><i class="fas ${icn} ${cls}" style="font-size:24px;"></i><div style="font-weight:bold; color:#fff;">#${rank}</div><div style="font-size:10px; color:#888;">${a.seasonName}</div></div>`;
                 });
             });
         }
@@ -220,30 +187,70 @@
             }
         }
 
+        // --- 100% WORKING LEADERBOARD (Client Side Sorting) ---
         function loadLeaderboard() {
             const lbList = document.getElementById('lbList');
-            onValue(query(ref(db, 'season_1/users'), orderByChild('totalScore'), limitToLast(20)), (snapshot) => {
-                if (!snapshot.exists()) { lbList.innerHTML = "<p style='color:#555'>Season started!</p>"; return; }
-                let players = []; snapshot.forEach(c => players.push(c.val()));
-                players.sort((a, b) => b.totalScore - a.totalScore);
-                lbList.innerHTML = "";
-                players.forEach((p, i) => {
-                    lbList.innerHTML += `
+            lbList.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Loading Season Data...</p>";
+            
+            // 1. Direct Reference (Sara data lekar aao)
+            const dbRef = ref(db, 'season_1/users');
+            
+            onValue(dbRef, (snapshot) => {
+                if (!snapshot.exists()) {
+                    lbList.innerHTML = "<p style='text-align:center; margin-top:20px;'>No Players Found</p>";
+                    return;
+                }
+                
+                // 2. Data ko Array mein convert karo
+                let players = [];
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    // Sirf wahi dikhao jinka totalScore hai
+                    if(data.totalScore) {
+                        players.push(data);
+                    }
+                });
+
+                // 3. Browser mein Sort karo (High to Low - totalScore ke hisab se)
+                players.sort((a, b) => parseFloat(b.totalScore) - parseFloat(a.totalScore));
+
+                // 4. HTML Render
+                let allHtml = "";
+                
+                // Top 50 Dikhao
+                players.slice(0, 50).forEach((p, i) => {
+                    let rankStyle = "";
+                    let rankColor = "var(--primary)";
+                    
+                    // Special Colors for Top 3
+                    if(i === 0) { rankStyle = "color:#ffd700; border:1px solid #ffd700; box-shadow: 0 0 5px rgba(255,215,0,0.3);"; rankColor="#ffd700"; }
+                    else if(i === 1) { rankStyle = "color:#c0c0c0; border:1px solid #c0c0c0;"; rankColor="#c0c0c0"; }
+                    else if(i === 2) { rankStyle = "color:#cd7f32; border:1px solid #cd7f32;"; rankColor="#cd7f32"; }
+
+                    let name = p.name ? p.name.split(' ')[0] : 'Unknown';
+                    let score = parseFloat(p.totalScore).toFixed(2);
+                    
+                    allHtml += `
                         <div class="player-row">
-                            <div class="rank-circle">${i+1}</div>
-                            <div class="player-info"><span class="player-name">${p.name.split(' ')[0]}</span></div>
-                            <div class="player-score">${p.totalScore.toFixed(2)}m</div>
+                            <div class="rank-circle" style="${rankStyle}">${i+1}</div>
+                            <div class="player-info">
+                                <span class="player-name">${name}</span>
+                            </div>
+                            <div class="player-score" style="color:${rankColor}">${score}m</div>
                         </div>`;
                 });
+                
+                lbList.innerHTML = allHtml;
+
+            }, (error) => {
+                console.error(error);
+                lbList.innerHTML = `<p style='color:red;'>Error: ${error.message}</p>`;
             });
         }
 
-        // Sensor Logic
         let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
         document.getElementById('startBtn').onclick = function() {
-            if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); });
-            } else { start(); }
+            if (typeof DeviceMotionEvent.requestPermission === 'function') { DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); }); } else { start(); }
             this.innerText = "SENSOR ACTIVE"; this.disabled = true; this.style.background = "#238636";
         };
         function start() {
