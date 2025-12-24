@@ -1,13 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Season 1</title>
+    <title>Jump Pro - Awards Update</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #00ff88; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
+        :root { --primary: #00ff88; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
         
         .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
@@ -17,7 +16,6 @@
 
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
         .nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .nav-item i { font-size: 20px; }
         .nav-item.active-nav { color: var(--primary); }
 
         .lb-container { width: 100%; max-width: 400px; }
@@ -27,12 +25,21 @@
         .player-name { font-weight: 600; font-size: 14px; color: #fff; }
         .player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
 
+        /* --- AWARDS STYLES --- */
+        .awards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 15px; }
+        .award-card { background: #0d1117; padding: 10px; border-radius: 10px; border: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; }
+        .award-icon { font-size: 24px; margin-bottom: 5px; }
+        .award-season { font-size: 10px; color: #8b949e; text-transform: uppercase; }
+        .award-rank { font-size: 14px; font-weight: bold; color: #fff; }
+        
+        .rank-1 { color: var(--gold); border-color: var(--gold); box-shadow: 0 0 10px rgba(255, 215, 0, 0.1); }
+        .rank-2 { color: var(--silver); border-color: var(--silver); }
+        .rank-3 { color: var(--bronze); border-color: var(--bronze); }
+        .rank-top { color: #58a6ff; border-color: #58a6ff; } /* Top 100 */
+
         #height { font-size: 80px; font-weight: 900; color: var(--primary); margin: 0; }
         .btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
-        
         .season-badge { background: #238636; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;}
-        .round-info { color: #8b949e; font-size: 13px; margin-bottom: 15px; }
-
         .uid-box { background: #0d1117; padding: 10px; border-radius: 8px; font-size: 10px; color: #8b949e; margin-top: 10px; word-break: break-all; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
@@ -43,7 +50,6 @@
         <div class="card" style="margin-top: 100px;">
             <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary);"></i>
             <h2>Jump Pro</h2>
-            <p style="color:#8b949e; font-size:14px;">Season 1: Daily Cumulative</p>
             <button onclick="login()" class="btn-main" style="margin-top:20px; background:#fff;">Continue with Google</button>
         </div>
     </div>
@@ -51,28 +57,21 @@
     <div id="jumpPage" class="page">
         <div class="card">
             <div id="seasonDisplay" class="season-badge">Season 1</div>
-            <div id="roundDisplay" class="round-info">Loading Round...</div>
-            
+            <div id="roundDisplay" style="color:#8b949e; font-size:12px; margin-bottom:15px;">Loading...</div>
             <div id="height">0.00</div>
             <div style="color: #484f58; font-size: 12px;">METERS (INSTANT)</div>
-            
             <div id="status" style="margin: 20px 0; color: #e3b341; font-weight: bold;">READY</div>
-            
             <div style="background:#0d1117; padding:10px; border-radius:10px; margin-bottom:20px;">
                 <div style="font-size:12px; color:#8b949e;">TODAY'S BEST</div>
                 <div id="todayBest" style="font-size:20px; font-weight:bold; color:#fff;">0.00m</div>
             </div>
-
             <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
         </div>
     </div>
 
     <div id="leaderboardPage" class="page">
         <h2 style="margin-bottom: 5px;"><i class="fas fa-trophy"></i> Season Ranking</h2>
-        <p style="font-size:12px; color:#8b949e; margin-bottom:20px;">Score = Sum of Daily Highest Jumps</p>
-        <div id="lbList" class="lb-container">
-            <p style="color:#555">Loading...</p>
-        </div>
+        <div id="lbList" class="lb-container"><p style="color:#555">Loading...</p></div>
     </div>
 
     <div id="profilePage" class="page">
@@ -80,10 +79,21 @@
             <img id="pImg" style="width:80px; border-radius:50%; border:2px solid var(--primary);" src="">
             <h2 id="pName" style="margin: 10px 0;">Name</h2>
             <div class="uid-box">UID: <span id="pUid">---</span></div>
+            
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
-                <span style="font-size:11px; color:#555;">TOTAL SEASON SCORE</span><br>
+                <span style="font-size:11px; color:#555;">CURRENT SEASON SCORE</span><br>
                 <span id="pTotal" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
             </div>
+
+            <div style="margin-top: 30px; width: 100%;">
+                <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
+                    <i class="fas fa-medal" style="color: #e3b341;"></i> Trophy Case
+                </h3>
+                <div id="awardsList" class="awards-grid">
+                    <p style="grid-column: span 2; color: #555; font-size: 12px;">No awards earned yet.</p>
+                </div>
+            </div>
+
             <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#f85149; cursor:pointer;">Logout</button>
         </div>
     </div>
@@ -99,7 +109,6 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, get, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // CONFIG (Same as before)
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
             authDomain: "white-drack-fd1ee.firebaseapp.com",
@@ -114,31 +123,17 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
+        let currentUser = null; let todayScore = 0;
 
-        let currentUser = null;
-        let todayScore = 0;
-        
-        // --- SEASON LOGIC ---
+        // Season Logic
         function getSeasonInfo() {
             const now = new Date();
-            const dayOfMonth = now.getDate(); // 1 to 31
-            const month = now.toLocaleString('default', { month: 'long' });
-            
+            const d = now.getDate();
             let round = 1;
-            if (dayOfMonth > 7) round = 2;
-            if (dayOfMonth > 14) round = 3;
-            if (dayOfMonth > 21) round = 4;
-            if (dayOfMonth > 28) round = "FINAL";
-
-            return {
-                text: round === "FINAL" ? `FINAL RESULTS (${month})` : `ROUND ${round} (${month})`,
-                dateKey: `${now.getFullYear()}-${now.getMonth()+1}-${dayOfMonth}` // Format: 2024-5-12
-            };
+            if (d > 7) round = 2; if (d > 14) round = 3; if (d > 21) round = 4; if (d > 28) round = "FINAL";
+            return { text: round === "FINAL" ? "Finalizing..." : `Round ${round}`, dateKey: `${now.getFullYear()}-${now.getMonth()+1}-${d}` };
         }
-
-        // Initialize UI
-        const info = getSeasonInfo();
-        document.getElementById('roundDisplay').innerText = info.text + ` | Day ${new Date().getDate()}`;
+        document.getElementById('roundDisplay').innerText = getSeasonInfo().text;
 
         window.login = () => signInWithPopup(auth, provider);
         window.logout = () => signOut(auth);
@@ -158,103 +153,92 @@
         window.navTo = (pageId, el) => {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-            if(el) {
-                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav'));
-                el.classList.add('active-nav');
-            }
+            if(el) { document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav')); el.classList.add('active-nav'); }
             if(pageId === 'leaderboardPage') loadLeaderboard();
         };
 
-        // --- DATA HANDLING ---
         function loadUserData(user) {
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pImg').src = user.photoURL;
             document.getElementById('pUid').innerText = user.uid;
-
-            const info = getSeasonInfo();
             
-            // Listen to Total Score
+            // Current Stats
             onValue(ref(db, `season_1/users/${user.uid}/totalScore`), (s) => {
-                const total = s.exists() ? s.val() : 0;
-                document.getElementById('pTotal').innerText = total.toFixed(2) + "m";
+                document.getElementById('pTotal').innerText = (s.exists() ? s.val() : 0).toFixed(2) + "m";
             });
-
-            // Listen to Today's Score
-            onValue(ref(db, `season_1/daily/${user.uid}/${info.dateKey}`), (s) => {
+            onValue(ref(db, `season_1/daily/${user.uid}/${getSeasonInfo().dateKey}`), (s) => {
                 todayScore = s.exists() ? s.val() : 0;
                 document.getElementById('todayBest').innerText = todayScore.toFixed(2) + "m";
             });
+
+            // --- FETCH AWARDS ---
+            // Database path assumed: users/{uid}/awards/{awardID}
+            // Data structure: { seasonName: "Season 1", rank: 1 }
+            onValue(ref(db, `users/${user.uid}/awards`), (snapshot) => {
+                const list = document.getElementById('awardsList');
+                if(!snapshot.exists()) {
+                    list.innerHTML = `<p style="grid-column: span 2; color: #555; font-size: 12px; text-align:center;">No trophies yet. Keep jumping!</p>`;
+                    return;
+                }
+                
+                list.innerHTML = "";
+                snapshot.forEach(child => {
+                    const award = child.val();
+                    const rank = parseInt(award.rank);
+                    
+                    // Determine Style based on Rank
+                    let styleClass = 'rank-top';
+                    let icon = 'fa-medal';
+                    
+                    if(rank === 1) { styleClass = 'rank-1'; icon = 'fa-trophy'; }
+                    else if(rank === 2) { styleClass = 'rank-2'; icon = 'fa-trophy'; }
+                    else if(rank === 3) { styleClass = 'rank-3'; icon = 'fa-trophy'; }
+
+                    list.innerHTML += `
+                        <div class="award-card ${styleClass}">
+                            <i class="fas ${icon} award-icon ${styleClass}"></i>
+                            <div class="award-rank">#${rank}</div>
+                            <div class="award-season">${award.seasonName}</div>
+                        </div>
+                    `;
+                });
+            });
         }
 
-        // Calculate and Save Logic
         async function handleJump(height) {
             if(!currentUser) return;
             const info = getSeasonInfo();
-            
-            // Only update if this jump is higher than today's existing best
             if (height > todayScore) {
                 todayScore = height;
-                document.getElementById('todayBest').innerText = height.toFixed(2) + "m"; // Instant UI update
-
-                // 1. Save Today's New Best
+                document.getElementById('todayBest').innerText = height.toFixed(2) + "m";
                 await set(ref(db, `season_1/daily/${currentUser.uid}/${info.dateKey}`), height);
-
-                // 2. Recalculate Total Season Score (Sum of all daily bests)
-                const allDailyRef = ref(db, `season_1/daily/${currentUser.uid}`);
-                const snapshot = await get(allDailyRef);
-                
-                let grandTotal = 0;
-                if(snapshot.exists()) {
-                    snapshot.forEach(day => {
-                        grandTotal += day.val();
-                    });
-                }
-
-                // 3. Update User Rank Data
+                const snap = await get(ref(db, `season_1/daily/${currentUser.uid}`));
+                let total = 0; snap.forEach(d => total += d.val());
                 await set(ref(db, `season_1/users/${currentUser.uid}`), {
-                    name: currentUser.displayName,
-                    photo: currentUser.photoURL,
-                    totalScore: grandTotal,
-                    lastActive: info.dateKey
+                    name: currentUser.displayName, photo: currentUser.photoURL, totalScore: total
                 });
             }
         }
 
-        // Leaderboard (Based on Total Score)
         function loadLeaderboard() {
             const lbList = document.getElementById('lbList');
-            const lbRef = query(ref(db, 'season_1/users'), orderByChild('totalScore'), limitToLast(20));
-            
-            onValue(lbRef, (snapshot) => {
-                if (!snapshot.exists()) {
-                    lbList.innerHTML = "<p style='color:#555'>Season started! Be the first to jump.</p>";
-                    return;
-                }
-                
-                let players = [];
-                snapshot.forEach(child => players.push(child.val()));
-
-                // Sort High to Low
+            onValue(query(ref(db, 'season_1/users'), orderByChild('totalScore'), limitToLast(20)), (snapshot) => {
+                if (!snapshot.exists()) { lbList.innerHTML = "<p style='color:#555'>Season started!</p>"; return; }
+                let players = []; snapshot.forEach(c => players.push(c.val()));
                 players.sort((a, b) => b.totalScore - a.totalScore);
-                
                 lbList.innerHTML = "";
                 players.forEach((p, i) => {
                     lbList.innerHTML += `
                         <div class="player-row">
-                            <div class="rank-circle" style="${i<3 ? 'color:#ffd700; border:1px solid #ffd700;' : ''}">${i+1}</div>
-                            <div class="player-info">
-                                <span class="player-name">${p.name.split(' ')[0]}</span>
-                            </div>
-                            <div class="player-score">
-                                <span style="font-size:10px; color:#888;">TOTAL</span>
-                                ${p.totalScore.toFixed(2)}m
-                            </div>
+                            <div class="rank-circle">${i+1}</div>
+                            <div class="player-info"><span class="player-name">${p.name.split(' ')[0]}</span></div>
+                            <div class="player-score">${p.totalScore.toFixed(2)}m</div>
                         </div>`;
                 });
             });
         }
 
-        // --- SENSOR LOGIC (Same) ---
+        // Sensor Logic
         let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
         document.getElementById('startBtn').onclick = function() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
@@ -262,32 +246,25 @@
             } else { start(); }
             this.innerText = "SENSOR ACTIVE"; this.disabled = true; this.style.background = "#238636";
         };
-
         function start() {
             window.addEventListener('devicemotion', (e) => {
-                let acc = e.accelerationIncludingGravity;
-                if(!acc || !acc.x) return;
+                let acc = e.accelerationIncludingGravity; if(!acc || !acc.x) return;
                 let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
                 lastAcc = (lastAcc * 0.7) + (raw * 0.3);
                 let now = performance.now();
-                if(lastAcc < 2.5 && !isFreeFalling) {
-                    isFreeFalling = true; startTime = now;
-                    document.getElementById('status').innerText = "AIRBORNE";
-                }
+                if(lastAcc < 2.5 && !isFreeFalling) { isFreeFalling = true; startTime = now; document.getElementById('status').innerText = "AIRBORNE"; }
                 if(isFreeFalling && lastAcc > 14) {
                     let d = (now - startTime)/1000;
                     if(d > 0.2 && d < 2.5) {
                         let h = 0.125 * 9.81 * (d**2);
                         document.getElementById('height').innerText = h.toFixed(2);
-                        
-                        // New Logic Trigger
-                        handleJump(h); 
+                        handleJump(h);
                     }
-                    isFreeFalling = false;
-                    document.getElementById('status').innerText = "READY";
+                    isFreeFalling = false; document.getElementById('status').innerText = "READY";
                 }
             });
         }
     </script>
 </body>
 </html>
+
