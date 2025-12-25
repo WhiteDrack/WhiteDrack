@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Monthly Seasons</title>
+    <title>Jump Pro - Social Update</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #00ff88; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
@@ -19,7 +19,10 @@
         .nav-item.active-nav { color: var(--primary); }
 
         .lb-container { width: 100%; max-width: 400px; }
-        .player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; animation: fadeIn 0.5s; }
+        /* Added cursor pointer to show it's clickable */
+        .player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; animation: fadeIn 0.5s; cursor: pointer; transition: transform 0.1s; }
+        .player-row:active { transform: scale(0.98); background: #30363d; }
+        
         .rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: var(--primary); }
         .player-info { flex-grow: 1; text-align: left; }
         .player-name { font-weight: 600; font-size: 14px; color: #fff; }
@@ -67,6 +70,7 @@
     <div id="leaderboardPage" class="page">
         <h2 style="margin-bottom: 5px;"><i class="fas fa-trophy"></i> Global Rank</h2>
         <div style="font-size: 12px; color: #8b949e; margin-bottom: 15px;" id="lbSeasonName">Current Month</div>
+        <p style="font-size: 10px; color: #555; margin-top: -10px;">(Tap a player to view profile)</p>
         <div id="lbList" class="lb-container"><p style="color:#555">Waiting for data...</p></div>
     </div>
 
@@ -88,6 +92,34 @@
                 </div>
             </div>
             <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#f85149; cursor:pointer;">Logout</button>
+        </div>
+    </div>
+
+    <div id="publicProfilePage" class="page" style="z-index: 2000;">
+        <div class="card">
+            <div style="width:100%; display:flex; justify-content:flex-start;">
+                <button onclick="closePublicProfile()" style="background:none; border:none; color:#8b949e; cursor:pointer; display:flex; align-items:center; gap:5px; font-size:14px;">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+            
+            <img id="ppImg" style="width:80px; border-radius:50%; border:2px solid #58a6ff; margin-top:15px;" src="">
+            <h2 id="ppName" style="margin: 10px 0;">Player</h2>
+            <div class="uid-box">UID: <span id="ppUid">---</span></div>
+            
+            <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px; border: 1px solid #30363d;">
+                <span style="font-size:11px; color:#555;">MONTHLY SCORE</span><br>
+                <span id="ppTotal" style="font-size:32px; font-weight:800; color:#58a6ff;">0.00m</span>
+            </div>
+
+            <div style="margin-top: 30px; width: 100%;">
+                <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
+                    <i class="fas fa-trophy" style="color: #58a6ff;"></i> Awards
+                </h3>
+                <div id="ppAwardsList" class="awards-grid">
+                    <p style="grid-column: span 2; color: #555; font-size: 12px;">Loading awards...</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -118,31 +150,24 @@
         const provider = new GoogleAuthProvider();
         let currentUser = null; let todayScore = 0;
 
-        // --- NEW: Dynamic Monthly Season System ---
         function getSeasonID() {
             const now = new Date();
-            // Banata hai: season_2023_10, season_2023_11 etc.
             return `season_${now.getFullYear()}_${now.getMonth() + 1}`;
         }
 
         function getSeasonInfo() {
             const now = new Date(); const d = now.getDate();
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            
-            // Set Season Name in UI
             const seasonName = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
             document.getElementById('seasonDisplay').innerText = "Season: " + seasonName;
             document.getElementById('lbSeasonName').innerText = "Leaderboard for " + seasonName;
-
             let round = 1; if (d > 7) round = 2; if (d > 14) round = 3; if (d > 21) round = 4; if (d > 28) round = "FINAL";
             return { 
                 text: round === "FINAL" ? "Finalizing..." : `Round ${round}`, 
                 dateKey: `${now.getFullYear()}-${now.getMonth()+1}-${d}`,
-                seasonID: getSeasonID() // Uses dynamic ID
+                seasonID: getSeasonID()
             };
         }
-        
-        // Init UI
         document.getElementById('roundDisplay').innerText = getSeasonInfo().text;
 
         window.login = () => signInWithPopup(auth, provider);
@@ -167,24 +192,71 @@
             if(pageId === 'leaderboardPage') loadLeaderboard();
         };
 
+        // --- NEW: View Other Player Functions ---
+        window.viewPlayer = (uid) => {
+            // Switch to Public Profile Page
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('publicProfilePage').classList.add('active');
+            
+            // Clear Old Data
+            document.getElementById('ppName').innerText = "Loading...";
+            document.getElementById('ppUid').innerText = uid;
+            document.getElementById('ppTotal').innerText = "...";
+            document.getElementById('ppImg').src = "https://via.placeholder.com/80";
+            document.getElementById('ppAwardsList').innerHTML = '<p style="grid-column: span 2; color:#555;">Loading...</p>';
+
+            const season = getSeasonInfo().seasonID;
+
+            // Fetch Player Info from Season Node
+            onValue(ref(db, `${season}/users/${uid}`), (snap) => {
+                if(snap.exists()) {
+                    const u = snap.val();
+                    document.getElementById('ppName').innerText = u.name;
+                    document.getElementById('ppImg').src = u.photo || "https://via.placeholder.com/80";
+                    document.getElementById('ppTotal').innerText = parseFloat(u.totalScore || 0).toFixed(2) + "m";
+                } else {
+                    document.getElementById('ppName').innerText = "Unknown Player";
+                    document.getElementById('ppTotal').innerText = "0.00m";
+                }
+            }, {onlyOnce: true});
+
+            // Fetch Awards
+            onValue(ref(db, `users/${uid}/awards`), (snap) => {
+                const list = document.getElementById('ppAwardsList');
+                if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
+                list.innerHTML = "";
+                snap.forEach(c => {
+                    const a = c.val(); let rank = parseInt(a.rank);
+                    let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
+                    let icn = rank<=3?'fa-trophy':'fa-medal';
+                    list.innerHTML += `<div class="award-card ${cls}"><i class="fas ${icn} ${cls}" style="font-size:24px;"></i><div style="font-weight:bold; color:#fff;">#${rank}</div><div style="font-size:10px; color:#888;">${a.seasonName}</div></div>`;
+                });
+            }, {onlyOnce: true});
+        };
+
+        window.closePublicProfile = () => {
+            // Return to Leaderboard
+            navTo('leaderboardPage');
+            // Restore Leaderboard Nav Highlight
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav'));
+            document.querySelectorAll('.nav-item')[1].classList.add('active-nav');
+        };
+
         function loadUserData(user) {
             const season = getSeasonInfo().seasonID;
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pImg').src = user.photoURL;
             document.getElementById('pUid').innerText = user.uid;
             
-            // Current Season Total Score
             onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
                 document.getElementById('pTotal').innerText = (s.exists() ? s.val() : 0).toFixed(2) + "m";
             });
             
-            // Today's Score
             onValue(ref(db, `${season}/daily/${user.uid}/${getSeasonInfo().dateKey}`), (s) => {
                 todayScore = s.exists() ? s.val() : 0;
                 document.getElementById('todayBest').innerText = todayScore.toFixed(2) + "m";
             });
 
-            // Load Awards (Remains Global)
             onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
                 const list = document.getElementById('awardsList');
                 if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
@@ -206,15 +278,9 @@
             if (height > todayScore) {
                 todayScore = height;
                 document.getElementById('todayBest').innerText = height.toFixed(2) + "m";
-                
-                // Save Daily Best in Current Season
                 await set(ref(db, `${season}/daily/${currentUser.uid}/${info.dateKey}`), height);
-                
-                // Calculate Total for Current Season (Add all Daily Bests)
                 const snap = await get(ref(db, `${season}/daily/${currentUser.uid}`));
                 let total = 0; snap.forEach(d => total += d.val());
-                
-                // Update Leaderboard Score
                 await set(ref(db, `${season}/users/${currentUser.uid}`), {
                     name: currentUser.displayName, photo: currentUser.photoURL, totalScore: total
                 });
@@ -226,11 +292,11 @@
             lbList.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Loading Season Data...</p>";
             
             const season = getSeasonInfo().seasonID;
-            const dbRef = ref(db, `${season}/users`); // Dynamic Season Ref
+            const dbRef = ref(db, `${season}/users`);
             
             onValue(dbRef, (snapshot) => {
                 if (!snapshot.exists()) {
-                    lbList.innerHTML = "<p style='text-align:center; margin-top:20px;'>No Players Yet This Month</p>";
+                    lbList.innerHTML = "<p style='text-align:center; margin-top:20px;'>No Players Yet</p>";
                     return;
                 }
                 
@@ -238,7 +304,8 @@
                 snapshot.forEach(child => {
                     const data = child.val();
                     if(data.totalScore) {
-                        players.push(data);
+                        // IMPORTANT: Save UID to allow profile viewing
+                        players.push({ ...data, uid: child.key });
                     }
                 });
 
@@ -256,8 +323,9 @@
                     let name = p.name ? p.name.split(' ')[0] : 'Unknown';
                     let score = parseFloat(p.totalScore).toFixed(2);
                     
+                    // Added onClick event with UID
                     allHtml += `
-                        <div class="player-row">
+                        <div class="player-row" onclick="viewPlayer('${p.uid}')">
                             <div class="rank-circle" style="${rankStyle}">${i+1}</div>
                             <div class="player-info">
                                 <span class="player-name">${name}</span>
