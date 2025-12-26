@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Social Update</title>
+    <title>Jump Pro - Champion Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -25,7 +25,7 @@
             <div style="color: #484f58; font-size: 12px;">METERS (INSTANT)</div>
             <div id="status" style="margin: 20px 0; color: #e3b341; font-weight: bold;">READY</div>
             <div style="background:#0d1117; padding:10px; border-radius:10px; margin-bottom:20px;">
-                <div style="font-size:12px; color:#8b949e;">TODAY'S BEST</div>
+                <div style="font-size:12px; color:#8b949e;">SEASON BEST</div>
                 <div id="todayBest" style="font-size:20px; font-weight:bold; color:#fff;">0.00m</div>
             </div>
             <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
@@ -41,11 +41,14 @@
 
     <div id="profilePage" class="page">
         <div class="card">
-            <img id="pImg" style="width:80px; border-radius:50%; border:2px solid var(--primary);" src="">
+            <div class="profile-img-container" id="myProfileContainer">
+                <img id="pImg" style="width:80px; height:80px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;" src="">
+            </div>
+
             <h2 id="pName" style="margin: 10px 0;">Name</h2>
             <div class="uid-box">UID: <span id="pUid">---</span></div>
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
-                <span style="font-size:11px; color:#555;">MONTHLY TOTAL</span><br>
+                <span style="font-size:11px; color:#555;">SEASON TOTAL</span><br>
                 <span id="pTotal" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
             </div>
             <div style="margin-top: 30px; width: 100%;">
@@ -68,12 +71,15 @@
                 </button>
             </div>
             
-            <img id="ppImg" style="width:80px; border-radius:50%; border:2px solid #58a6ff; margin-top:15px;" src="">
+            <div class="profile-img-container" id="publicProfileContainer">
+                <img id="ppImg" style="width:80px; height:80px; border-radius:50%; border:2px solid #58a6ff; object-fit:cover;" src="">
+            </div>
+
             <h2 id="ppName" style="margin: 10px 0;">Player</h2>
             <div class="uid-box">UID: <span id="ppUid">---</span></div>
             
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px; border: 1px solid #30363d;">
-                <span style="font-size:11px; color:#555;">MONTHLY SCORE</span><br>
+                <span style="font-size:11px; color:#555;">SEASON SCORE</span><br>
                 <span id="ppTotal" style="font-size:32px; font-weight:800; color:#58a6ff;">0.00m</span>
             </div>
 
