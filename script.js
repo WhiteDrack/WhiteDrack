@@ -18,26 +18,35 @@ const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null; 
-let currentSeasonBest = 0; // सिर्फ एक वेरिएबल जो हाईएस्ट जंप याद रखेगा
+let seasonBestScore = 0; // "Today Score" की जगह अब "Season Best" है
 
 function getSeasonID() {
     const now = new Date();
-    // सीजन ID में महीना और साल है। महीना बदलते ही ID बदल जाएगी और डेटा रिफ्रेश हो जाएगा।
+    // सीजन हर महीने बदल जाएगा (जैसे: season_2025_12 -> season_2026_1)
     return `season_${now.getFullYear()}_${now.getMonth() + 1}`;
 }
 
 function getSeasonInfo() {
-    const now = new Date();
+    const now = new Date(); const d = now.getDate();
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const seasonName = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
     
     if(document.getElementById('seasonDisplay')) {
         document.getElementById('seasonDisplay').innerText = "Season: " + seasonName;
-        document.getElementById('lbSeasonName').innerText = "Top Jumps of " + seasonName;
+        document.getElementById('lbSeasonName').innerText = "Leaderboard for " + seasonName;
     }
-    return { seasonID: getSeasonID() };
+
+    let round = 1; if (d > 7) round = 2; if (d > 14) round = 3; if (d > 21) round = 4; if (d > 28) round = "FINAL";
+    
+    return { 
+        text: round === "FINAL" ? "Finalizing..." : `Round ${round}`, 
+        seasonID: getSeasonID()
+    };
 }
-getSeasonInfo();
+
+if(document.getElementById('roundDisplay')) {
+    document.getElementById('roundDisplay').innerText = getSeasonInfo().text;
+}
 
 window.login = () => signInWithPopup(auth, provider);
 window.logout = () => signOut(auth);
@@ -61,7 +70,50 @@ window.navTo = (pageId, el) => {
     if(pageId === 'leaderboardPage') loadLeaderboard();
 };
 
-// --- Profile Load Logic ---
+window.viewPlayer = (uid) => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('publicProfilePage').classList.add('active');
+    
+    document.getElementById('ppName').innerText = "Loading...";
+    document.getElementById('ppUid').innerText = uid;
+    document.getElementById('ppTotal').innerText = "...";
+    document.getElementById('ppImg').src = "https://via.placeholder.com/80";
+    document.getElementById('ppAwardsList').innerHTML = '<p style="grid-column: span 2; color:#555;">Loading...</p>';
+
+    const season = getSeasonInfo().seasonID;
+
+    onValue(ref(db, `${season}/users/${uid}`), (snap) => {
+        if(snap.exists()) {
+            const u = snap.val();
+            document.getElementById('ppName').innerText = u.name;
+            document.getElementById('ppImg').src = u.photo || "https://via.placeholder.com/80";
+            // totalScore अब Highest Jump ही है
+            document.getElementById('ppTotal').innerText = parseFloat(u.totalScore || 0).toFixed(2) + "m";
+        } else {
+            document.getElementById('ppName').innerText = "Unknown Player";
+            document.getElementById('ppTotal').innerText = "0.00m";
+        }
+    }, {onlyOnce: true});
+
+    onValue(ref(db, `users/${uid}/awards`), (snap) => {
+        const list = document.getElementById('ppAwardsList');
+        if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
+        list.innerHTML = "";
+        snap.forEach(c => {
+            const a = c.val(); let rank = parseInt(a.rank);
+            let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
+            let icn = rank<=3?'fa-trophy':'fa-medal';
+            list.innerHTML += `<div class="award-card ${cls}"><i class="fas ${icn} ${cls}" style="font-size:24px;"></i><div style="font-weight:bold; color:#fff;">#${rank}</div><div style="font-size:10px; color:#888;">${a.seasonName}</div></div>`;
+        });
+    }, {onlyOnce: true});
+};
+
+window.closePublicProfile = () => {
+    navTo('leaderboardPage');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav'));
+    document.querySelectorAll('.nav-item')[1].classList.add('active-nav');
+};
+
 function loadUserData(user) {
     const season = getSeasonInfo().seasonID;
 
@@ -69,42 +121,65 @@ function loadUserData(user) {
     document.getElementById('pImg').src = user.photoURL;
     document.getElementById('pUid').innerText = user.uid;
     
-    // अब हम सिर्फ highScore सुन रहे हैं (Daily का कोई काम नहीं)
-    onValue(ref(db, `${season}/users/${user.uid}/highScore`), (s) => {
-        if(s.exists()) {
-            currentSeasonBest = parseFloat(s.val());
-        } else {
-            currentSeasonBest = 0;
-        }
-        // UI Update
-        document.getElementById('seasonBestDisplay').innerText = currentSeasonBest.toFixed(2) + "m";
-        document.getElementById('pTotal').innerText = currentSeasonBest.toFixed(2) + "m";
+    // UI Label Update: "Today's Best" को बदलकर "Season Best" कर देते हैं
+    const bestLabel = document.getElementById('todayBest').previousElementSibling;
+    if(bestLabel) bestLabel.innerText = "SEASON BEST";
+
+    // सिर्फ User नोड को सुनना है (Daily नोड को हटा दिया गया है)
+    onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
+        // अगर डेटा है तो वही स्कोर है, वरना 0
+        seasonBestScore = s.exists() ? parseFloat(s.val()) : 0;
+        
+        // UI अपडेट करें
+        document.getElementById('pTotal').innerText = seasonBestScore.toFixed(2) + "m";
+        document.getElementById('todayBest').innerText = seasonBestScore.toFixed(2) + "m";
+    });
+
+    // Awards Listener (Same as before)
+    onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
+        const list = document.getElementById('awardsList');
+        if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
+        list.innerHTML = "";
+        snap.forEach(c => {
+            const a = c.val(); let rank = parseInt(a.rank);
+            let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
+            let icn = rank<=3?'fa-trophy':'fa-medal';
+            list.innerHTML += `<div class="award-card ${cls}"><i class="fas ${icn} ${cls}" style="font-size:24px;"></i><div style="font-weight:bold; color:#fff;">#${rank}</div><div style="font-size:10px; color:#888;">${a.seasonName}</div></div>`;
+        });
     });
 }
 
-// --- MAIN LOGIC: Handle Highest Jump ---
 async function handleJump(height) {
     if(!currentUser) return;
-    const season = getSeasonInfo().seasonID;
+    
+    const info = getSeasonInfo();
+    const season = info.seasonID;
 
-    // सिर्फ तभी सेव करें अगर यह जंप पिछले रिकॉर्ड से ज़्यादा है
-    if (height > currentSeasonBest) {
-        currentSeasonBest = height;
+    // सिर्फ तब सेव करें जब नई ऊंचाई पुरानी 'seasonBestScore' से ज्यादा हो
+    if (height > seasonBestScore) {
+        seasonBestScore = height;
         
-        // UI अपडेट (ताकि यूज़र को तुरंत दिखे)
-        document.getElementById('seasonBestDisplay').innerText = height.toFixed(2) + "m";
+        // UI अपडेट
+        document.getElementById('todayBest').innerText = height.toFixed(2) + "m";
         document.getElementById('pTotal').innerText = height.toFixed(2) + "m";
-        
-        // Firebase में अपडेट (केवल High Score)
-        await set(ref(db, `${season}/users/${currentUser.uid}`), {
-            name: currentUser.displayName, 
-            photo: currentUser.photoURL, 
-            highScore: height  // यहाँ अब totalScore नहीं, highScore है
-        });
+
+        try {
+            // डायरेक्ट User के स्कोर को अपडेट करें (Daily का चक्कर खत्म)
+            // totalScore ही अब Highest Score है
+            await set(ref(db, `${season}/users/${currentUser.uid}`), {
+                name: currentUser.displayName, 
+                photo: currentUser.photoURL, 
+                totalScore: height 
+            });
+            
+            console.log("New Season Record Saved: " + height);
+
+        } catch (error) {
+            console.error("Save Failed:", error);
+        }
     }
 }
 
-// --- Leaderboard Logic ---
 function loadLeaderboard() {
     const lbList = document.getElementById('lbList');
     lbList.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Loading Season Data...</p>";
@@ -114,21 +189,20 @@ function loadLeaderboard() {
     
     onValue(dbRef, (snapshot) => {
         if (!snapshot.exists()) {
-            lbList.innerHTML = "<p style='text-align:center; margin-top:20px;'>New Season - No Records Yet</p>";
+            lbList.innerHTML = "<p style='text-align:center; margin-top:20px;'>No Players Yet</p>";
             return;
         }
         
         let players = [];
         snapshot.forEach(child => {
             const data = child.val();
-            // हम अब highScore चेक कर रहे हैं
-            if(data.highScore) {
+            if(data.totalScore) {
                 players.push({ ...data, uid: child.key });
             }
         });
 
-        // सबसे बड़े स्कोर को ऊपर रखें
-        players.sort((a, b) => parseFloat(b.highScore) - parseFloat(a.highScore));
+        // जो सबसे ऊंचा कूदा है वो सबसे ऊपर (Highest First)
+        players.sort((a, b) => parseFloat(b.totalScore) - parseFloat(a.totalScore));
 
         let allHtml = "";
         players.slice(0, 50).forEach((p, i) => {
@@ -140,7 +214,7 @@ function loadLeaderboard() {
             else if(i === 2) { rankStyle = "color:#cd7f32; border:1px solid #cd7f32;"; rankColor="#cd7f32"; }
 
             let name = p.name ? p.name.split(' ')[0] : 'Unknown';
-            let score = parseFloat(p.highScore).toFixed(2);
+            let score = parseFloat(p.totalScore).toFixed(2);
             
             allHtml += `
                 <div class="player-row" onclick="viewPlayer('${p.uid}')">
@@ -160,39 +234,6 @@ function loadLeaderboard() {
     });
 }
 
-// --- Public Profile Viewer ---
-window.viewPlayer = (uid) => {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('publicProfilePage').classList.add('active');
-    
-    document.getElementById('ppName').innerText = "Loading...";
-    document.getElementById('ppUid').innerText = uid;
-    document.getElementById('ppTotal').innerText = "...";
-    document.getElementById('ppImg').src = "https://via.placeholder.com/80";
-
-    const season = getSeasonInfo().seasonID;
-
-    onValue(ref(db, `${season}/users/${uid}`), (snap) => {
-        if(snap.exists()) {
-            const u = snap.val();
-            document.getElementById('ppName').innerText = u.name;
-            document.getElementById('ppImg').src = u.photo || "https://via.placeholder.com/80";
-            // High Score दिखाएं
-            document.getElementById('ppTotal').innerText = parseFloat(u.highScore || 0).toFixed(2) + "m";
-        } else {
-            document.getElementById('ppName').innerText = "Unknown Player";
-            document.getElementById('ppTotal').innerText = "0.00m";
-        }
-    }, {onlyOnce: true});
-};
-
-window.closePublicProfile = () => {
-    navTo('leaderboardPage');
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav'));
-    document.querySelectorAll('.nav-item')[1].classList.add('active-nav');
-};
-
-// --- Sensor Logic (Same as before) ---
 let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
 document.getElementById('startBtn').onclick = function() {
     if (typeof DeviceMotionEvent.requestPermission === 'function') { DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); }); } else { start(); }
@@ -210,9 +251,10 @@ function start() {
             if(d > 0.2 && d < 2.5) {
                 let h = 0.125 * 9.81 * (d**2);
                 document.getElementById('height').innerText = h.toFixed(2);
-                handleJump(h); // Send to Logic
+                handleJump(h);
             }
             isFreeFalling = false; document.getElementById('status').innerText = "READY";
         }
     });
 }
+
