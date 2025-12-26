@@ -22,7 +22,6 @@ let seasonBestScore = 0;
 
 function getSeasonID() {
     const now = new Date();
-    // सीजन हर महीने बदल जाएगा (जैसे: season_2025_12)
     return `season_${now.getFullYear()}_${now.getMonth() + 1}`;
 }
 
@@ -70,11 +69,12 @@ window.navTo = (pageId, el) => {
     if(pageId === 'leaderboardPage') loadLeaderboard();
 };
 
-// --- CHAMPION LOGIC ---
+// --- LOGIC: Find Best Year Champion ---
 function checkChampionStatus(awards, containerId) {
     const container = document.getElementById(containerId);
-    
-    // पुराने इफेक्ट हटाओ
+    if(!container) return;
+
+    // Reset styles
     container.classList.remove('legendary-ring');
     const oldBadge = container.querySelector('.year-crown-badge');
     if(oldBadge) oldBadge.remove();
@@ -83,21 +83,28 @@ function checkChampionStatus(awards, containerId) {
 
     let yearCounts = {};
     
-    // सारे Gold Awards (Rank 1) गिनो
+    // Count Gold Awards per Year
     Object.values(awards).forEach(award => {
         if(parseInt(award.rank) === 1) { 
             const year = award.seasonName.split(' ')[1]; // "Dec 2025" -> "2025"
-            if(year) yearCounts[year] = (yearCounts[year] || 0) + 1;
+            if(year) {
+                yearCounts[year] = (yearCounts[year] || 0) + 1;
+            }
         }
     });
 
-    // सबसे ज्यादा गोल्ड वाला साल निकालो
-    let maxGold = 0; let bestYear = "";
+    // Find the year with maximum gold medals
+    let maxGold = 0;
+    let bestYear = "";
+
     for(let y in yearCounts) {
-        if(yearCounts[y] > maxGold) { maxGold = yearCounts[y]; bestYear = y; }
+        if(yearCounts[y] > maxGold) {
+            maxGold = yearCounts[y];
+            bestYear = y;
+        }
     }
 
-    // इफेक्ट लगाओ
+    // Apply Effect if at least 1 gold medal found
     if(maxGold > 0) {
         container.classList.add('legendary-ring');
         container.innerHTML += `<div class="year-crown-badge">👑 ${bestYear} King</div>`;
@@ -114,11 +121,13 @@ window.viewPlayer = (uid) => {
     document.getElementById('ppImg').src = "https://via.placeholder.com/80";
     document.getElementById('ppAwardsList').innerHTML = '<p style="grid-column: span 2; color:#555;">Loading...</p>';
     
-    // पुराना स्टाइल साफ करो
+    // Clear old champion status
     const container = document.getElementById('publicProfileContainer');
-    container.classList.remove('legendary-ring');
-    const oldBadge = container.querySelector('.year-crown-badge');
-    if(oldBadge) oldBadge.remove();
+    if(container) {
+        container.classList.remove('legendary-ring');
+        const oldBadge = container.querySelector('.year-crown-badge');
+        if(oldBadge) oldBadge.remove();
+    }
 
     const season = getSeasonInfo().seasonID;
 
@@ -134,11 +143,14 @@ window.viewPlayer = (uid) => {
         }
     }, {onlyOnce: true});
 
+    // Fetch Awards & Check Champion
     onValue(ref(db, `users/${uid}/awards`), (snap) => {
+        const list = document.getElementById('ppAwardsList');
         const awards = snap.exists() ? snap.val() : null;
+
+        // Apply visual if champion
         checkChampionStatus(awards, 'publicProfileContainer');
 
-        const list = document.getElementById('ppAwardsList');
         if(!awards) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
         list.innerHTML = "";
         
@@ -164,7 +176,9 @@ function loadUserData(user) {
     document.getElementById('pImg').src = user.photoURL;
     document.getElementById('pUid').innerText = user.uid;
     
-    // सिर्फ highest jump सुनना है
+    const bestLabel = document.getElementById('todayBest').previousElementSibling;
+    if(bestLabel) bestLabel.innerText = "SEASON BEST";
+
     onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
         seasonBestScore = s.exists() ? parseFloat(s.val()) : 0;
         document.getElementById('pTotal').innerText = seasonBestScore.toFixed(2) + "m";
@@ -173,7 +187,9 @@ function loadUserData(user) {
 
     onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
         const awards = snap.exists() ? snap.val() : null;
-        checkChampionStatus(awards, 'myProfileContainer'); // खुद की प्रोफाइल चेक
+        
+        // Apply visual if champion
+        checkChampionStatus(awards, 'myProfileContainer');
 
         const list = document.getElementById('awardsList');
         if(!awards) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
@@ -192,20 +208,18 @@ async function handleJump(height) {
     const info = getSeasonInfo();
     const season = info.seasonID;
 
-    // सिर्फ तभी सेव करें अगर नया जंप Season Best से ज्यादा है
     if (height > seasonBestScore) {
         seasonBestScore = height;
         document.getElementById('todayBest').innerText = height.toFixed(2) + "m";
         document.getElementById('pTotal').innerText = height.toFixed(2) + "m";
 
         try {
-            // डायरेक्ट टोटल स्कोर अपडेट करें (कोई डेली एडिशन नहीं)
             await set(ref(db, `${season}/users/${currentUser.uid}`), {
                 name: currentUser.displayName, 
                 photo: currentUser.photoURL, 
                 totalScore: height 
             });
-            console.log("New Best Jump Saved: " + height);
+            console.log("New Season Record Saved: " + height);
         } catch (error) {
             console.error("Save Failed:", error);
         }
@@ -233,7 +247,6 @@ function loadLeaderboard() {
             }
         });
 
-        // सबसे ऊंचा जंप सबसे ऊपर
         players.sort((a, b) => parseFloat(b.totalScore) - parseFloat(a.totalScore));
 
         let allHtml = "";
