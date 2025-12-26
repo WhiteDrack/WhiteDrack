@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Social Update</title>
+    <title>Jump Pro - High Score</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,6 +14,7 @@
         <div class="card" style="margin-top: 100px;">
             <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary);"></i>
             <h2>Jump Pro</h2>
+            <p style="color:#888; font-size:12px;">Highest Jump Edition</p>
             <button onclick="login()" class="btn-main" style="margin-top:20px; background:#fff;">Continue with Google</button>
         </div>
     </div>
@@ -20,22 +22,22 @@
     <div id="jumpPage" class="page">
         <div class="card">
             <div id="seasonDisplay" class="season-badge">Loading Season...</div>
-            <div id="roundDisplay" style="color:#8b949e; font-size:12px; margin-bottom:15px;">Loading...</div>
             <div id="height">0.00</div>
-            <div style="color: #484f58; font-size: 12px;">METERS (INSTANT)</div>
+            <div style="color: #484f58; font-size: 12px;">METERS (LAST JUMP)</div>
             <div id="status" style="margin: 20px 0; color: #e3b341; font-weight: bold;">READY</div>
-            <div style="background:#0d1117; padding:10px; border-radius:10px; margin-bottom:20px;">
-                <div style="font-size:12px; color:#8b949e;">TODAY'S BEST</div>
-                <div id="todayBest" style="font-size:20px; font-weight:bold; color:#fff;">0.00m</div>
+            
+            <div style="background:#0d1117; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #30363d;">
+                <div style="font-size:12px; color:#8b949e; letter-spacing: 1px;">YOUR SEASON BEST</div>
+                <div id="seasonBestDisplay" style="font-size:32px; font-weight:900; color:var(--primary); margin-top:5px;">0.00m</div>
             </div>
+            
             <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
         </div>
     </div>
 
     <div id="leaderboardPage" class="page">
-        <h2 style="margin-bottom: 5px;"><i class="fas fa-trophy"></i> Global Rank</h2>
-        <div style="font-size: 12px; color: #8b949e; margin-bottom: 15px;" id="lbSeasonName">Current Month</div>
-        <p style="font-size: 10px; color: #555; margin-top: -10px;">(Tap a player to view profile)</p>
+        <h2 style="margin-bottom: 5px;"><i class="fas fa-trophy"></i> Top Jumpers</h2>
+        <div style="font-size: 12px; color: #8b949e; margin-bottom: 15px;" id="lbSeasonName">Current Season</div>
         <div id="lbList" class="lb-container"><p style="color:#555">Waiting for data...</p></div>
     </div>
 
@@ -45,16 +47,8 @@
             <h2 id="pName" style="margin: 10px 0;">Name</h2>
             <div class="uid-box">UID: <span id="pUid">---</span></div>
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
-                <span style="font-size:11px; color:#555;">MONTHLY TOTAL</span><br>
+                <span style="font-size:11px; color:#555;">SEASON HIGHEST SCORE</span><br>
                 <span id="pTotal" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
-            </div>
-            <div style="margin-top: 30px; width: 100%;">
-                <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
-                    <i class="fas fa-medal" style="color: #e3b341;"></i> Trophy Case
-                </h3>
-                <div id="awardsList" class="awards-grid">
-                    <p style="grid-column: span 2; color: #555; font-size: 12px;">No awards earned yet.</p>
-                </div>
             </div>
             <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#f85149; cursor:pointer;">Logout</button>
         </div>
@@ -67,23 +61,11 @@
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
             </div>
-            
             <img id="ppImg" style="width:80px; border-radius:50%; border:2px solid #58a6ff; margin-top:15px;" src="">
             <h2 id="ppName" style="margin: 10px 0;">Player</h2>
-            <div class="uid-box">UID: <span id="ppUid">---</span></div>
-            
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px; border: 1px solid #30363d;">
-                <span style="font-size:11px; color:#555;">MONTHLY SCORE</span><br>
+                <span style="font-size:11px; color:#555;">SEASON HIGHEST</span><br>
                 <span id="ppTotal" style="font-size:32px; font-weight:800; color:#58a6ff;">0.00m</span>
-            </div>
-
-            <div style="margin-top: 30px; width: 100%;">
-                <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
-                    <i class="fas fa-trophy" style="color: #58a6ff;"></i> Awards
-                </h3>
-                <div id="ppAwardsList" class="awards-grid">
-                    <p style="grid-column: span 2; color: #555; font-size: 12px;">Loading awards...</p>
-                </div>
             </div>
         </div>
     </div>
@@ -97,4 +79,3 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
-
