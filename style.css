@@ -32,3 +32,4 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .season-badge { background: #238636; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;}
 .uid-box { background: #0d1117; padding: 10px; border-radius: 8px; font-size: 10px; color: #8b949e; margin-top: 10px; word-break: break-all; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
