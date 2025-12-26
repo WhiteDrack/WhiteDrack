@@ -18,11 +18,11 @@ const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null; 
-let seasonBestScore = 0; // "Today Score" की जगह अब "Season Best" है
+let seasonBestScore = 0;
 
 function getSeasonID() {
     const now = new Date();
-    // सीजन हर महीने बदल जाएगा (जैसे: season_2025_12 -> season_2026_1)
+    // सीजन हर महीने बदल जाएगा (जैसे: season_2025_12)
     return `season_${now.getFullYear()}_${now.getMonth() + 1}`;
 }
 
@@ -70,6 +70,40 @@ window.navTo = (pageId, el) => {
     if(pageId === 'leaderboardPage') loadLeaderboard();
 };
 
+// --- CHAMPION LOGIC ---
+function checkChampionStatus(awards, containerId) {
+    const container = document.getElementById(containerId);
+    
+    // पुराने इफेक्ट हटाओ
+    container.classList.remove('legendary-ring');
+    const oldBadge = container.querySelector('.year-crown-badge');
+    if(oldBadge) oldBadge.remove();
+
+    if(!awards) return;
+
+    let yearCounts = {};
+    
+    // सारे Gold Awards (Rank 1) गिनो
+    Object.values(awards).forEach(award => {
+        if(parseInt(award.rank) === 1) { 
+            const year = award.seasonName.split(' ')[1]; // "Dec 2025" -> "2025"
+            if(year) yearCounts[year] = (yearCounts[year] || 0) + 1;
+        }
+    });
+
+    // सबसे ज्यादा गोल्ड वाला साल निकालो
+    let maxGold = 0; let bestYear = "";
+    for(let y in yearCounts) {
+        if(yearCounts[y] > maxGold) { maxGold = yearCounts[y]; bestYear = y; }
+    }
+
+    // इफेक्ट लगाओ
+    if(maxGold > 0) {
+        container.classList.add('legendary-ring');
+        container.innerHTML += `<div class="year-crown-badge">👑 ${bestYear} King</div>`;
+    }
+}
+
 window.viewPlayer = (uid) => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('publicProfilePage').classList.add('active');
@@ -79,6 +113,12 @@ window.viewPlayer = (uid) => {
     document.getElementById('ppTotal').innerText = "...";
     document.getElementById('ppImg').src = "https://via.placeholder.com/80";
     document.getElementById('ppAwardsList').innerHTML = '<p style="grid-column: span 2; color:#555;">Loading...</p>';
+    
+    // पुराना स्टाइल साफ करो
+    const container = document.getElementById('publicProfileContainer');
+    container.classList.remove('legendary-ring');
+    const oldBadge = container.querySelector('.year-crown-badge');
+    if(oldBadge) oldBadge.remove();
 
     const season = getSeasonInfo().seasonID;
 
@@ -87,7 +127,6 @@ window.viewPlayer = (uid) => {
             const u = snap.val();
             document.getElementById('ppName').innerText = u.name;
             document.getElementById('ppImg').src = u.photo || "https://via.placeholder.com/80";
-            // totalScore अब Highest Jump ही है
             document.getElementById('ppTotal').innerText = parseFloat(u.totalScore || 0).toFixed(2) + "m";
         } else {
             document.getElementById('ppName').innerText = "Unknown Player";
@@ -96,9 +135,13 @@ window.viewPlayer = (uid) => {
     }, {onlyOnce: true});
 
     onValue(ref(db, `users/${uid}/awards`), (snap) => {
+        const awards = snap.exists() ? snap.val() : null;
+        checkChampionStatus(awards, 'publicProfileContainer');
+
         const list = document.getElementById('ppAwardsList');
-        if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
+        if(!awards) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
         list.innerHTML = "";
+        
         snap.forEach(c => {
             const a = c.val(); let rank = parseInt(a.rank);
             let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
@@ -121,24 +164,19 @@ function loadUserData(user) {
     document.getElementById('pImg').src = user.photoURL;
     document.getElementById('pUid').innerText = user.uid;
     
-    // UI Label Update: "Today's Best" को बदलकर "Season Best" कर देते हैं
-    const bestLabel = document.getElementById('todayBest').previousElementSibling;
-    if(bestLabel) bestLabel.innerText = "SEASON BEST";
-
-    // सिर्फ User नोड को सुनना है (Daily नोड को हटा दिया गया है)
+    // सिर्फ highest jump सुनना है
     onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
-        // अगर डेटा है तो वही स्कोर है, वरना 0
         seasonBestScore = s.exists() ? parseFloat(s.val()) : 0;
-        
-        // UI अपडेट करें
         document.getElementById('pTotal').innerText = seasonBestScore.toFixed(2) + "m";
         document.getElementById('todayBest').innerText = seasonBestScore.toFixed(2) + "m";
     });
 
-    // Awards Listener (Same as before)
     onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
+        const awards = snap.exists() ? snap.val() : null;
+        checkChampionStatus(awards, 'myProfileContainer'); // खुद की प्रोफाइल चेक
+
         const list = document.getElementById('awardsList');
-        if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
+        if(!awards) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
         list.innerHTML = "";
         snap.forEach(c => {
             const a = c.val(); let rank = parseInt(a.rank);
@@ -151,29 +189,23 @@ function loadUserData(user) {
 
 async function handleJump(height) {
     if(!currentUser) return;
-    
     const info = getSeasonInfo();
     const season = info.seasonID;
 
-    // सिर्फ तब सेव करें जब नई ऊंचाई पुरानी 'seasonBestScore' से ज्यादा हो
+    // सिर्फ तभी सेव करें अगर नया जंप Season Best से ज्यादा है
     if (height > seasonBestScore) {
         seasonBestScore = height;
-        
-        // UI अपडेट
         document.getElementById('todayBest').innerText = height.toFixed(2) + "m";
         document.getElementById('pTotal').innerText = height.toFixed(2) + "m";
 
         try {
-            // डायरेक्ट User के स्कोर को अपडेट करें (Daily का चक्कर खत्म)
-            // totalScore ही अब Highest Score है
+            // डायरेक्ट टोटल स्कोर अपडेट करें (कोई डेली एडिशन नहीं)
             await set(ref(db, `${season}/users/${currentUser.uid}`), {
                 name: currentUser.displayName, 
                 photo: currentUser.photoURL, 
                 totalScore: height 
             });
-            
-            console.log("New Season Record Saved: " + height);
-
+            console.log("New Best Jump Saved: " + height);
         } catch (error) {
             console.error("Save Failed:", error);
         }
@@ -201,7 +233,7 @@ function loadLeaderboard() {
             }
         });
 
-        // जो सबसे ऊंचा कूदा है वो सबसे ऊपर (Highest First)
+        // सबसे ऊंचा जंप सबसे ऊपर
         players.sort((a, b) => parseFloat(b.totalScore) - parseFloat(a.totalScore));
 
         let allHtml = "";
