@@ -1,0 +1,34 @@
+:root { --primary: #00ff88; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+
+.page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
+.active { display: flex; animation: fadeIn 0.3s ease; }
+
+.card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; }
+
+.nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
+.nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.nav-item.active-nav { color: var(--primary); }
+
+.lb-container { width: 100%; max-width: 400px; }
+
+.player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; animation: fadeIn 0.5s; cursor: pointer; transition: transform 0.1s; }
+.player-row:active { transform: scale(0.98); background: #30363d; }
+
+.rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: var(--primary); }
+.player-info { flex-grow: 1; text-align: left; }
+.player-name { font-weight: 600; font-size: 14px; color: #fff; }
+.player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
+
+.awards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 15px; }
+.award-card { background: #0d1117; padding: 10px; border-radius: 10px; border: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; }
+.rank-1 { color: var(--gold); border-color: var(--gold); }
+.rank-2 { color: var(--silver); border-color: var(--silver); }
+.rank-3 { color: var(--bronze); border-color: var(--bronze); }
+.rank-top { color: #58a6ff; border-color: #58a6ff; }
+
+#height { font-size: 80px; font-weight: 900; color: var(--primary); margin: 0; }
+.btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
+.season-badge { background: #238636; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;}
+.uid-box { background: #0d1117; padding: 10px; border-radius: 8px; font-size: 10px; color: #8b949e; margin-top: 10px; word-break: break-all; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
