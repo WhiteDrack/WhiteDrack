@@ -60,7 +60,22 @@ window.navTo = (pageId, el) => {
     if(pageId === 'leaderboardPage') loadLeaderboard();
 };
 
-// --- CHAMPION LOGIC (Only Gold Medals count) ---
+// --- UNIQUE NUMERIC ID GENERATOR ---
+async function getOrGeneratePublicID(user) {
+    const idRef = ref(db, `users/${user.uid}/publicID`);
+    const snap = await get(idRef);
+    
+    if (snap.exists()) {
+        return snap.val(); // ID pehle se hai
+    } else {
+        // ID generate karo (Random 8 digits)
+        const newID = Math.floor(10000000 + Math.random() * 90000000);
+        await set(idRef, newID);
+        return newID;
+    }
+}
+
+// --- CHAMPION LOGIC ---
 function checkChampionStatus(awards, containerId) {
     const container = document.getElementById(containerId);
     if(!container) return;
@@ -72,7 +87,6 @@ function checkChampionStatus(awards, containerId) {
 
     let yearCounts = {};
     Object.values(awards).forEach(award => {
-        // Special trophies don't count for the "Rank 1" ring
         if(!award.isSpecial && parseInt(award.rank) === 1) { 
             const year = award.seasonName.split(' ')[1];
             if(year) yearCounts[year] = (yearCounts[year] || 0) + 1;
@@ -88,7 +102,7 @@ function checkChampionStatus(awards, containerId) {
     }
 }
 
-// --- MAIL & AWARD CLAIM SYSTEM ---
+// --- MAIL SYSTEM ---
 window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
 window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
 
@@ -112,7 +126,6 @@ function fetchMail() {
             let btn = "";
 
             if (mail.type === "special_trophy") {
-                // Save object to window to avoid JSON stringify issues in HTML
                 window[`trophy_${key}`] = mail.trophyData;
                 btn = `<button onclick="claimTrophy('${key}')" class="claim-btn" style="background:linear-gradient(45deg, #7928ca, #ff0080); color:white;"><i class="fas fa-trophy"></i> CLAIM TROPHY</button>`;
             } else if (mail.reward) {
@@ -131,12 +144,11 @@ function fetchMail() {
 
         list.innerHTML = html;
         const badge = document.getElementById('mailCount');
-        if(count > 0) { badge.innerText = count; badge.style.display = 'inline-block'; } 
+        if(count > 0) { badge.innerText = count; badge.style.display = 'flex'; } 
         else { badge.style.display = 'none'; }
     });
 }
 
-// Claim Score
 window.claimReward = async (mailId, rewardAmount) => {
     if(!currentUser) return;
     const season = getSeasonInfo().seasonID;
@@ -154,12 +166,10 @@ window.claimReward = async (mailId, rewardAmount) => {
     }
 };
 
-// Claim Special Trophy
 window.claimTrophy = async (mailId) => {
     if(!currentUser) return;
     const tData = window[`trophy_${mailId}`];
     if(!tData) { alert("Error finding trophy data."); return; }
-
     if(confirm(`Claim '${tData.name}' Trophy?`)) {
         try {
             await push(ref(db, `users/${currentUser.uid}/awards`), {
@@ -177,44 +187,47 @@ window.claimTrophy = async (mailId) => {
 
 window.deleteMail = async (mailId) => { if(currentUser) await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`)); };
 
-// --- AWARD RENDERER ---
+// --- AWARD RENDERER (NO DATE) ---
 function renderAwards(snap, listId) {
     const list = document.getElementById(listId);
-    if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
+    if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 3; color:#555; text-align:center;">No trophies yet.</p>`; return; }
     
     list.innerHTML = "";
     const awards = snap.val();
 
     Object.values(awards).forEach(a => {
         if (a.isSpecial) {
-            // Render Professional Trophy
+            // Special Trophy (Date Removed)
             const s = a.specialData;
             list.innerHTML += `
                 <div class="special-trophy-card ${s.style}">
                     <i class="fas ${s.icon} special-icon"></i>
                     <div class="special-title">${s.name}</div>
-                    <div class="special-year">${s.date}</div>
-                </div>`;
+                    </div>`;
         } else {
-            // Render Standard Rank Trophy
+            // Rank Trophy
             let rank = parseInt(a.rank);
             let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
             let icn = rank<=3?'fa-trophy':'fa-medal';
             list.innerHTML += `
                 <div class="award-card ${cls}">
-                    <i class="fas ${icn} ${cls}" style="font-size:24px;"></i>
-                    <div style="font-weight:bold; color:#fff;">#${rank}</div>
-                    <div style="font-size:10px; color:#888;">${a.seasonName}</div>
+                    <i class="fas ${icn} ${cls}" style="font-size:20px;"></i>
+                    <div style="font-weight:bold; color:#fff; font-size:12px;">#${rank}</div>
+                    <div style="font-size:8px; color:#888;">${a.seasonName}</div>
                 </div>`;
         }
     });
 }
 
-function loadUserData(user) {
+async function loadUserData(user) {
     const season = getSeasonInfo().seasonID;
+    
+    // Numeric ID Logic
+    const publicID = await getOrGeneratePublicID(user);
+    document.getElementById('pUid').innerText = publicID;
+
     document.getElementById('pName').innerText = user.displayName;
     document.getElementById('pImg').src = user.photoURL;
-    document.getElementById('pUid').innerText = user.uid;
     
     onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
         seasonBestScore = s.exists() ? parseFloat(s.val()) : 0;
@@ -227,18 +240,26 @@ function loadUserData(user) {
     });
 }
 
-window.viewPlayer = (uid) => {
+window.viewPlayer = async (uid) => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('publicProfilePage').classList.add('active');
+    
     document.getElementById('ppName').innerText = "Loading...";
-    document.getElementById('ppUid').innerText = uid;
+    document.getElementById('ppUid').innerText = "...";
     document.getElementById('ppTotal').innerText = "...";
     document.getElementById('ppImg').src = "https://via.placeholder.com/80";
-    document.getElementById('ppAwardsList').innerHTML = '<p style="grid-column: span 2; color:#555;">Loading...</p>';
+    document.getElementById('ppAwardsList').innerHTML = '<p style="grid-column: span 3; color:#555;">Loading...</p>';
     
     const container = document.getElementById('publicProfileContainer');
     if(container) { container.classList.remove('legendary-ring'); const b=container.querySelector('.year-crown-badge'); if(b) b.remove(); }
+    
     const season = getSeasonInfo().seasonID;
+    
+    // Get Numeric ID for View Player
+    get(ref(db, `users/${uid}/publicID`)).then(snap => {
+        document.getElementById('ppUid').innerText = snap.exists() ? snap.val() : "---";
+    });
+
     onValue(ref(db, `${season}/users/${uid}`), (snap) => {
         if(snap.exists()) {
             const u = snap.val();
