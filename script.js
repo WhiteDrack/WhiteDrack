@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
@@ -69,12 +69,11 @@ window.navTo = (pageId, el) => {
     if(pageId === 'leaderboardPage') loadLeaderboard();
 };
 
-// --- LOGIC: Find Best Year Champion ---
+// --- CHAMPION LOGIC ---
 function checkChampionStatus(awards, containerId) {
     const container = document.getElementById(containerId);
     if(!container) return;
 
-    // Reset styles
     container.classList.remove('legendary-ring');
     const oldBadge = container.querySelector('.year-crown-badge');
     if(oldBadge) oldBadge.remove();
@@ -82,35 +81,116 @@ function checkChampionStatus(awards, containerId) {
     if(!awards) return;
 
     let yearCounts = {};
-    
-    // Count Gold Awards per Year
     Object.values(awards).forEach(award => {
         if(parseInt(award.rank) === 1) { 
-            const year = award.seasonName.split(' ')[1]; // "Dec 2025" -> "2025"
-            if(year) {
-                yearCounts[year] = (yearCounts[year] || 0) + 1;
-            }
+            const year = award.seasonName.split(' ')[1];
+            if(year) yearCounts[year] = (yearCounts[year] || 0) + 1;
         }
     });
 
-    // Find the year with maximum gold medals
-    let maxGold = 0;
-    let bestYear = "";
-
+    let maxGold = 0; let bestYear = "";
     for(let y in yearCounts) {
-        if(yearCounts[y] > maxGold) {
-            maxGold = yearCounts[y];
-            bestYear = y;
-        }
+        if(yearCounts[y] > maxGold) { maxGold = yearCounts[y]; bestYear = y; }
     }
 
-    // Apply Effect if at least 1 gold medal found
     if(maxGold > 0) {
         container.classList.add('legendary-ring');
         container.innerHTML += `<div class="year-crown-badge">👑 ${bestYear} King</div>`;
     }
 }
 
+// --- INBOX LOGIC ---
+window.openMailbox = () => {
+    document.getElementById('mailModal').style.display = 'flex';
+    fetchMail();
+};
+
+window.closeMailbox = () => {
+    document.getElementById('mailModal').style.display = 'none';
+};
+
+function fetchMail() {
+    if(!currentUser) return;
+    const list = document.getElementById('mailList');
+    
+    onValue(ref(db, `users/${currentUser.uid}/inbox`), (snap) => {
+        if(!snap.exists()) {
+            list.innerHTML = '<p style="color:#555; text-align:center; padding:20px;">Inbox is empty.</p>';
+            document.getElementById('mailCount').style.display = 'none';
+            return;
+        }
+
+        const mails = snap.val();
+        let html = "";
+        let count = 0;
+
+        Object.entries(mails).forEach(([key, mail]) => {
+            count++;
+            const btn = mail.reward 
+                ? `<button onclick="claimReward('${key}', ${mail.reward})" class="claim-btn"><i class="fas fa-coins"></i> CLAIM +${mail.reward}m SCORE</button>` 
+                : `<button onclick="deleteMail('${key}')" class="claim-btn" style="background:#30363d; color:#fff;">Dismiss</button>`;
+
+            html += `
+            <div class="mail-item">
+                <div class="mail-title">${mail.title}</div>
+                <div class="mail-msg">${mail.message}</div>
+                ${btn}
+            </div>`;
+        });
+
+        list.innerHTML = html;
+        const badge = document.getElementById('mailCount');
+        if(count > 0) {
+            badge.innerText = count;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    });
+}
+
+window.claimReward = async (mailId, rewardAmount) => {
+    if(!currentUser) return;
+    const info = getSeasonInfo();
+    const season = info.seasonID;
+
+    if(confirm(`Claim ${rewardAmount}m reward?`)) {
+        try {
+            // Get current highest score
+            const userRef = ref(db, `${season}/users/${currentUser.uid}/totalScore`);
+            const snap = await get(userRef);
+            let currentScore = snap.exists() ? parseFloat(snap.val()) : 0;
+            
+            // Add reward to current score
+            let newScore = currentScore + parseFloat(rewardAmount);
+            
+            // Update Database with new Total
+            await set(ref(db, `${season}/users/${currentUser.uid}`), {
+                name: currentUser.displayName,
+                photo: currentUser.photoURL,
+                totalScore: newScore
+            });
+
+            // Update local tracking
+            seasonBestScore = newScore;
+            
+            // Remove mail
+            await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`));
+
+            alert("Reward Claimed! Score Boosted.");
+        } catch(error) {
+            console.error(error);
+            alert("Error claiming reward.");
+        }
+    }
+};
+
+window.deleteMail = async (mailId) => {
+    if(!currentUser) return;
+    await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`));
+};
+
+// --- DATA LOADING ---
 window.viewPlayer = (uid) => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('publicProfilePage').classList.add('active');
@@ -121,7 +201,7 @@ window.viewPlayer = (uid) => {
     document.getElementById('ppImg').src = "https://via.placeholder.com/80";
     document.getElementById('ppAwardsList').innerHTML = '<p style="grid-column: span 2; color:#555;">Loading...</p>';
     
-    // Clear old champion status
+    // Reset Public Profile visual
     const container = document.getElementById('publicProfileContainer');
     if(container) {
         container.classList.remove('legendary-ring');
@@ -143,12 +223,10 @@ window.viewPlayer = (uid) => {
         }
     }, {onlyOnce: true});
 
-    // Fetch Awards & Check Champion
     onValue(ref(db, `users/${uid}/awards`), (snap) => {
         const list = document.getElementById('ppAwardsList');
         const awards = snap.exists() ? snap.val() : null;
 
-        // Apply visual if champion
         checkChampionStatus(awards, 'publicProfileContainer');
 
         if(!awards) { list.innerHTML = `<p style="grid-column: span 2; color:#555; text-align:center;">No trophies yet.</p>`; return; }
@@ -176,9 +254,6 @@ function loadUserData(user) {
     document.getElementById('pImg').src = user.photoURL;
     document.getElementById('pUid').innerText = user.uid;
     
-    const bestLabel = document.getElementById('todayBest').previousElementSibling;
-    if(bestLabel) bestLabel.innerText = "SEASON BEST";
-
     onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
         seasonBestScore = s.exists() ? parseFloat(s.val()) : 0;
         document.getElementById('pTotal').innerText = seasonBestScore.toFixed(2) + "m";
@@ -187,8 +262,6 @@ function loadUserData(user) {
 
     onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
         const awards = snap.exists() ? snap.val() : null;
-        
-        // Apply visual if champion
         checkChampionStatus(awards, 'myProfileContainer');
 
         const list = document.getElementById('awardsList');
@@ -203,6 +276,7 @@ function loadUserData(user) {
     });
 }
 
+// --- JUMP LOGIC (Highest Only) ---
 async function handleJump(height) {
     if(!currentUser) return;
     const info = getSeasonInfo();
@@ -279,6 +353,7 @@ function loadLeaderboard() {
     });
 }
 
+// --- SENSOR LOGIC ---
 let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
 document.getElementById('startBtn').onclick = function() {
     if (typeof DeviceMotionEvent.requestPermission === 'function') { DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); }); } else { start(); }
