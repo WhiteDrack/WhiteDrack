@@ -42,22 +42,20 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
     position: relative;
     display: inline-block;
     margin-top: 20px;
-    padding: 5px; /* Gap for the ring */
+    padding: 5px;
 }
 
-/* 1. The Rotating Golden Aura */
 .legendary-ring::before {
     content: '';
     position: absolute;
-    inset: -3px; /* Slightly outside the image */
+    inset: -3px; 
     background: conic-gradient(from 0deg, transparent 0%, #ffd700 20%, #b8860b 50%, #ffd700 80%, transparent 100%);
     border-radius: 50%;
     z-index: -1;
     animation: rotateGold 4s linear infinite;
-    filter: blur(4px); /* Glow effect */
+    filter: blur(4px);
 }
 
-/* 2. Sharp Inner Border */
 .legendary-ring::after {
     content: '';
     position: absolute;
@@ -67,7 +65,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
     z-index: -1;
 }
 
-/* 3. The "King" Badge */
 .year-crown-badge {
     position: absolute;
     bottom: -12px;
@@ -91,8 +88,74 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
-
 @keyframes badgePop {
     0% { transform: translateX(-50%) scale(0); }
     100% { transform: translateX(-50%) scale(1); }
 }
+
+/* =========================================
+   INBOX / MAIL SYSTEM STYLES
+   ========================================= */
+.badge {
+    background: #f85149;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    vertical-align: top;
+    margin-left: 5px;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s;
+}
+
+.modal-card {
+    width: 90%;
+    max-width: 350px;
+    background: #161b22;
+    border: 1px solid #30363d;
+}
+
+.mail-item {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.mail-title {
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.mail-msg {
+    font-size: 12px;
+    color: #c9d1d9;
+    margin-bottom: 10px;
+}
+
+.claim-btn {
+    background: linear-gradient(45deg, #ffd700, #ff8c00);
+    border: none;
+    color: #000;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 12px;
+}
+.claim-btn:active { transform: scale(0.95); }
