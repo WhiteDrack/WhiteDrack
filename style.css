@@ -1,88 +1,135 @@
+
 :root { --primary: #00ff88; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
 body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
 
 .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
 .active { display: flex; animation: fadeIn 0.3s ease; }
 
-.card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; }
+/* Card needs relative positioning for Inbox Icon */
+.card { position: relative; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; }
 
-.nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
-.nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.nav-item.active-nav { color: var(--primary); }
+/* --- FLOATING INBOX ICON (Top Right) --- */
+.inbox-icon-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #1f242d;
+    border: 1px solid #30363d;
+    color: #fff;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+.inbox-icon-btn:hover { background: #30363d; }
 
-.lb-container { width: 100%; max-width: 400px; }
+.badge { 
+    position: absolute; 
+    top: -2px; 
+    right: -2px; 
+    background: #f85149; 
+    color: white; 
+    border-radius: 50%; 
+    width: 15px; 
+    height: 15px; 
+    font-size: 9px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border: 1px solid #161b22;
+}
 
-.player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; animation: fadeIn 0.5s; cursor: pointer; transition: transform 0.1s; }
-.player-row:active { transform: scale(0.98); background: #30363d; }
+/* --- COMPACT TROPHY GRID --- */
+.awards-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); /* 1 Line mein 3 Trophies */
+    gap: 8px; 
+    width: 100%; 
+    margin-top: 15px; 
+}
 
-.rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: var(--primary); }
-.player-info { flex-grow: 1; text-align: left; }
-.player-name { font-weight: 600; font-size: 14px; color: #fff; }
-.player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
+/* Common Card Style for Rank & Special */
+.award-card, .special-trophy-card { 
+    background: #0d1117; 
+    padding: 8px; 
+    border-radius: 8px; 
+    border: 1px solid #30363d; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    min-height: 80px; /* Fixed height for uniformity */
+}
 
-.awards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 15px; }
-.award-card { background: #0d1117; padding: 10px; border-radius: 10px; border: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; }
+/* Rank Trophy Colors */
 .rank-1 { color: var(--gold); border-color: var(--gold); }
 .rank-2 { color: var(--silver); border-color: var(--silver); }
 .rank-3 { color: var(--bronze); border-color: var(--bronze); }
 .rank-top { color: #58a6ff; border-color: #58a6ff; }
 
+/* Special Trophy Styles (Compact) */
+.special-trophy-card { 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    animation: slideIn 0.5s ease;
+}
+.special-icon { font-size: 24px; margin-bottom: 5px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+.special-title { font-size: 8px; font-weight: 800; text-transform: uppercase; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1.2; }
+/* Date Removed via CSS just in case */
+.special-year { display: none; }
+
+/* Special Gradients */
+.style-titan { background: linear-gradient(135deg, #bf953f, #aa771c); border: 1px solid #ffd700; }
+.style-titan .special-icon { color: #fff; text-shadow: 0 0 5px #ffd700; }
+.style-titan .special-title { color: #3e2700; }
+
+.style-velocity { background: linear-gradient(135deg, #2b0000, #800000); border: 1px solid #ff004c; }
+.style-velocity .special-icon { color: #ff004c; }
+
+.style-legacy { background: linear-gradient(135deg, #134e5e, #1f4037); border: 1px solid #7fffd4; }
+.style-legacy .special-icon { color: #a8e6cf; }
+
+.style-apex { background: linear-gradient(135deg, #141e30, #243b55); border: 1px solid #00d2ff; }
+.style-apex .special-icon { color: #00d2ff; }
+
+.style-heart { background: linear-gradient(135deg, #833ab4, #fd1d1d); border: 1px solid #fff; }
+.style-heart .special-icon { color: #fff; }
+
+
+/* --- OTHER UI --- */
+.nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
+.nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.nav-item.active-nav { color: var(--primary); }
+.lb-container { width: 100%; max-width: 400px; }
+.player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; animation: fadeIn 0.5s; cursor: pointer; }
+.rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: var(--primary); }
+.player-info { flex-grow: 1; text-align: left; }
+.player-name { font-weight: 600; font-size: 14px; color: #fff; }
+.player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
 #height { font-size: 80px; font-weight: 900; color: var(--primary); margin: 0; }
 .btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
 .season-badge { background: #238636; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;}
-.uid-box { background: #0d1117; padding: 10px; border-radius: 8px; font-size: 10px; color: #8b949e; margin-top: 10px; word-break: break-all; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.uid-box { background: #0d1117; padding: 5px 10px; border-radius: 8px; font-size: 11px; color: #8b949e; margin-top: 5px; display: inline-block; border: 1px solid #30363d; letter-spacing: 1px; font-family: monospace; }
 
-/* =========================================
-   ROYAL GOLDEN GLOW (Champion Visuals)
-   ========================================= */
+/* Champion Visuals */
 .profile-img-container { position: relative; display: inline-block; margin-top: 20px; padding: 5px; }
 .legendary-ring::before { content: ''; position: absolute; inset: -3px; background: conic-gradient(from 0deg, transparent 0%, #ffd700 20%, #b8860b 50%, #ffd700 80%, transparent 100%); border-radius: 50%; z-index: -1; animation: rotateGold 4s linear infinite; filter: blur(4px); }
 .legendary-ring::after { content: ''; position: absolute; inset: -1px; background: linear-gradient(45deg, #ffd700, #ffb700); border-radius: 50%; z-index: -1; }
 .year-crown-badge { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(180deg, #ffd700 0%, #ff8c00 100%); color: #000; font-size: 9px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 2px solid #161b22; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); white-space: nowrap; animation: badgePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes rotateGold { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 @keyframes badgePop { 0% { transform: translateX(-50%) scale(0); } 100% { transform: translateX(-50%) scale(1); } }
+@keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* =========================================
-   INBOX SYSTEM
-   ========================================= */
-.badge { background: #f85149; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; vertical-align: top; margin-left: 5px; }
+/* Mail Modal */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
 .modal-card { width: 90%; max-width: 350px; background: #161b22; border: 1px solid #30363d; }
 .mail-item { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 10px; margin-bottom: 10px; position: relative; }
 .mail-title { font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 14px; }
 .mail-msg { font-size: 12px; color: #c9d1d9; margin-bottom: 10px; }
 .claim-btn { background: linear-gradient(45deg, #ffd700, #ff8c00); border: none; color: #000; font-weight: bold; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 12px; }
-.claim-btn:active { transform: scale(0.95); }
-
-/* =========================================
-   SPECIAL PREMIUM TROPHIES (Professional)
-   ========================================= */
-.special-trophy-card { grid-column: span 2; position: relative; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); animation: slideIn 0.5s ease; }
-.special-icon { font-size: 32px; margin-bottom: 8px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
-.special-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-.special-year { font-size: 9px; opacity: 0.8; margin-top: 2px; }
-
-/* 1. TITAN */
-.style-titan { background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); border: 1px solid #ffd700; }
-.style-titan .special-icon { color: #fff; text-shadow: 0 0 10px #ffd700; }
-.style-titan .special-title { color: #3e2700; }
-
-/* 2. VELOCITY */
-.style-velocity { background: linear-gradient(135deg, #2b0000, #800000); border: 1px solid #ff004c; box-shadow: 0 0 10px #ff004c; }
-.style-velocity .special-icon { color: #ff004c; filter: drop-shadow(0 0 5px #fff); }
-
-/* 3. LEGACY */
-.style-legacy { background: linear-gradient(135deg, #134e5e, #71b280); border: 1px solid #7fffd4; }
-.style-legacy .special-icon { color: #a8e6cf; }
-
-/* 4. APEX */
-.style-apex { background: linear-gradient(135deg, #141e30, #243b55); border: 1px solid #00d2ff; box-shadow: 0 0 10px #00d2ff; }
-.style-apex .special-icon { color: #00d2ff; }
-
-/* 5. HEART */
-.style-heart { background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); border: 1px solid #fff; }
-.style-heart .special-icon { color: #fff; }
-
-@keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
