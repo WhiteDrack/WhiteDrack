@@ -44,28 +44,29 @@
 
     <div id="profilePage" class="page">
         <div class="card">
+            <button onclick="openMailbox()" class="inbox-icon-btn">
+                <i class="fas fa-envelope"></i>
+                <span id="mailCount" class="badge" style="display:none;">0</span>
+            </button>
+
             <div class="profile-img-container" id="myProfileContainer">
                 <img id="pImg" style="width:80px; height:80px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;" src="">
             </div>
             
             <h2 id="pName" style="margin: 10px 0;">Name</h2>
-            <div class="uid-box">UID: <span id="pUid">---</span></div>
+            <div class="uid-box">ID: <span id="pUid">---</span></div>
             
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
                 <span style="font-size:11px; color:#555;">SEASON BEST SCORE</span><br>
                 <span id="pTotal" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
             </div>
             
-            <button onclick="openMailbox()" class="btn-main" style="margin-top:15px; background: #1f242d; color: #fff; border: 1px solid #30363d;">
-                <i class="fas fa-envelope"></i> Inbox <span id="mailCount" class="badge" style="display:none;">0</span>
-            </button>
-
             <div style="margin-top: 30px; width: 100%;">
                 <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
                     <i class="fas fa-medal" style="color: #e3b341;"></i> Trophy Case
                 </h3>
                 <div id="awardsList" class="awards-grid">
-                    <p style="grid-column: span 2; color: #555; font-size: 12px;">No awards earned yet.</p>
+                    <p style="grid-column: span 3; color: #555; font-size: 12px;">No awards earned yet.</p>
                 </div>
             </div>
             
@@ -86,7 +87,7 @@
             </div>
             
             <h2 id="ppName" style="margin: 10px 0;">Player</h2>
-            <div class="uid-box">UID: <span id="ppUid">---</span></div>
+            <div class="uid-box">ID: <span id="ppUid">---</span></div>
             
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px; border: 1px solid #30363d;">
                 <span style="font-size:11px; color:#555;">SEASON BEST SCORE</span><br>
@@ -98,7 +99,7 @@
                     <i class="fas fa-trophy" style="color: #58a6ff;"></i> Awards
                 </h3>
                 <div id="ppAwardsList" class="awards-grid">
-                    <p style="grid-column: span 2; color: #555; font-size: 12px;">Loading awards...</p>
+                    <p style="grid-column: span 3; color: #555; font-size: 12px;">Loading awards...</p>
                 </div>
             </div>
         </div>
