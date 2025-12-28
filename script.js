@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, set, get, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, remove, push, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
@@ -60,20 +60,49 @@ window.navTo = (pageId, el) => {
     if(pageId === 'leaderboardPage') loadLeaderboard();
 };
 
-// --- UNIQUE NUMERIC ID GENERATOR ---
+// --- NUMERIC ID LOGIC ---
 async function getOrGeneratePublicID(user) {
     const idRef = ref(db, `users/${user.uid}/publicID`);
     const snap = await get(idRef);
-    
     if (snap.exists()) {
-        return snap.val(); // ID pehle se hai
+        return snap.val();
     } else {
-        // ID generate karo (Random 8 digits)
+        // Generate 8 digit ID
         const newID = Math.floor(10000000 + Math.random() * 90000000);
         await set(idRef, newID);
         return newID;
     }
 }
+
+// --- SEARCH LOGIC ---
+window.searchPlayer = async () => {
+    const inputVal = document.getElementById('searchInput').value.trim();
+    if(!inputVal) { alert("Please enter Player ID!"); return; }
+
+    const btn = document.querySelector('.search-btn');
+    const originalIcon = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    try {
+        const usersRef = ref(db, 'users');
+        // Check if ID matches 'publicID'
+        const q = query(usersRef, orderByChild('publicID'), equalTo(parseInt(inputVal)));
+        const snapshot = await get(q);
+
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const foundUid = Object.keys(data)[0]; // Get actual UID
+            viewPlayer(foundUid);
+        } else {
+            alert("Player ID not found.");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Search Error.");
+    } finally {
+        btn.innerHTML = originalIcon;
+    }
+};
 
 // --- CHAMPION LOGIC ---
 function checkChampionStatus(awards, containerId) {
@@ -187,7 +216,7 @@ window.claimTrophy = async (mailId) => {
 
 window.deleteMail = async (mailId) => { if(currentUser) await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`)); };
 
-// --- AWARD RENDERER (NO DATE) ---
+// --- AWARD RENDERER (NO DATE, COMPACT) ---
 function renderAwards(snap, listId) {
     const list = document.getElementById(listId);
     if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 3; color:#555; text-align:center;">No trophies yet.</p>`; return; }
@@ -197,13 +226,13 @@ function renderAwards(snap, listId) {
 
     Object.values(awards).forEach(a => {
         if (a.isSpecial) {
-            // Special Trophy (Date Removed)
+            // Special Trophy (Date Hidden via CSS)
             const s = a.specialData;
             list.innerHTML += `
                 <div class="special-trophy-card ${s.style}">
                     <i class="fas ${s.icon} special-icon"></i>
                     <div class="special-title">${s.name}</div>
-                    </div>`;
+                </div>`;
         } else {
             // Rank Trophy
             let rank = parseInt(a.rank);
@@ -255,7 +284,7 @@ window.viewPlayer = async (uid) => {
     
     const season = getSeasonInfo().seasonID;
     
-    // Get Numeric ID for View Player
+    // Fetch Numeric ID for view
     get(ref(db, `users/${uid}/publicID`)).then(snap => {
         document.getElementById('ppUid').innerText = snap.exists() ? snap.val() : "---";
     });
