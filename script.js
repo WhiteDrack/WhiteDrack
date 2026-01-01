@@ -60,6 +60,14 @@ window.navTo = (pageId, el) => {
     if(pageId === 'leaderboardPage') loadLeaderboard();
 };
 
+// --- MODAL CONTROLS ---
+window.openSearchModal = () => { document.getElementById('searchModal').style.display = 'flex'; };
+window.closeSearchModal = () => { document.getElementById('searchModal').style.display = 'none'; };
+
+window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
+window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
+
+
 // --- NUMERIC ID LOGIC ---
 async function getOrGeneratePublicID(user) {
     const idRef = ref(db, `users/${user.uid}/publicID`);
@@ -67,31 +75,31 @@ async function getOrGeneratePublicID(user) {
     if (snap.exists()) {
         return snap.val();
     } else {
-        // Generate 8 digit ID
         const newID = Math.floor(10000000 + Math.random() * 90000000);
         await set(idRef, newID);
         return newID;
     }
 }
 
-// --- SEARCH LOGIC ---
+// --- SEARCH LOGIC (Updated to use Modal Input) ---
 window.searchPlayer = async () => {
-    const inputVal = document.getElementById('searchInput').value.trim();
+    // Note: Now using 'modalSearchInput'
+    const inputVal = document.getElementById('modalSearchInput').value.trim();
     if(!inputVal) { alert("Please enter Player ID!"); return; }
 
     const btn = document.querySelector('.search-btn');
-    const originalIcon = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    const originalText = btn.innerText;
+    btn.innerText = "Searching...";
 
     try {
         const usersRef = ref(db, 'users');
-        // Check if ID matches 'publicID'
         const q = query(usersRef, orderByChild('publicID'), equalTo(parseInt(inputVal)));
         const snapshot = await get(q);
 
         if (snapshot.exists()) {
             const data = snapshot.val();
-            const foundUid = Object.keys(data)[0]; // Get actual UID
+            const foundUid = Object.keys(data)[0]; 
+            closeSearchModal(); // Close modal on success
             viewPlayer(foundUid);
         } else {
             alert("Player ID not found.");
@@ -100,7 +108,7 @@ window.searchPlayer = async () => {
         console.error(error);
         alert("Search Error.");
     } finally {
-        btn.innerHTML = originalIcon;
+        btn.innerText = originalText;
     }
 };
 
@@ -132,9 +140,6 @@ function checkChampionStatus(awards, containerId) {
 }
 
 // --- MAIL SYSTEM ---
-window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
-window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
-
 function fetchMail() {
     if(!currentUser) return;
     const list = document.getElementById('mailList');
@@ -216,7 +221,7 @@ window.claimTrophy = async (mailId) => {
 
 window.deleteMail = async (mailId) => { if(currentUser) await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`)); };
 
-// --- AWARD RENDERER (NO DATE, COMPACT) ---
+// --- AWARD RENDERER ---
 function renderAwards(snap, listId) {
     const list = document.getElementById(listId);
     if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 3; color:#555; text-align:center;">No trophies yet.</p>`; return; }
@@ -226,7 +231,6 @@ function renderAwards(snap, listId) {
 
     Object.values(awards).forEach(a => {
         if (a.isSpecial) {
-            // Special Trophy (Date Hidden via CSS)
             const s = a.specialData;
             list.innerHTML += `
                 <div class="special-trophy-card ${s.style}">
@@ -234,7 +238,6 @@ function renderAwards(snap, listId) {
                     <div class="special-title">${s.name}</div>
                 </div>`;
         } else {
-            // Rank Trophy
             let rank = parseInt(a.rank);
             let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
             let icn = rank<=3?'fa-trophy':'fa-medal';
@@ -284,7 +287,6 @@ window.viewPlayer = async (uid) => {
     
     const season = getSeasonInfo().seasonID;
     
-    // Fetch Numeric ID for view
     get(ref(db, `users/${uid}/publicID`)).then(snap => {
         document.getElementById('ppUid').innerText = snap.exists() ? snap.val() : "---";
     });
@@ -341,4 +343,3 @@ function loadLeaderboard() {
 let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
 document.getElementById('startBtn').onclick = function() { if (typeof DeviceMotionEvent.requestPermission === 'function') { DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); }); } else { start(); } this.innerText = "SENSOR ACTIVE"; this.disabled = true; this.style.background = "#238636"; };
 function start() { window.addEventListener('devicemotion', (e) => { let acc = e.accelerationIncludingGravity; if(!acc || !acc.x) return; let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2); lastAcc = (lastAcc * 0.7) + (raw * 0.3); let now = performance.now(); if(lastAcc < 2.5 && !isFreeFalling) { isFreeFalling = true; startTime = now; document.getElementById('status').innerText = "AIRBORNE"; } if(isFreeFalling && lastAcc > 14) { let d = (now - startTime)/1000; if(d > 0.2 && d < 2.5) { let h = 0.125 * 9.81 * (d**2); document.getElementById('height').innerText = h.toFixed(2); handleJump(h); } isFreeFalling = false; document.getElementById('status').innerText = "READY"; } }); }
-
