@@ -339,7 +339,6 @@ function loadLeaderboard() {
         lbList.innerHTML = allHtml;
     });
 }
-<div> <a style=" width: 150px; background-color: #1CA953; text-align: center; font-weight: 800; padding: 11px 0px; color: white; font-size: 12px; display: inline-block; text-decoration: none; border-radius:3.229px; " href='https://u.payu.in/WrxiPf1IMGiv' > Buy Now </a> </div>
 
 let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
 document.getElementById('startBtn').onclick = function() { if (typeof DeviceMotionEvent.requestPermission === 'function') { DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); }); } else { start(); } this.innerText = "SENSOR ACTIVE"; this.disabled = true; this.style.background = "#238636"; };
