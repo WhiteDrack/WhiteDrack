@@ -1,46 +1,45 @@
 :root { --primary: #00ff88; --gold: #ffd700; --silver: #e0e0e0; --bronze: #cd7f32; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
 body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
 
+/* Page Layout */
 .page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
 .active { display: flex; animation: fadeIn 0.3s ease; }
 .card { position: relative; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; }
 
-/* --- BUTTONS & ICONS --- */
-.inbox-icon-btn, .search-icon-btn { position: absolute; top: 15px; right: 15px; background: #1f242d; border: 1px solid #30363d; color: #fff; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; transition: transform 0.2s; }
-.search-icon-btn { right: auto; left: 15px; } 
-.inbox-icon-btn:active, .search-icon-btn:active { transform: scale(0.9); }
+/* Buttons & Inputs */
+.search-input { padding: 12px; background: #0d1117; border: 1px solid #30363d; color: #fff; border-radius: 8px; outline: none; font-size: 14px; }
+.search-btn { background: #1f6feb; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
+
+/* Floating Icons */
+.inbox-icon-btn, .search-icon-btn { position: absolute; top: 15px; right: 15px; background: #1f242d; border: 1px solid #30363d; color: #fff; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; }
+.search-icon-btn { right: auto; left: 15px; } /* Search on Left */
 .badge { position: absolute; top: -2px; right: -2px; background: #f85149; color: white; border-radius: 50%; width: 15px; height: 15px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid #161b22; }
 
-/* --- TROPHY GRID (MEDAL LOOK) --- */
+/* --- MEDAL STYLE TROPHIES (NO BOXES) --- */
 .awards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; margin-top: 25px; }
-
-/* Remove Box Background */
 .award-card, .special-trophy-card { background: transparent; border: none; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 90px; position: relative; animation: popIn 0.4s ease; }
 
-/* Medal Circle */
-.award-card i, .special-trophy-card i { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 22px; margin-bottom: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.1); transition: transform 0.2s; }
+/* The Medal Circle */
+.award-card i, .special-trophy-card i { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 22px; margin-bottom: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.1); }
 .award-card div, .special-trophy-card .special-title { font-size: 10px; color: #8b949e; font-weight: 600; text-align: center; line-height: 1.2; }
-.special-year { display: none; } /* Date Hidden */
+.special-year { display: none; }
 
-/* Ranks */
+/* Rank Colors */
 .rank-1 i { background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b); color: #fff; border: 2px solid #ffed4a; }
 .rank-2 i { background: radial-gradient(circle at 30% 30%, #e0e0e0, #757575); color: #fff; border: 2px solid #fff; }
 .rank-3 i { background: radial-gradient(circle at 30% 30%, #cd7f32, #8b4513); color: #fff; border: 2px solid #ffaf7a; }
 .rank-top i { background: #161b22; color: #58a6ff; border: 1px solid #30363d; box-shadow: none; }
 
-/* Premium Special Trophies */
+/* Special Gems */
 .style-titan i { background: radial-gradient(circle at 30% 30%, #fffacd, #ffd700, #b8860b); color: #5a3e00; box-shadow: 0 0 15px #ffd700; border: 2px solid #fff; }
 .style-titan .special-title { color: #ffd700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
-
 .style-velocity i { background: radial-gradient(circle at 30% 30%, #ff4d4d, #990000); color: #fff; box-shadow: 0 0 15px #ff004c; border: 2px solid #ff9999; }
 .style-velocity .special-title { color: #ff4d4d; }
-
 .style-legacy i { background: radial-gradient(circle at 30% 30%, #7fffd4, #008080); color: #003333; box-shadow: 0 0 15px #7fffd4; border: 2px solid #e0ffff; }
 .style-legacy .special-title { color: #7fffd4; }
-
 .style-apex i { background: radial-gradient(circle at 30% 30%, #00d2ff, #0056b3); color: #fff; box-shadow: 0 0 15px #00d2ff; border: 2px solid #cceeff; }
 .style-apex .special-title { color: #00d2ff; }
-
 .style-heart i { background: radial-gradient(circle at 30% 30%, #ffb6c1, #ff1493); color: #fff; box-shadow: 0 0 15px #ff69b4; border: 2px solid #ffe4e1; }
 .style-heart .special-title { color: #ff69b4; }
 
@@ -50,9 +49,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .legendary-ring::after { content: ''; position: absolute; inset: -1px; background: linear-gradient(45deg, #ffd700, #ffb700); border-radius: 50%; z-index: -1; }
 .year-crown-badge { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(180deg, #ffd700 0%, #ff8c00 100%); color: #000; font-size: 9px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 2px solid #161b22; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); white-space: nowrap; animation: badgePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-/* UI Helpers */
-.search-input { padding: 12px; background: #0d1117; border: 1px solid #30363d; color: #fff; border-radius: 8px; outline: none; font-size: 14px; }
-.search-btn { background: #1f6feb; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
+/* Common */
 .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
 .nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .nav-item.active-nav { color: var(--primary); }
@@ -63,7 +60,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .player-name { font-weight: 600; font-size: 14px; color: #fff; }
 .player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
 #height { font-size: 80px; font-weight: 900; color: var(--primary); margin: 0; }
-.btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
 .season-badge { background: #238636; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;}
 .uid-box { background: #0d1117; padding: 5px 10px; border-radius: 8px; font-size: 11px; color: #8b949e; margin-top: 5px; display: inline-block; border: 1px solid #30363d; letter-spacing: 1px; font-family: monospace; }
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
