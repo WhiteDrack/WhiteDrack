@@ -1,330 +1,74 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, set, get, onValue, remove, push, query, orderByChild, equalTo, runTransaction, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+:root { --primary: #00ff88; --gold: #ffd700; --silver: #e0e0e0; --bronze: #cd7f32; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
-    authDomain: "white-drack-fd1ee.firebaseapp.com",
-    databaseURL: "https://white-drack-fd1ee-default-rtdb.firebaseio.com",
-    projectId: "white-drack-fd1ee",
-    storageBucket: "white-drack-fd1ee.firebasestorage.app",
-    messagingSenderId: "151227903888",
-    appId: "1:151227903888:web:02a2d7ab14f7d1e152cd15"
-};
+/* Page Layout */
+.page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
+.active { display: flex; animation: fadeIn 0.3s ease; }
+.card { position: relative; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; }
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const provider = new GoogleAuthProvider();
+/* Buttons & Inputs */
+.search-input { padding: 12px; background: #0d1117; border: 1px solid #30363d; color: #fff; border-radius: 8px; outline: none; font-size: 14px; }
+.search-btn { background: #1f6feb; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
 
-let currentUser = null; 
-let currentTotalScore = 0;
+/* Floating Icons */
+.inbox-icon-btn, .search-icon-btn { position: absolute; top: 15px; right: 15px; background: #1f242d; border: 1px solid #30363d; color: #fff; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; }
+.search-icon-btn { right: auto; left: 15px; } /* Search on Left */
+.badge { position: absolute; top: -2px; right: -2px; background: #f85149; color: white; border-radius: 50%; width: 15px; height: 15px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid #161b22; }
 
-// --- UTILS ---
-function getSeasonID() {
-    const now = new Date();
-    return `season_${now.getFullYear()}_${now.getMonth() + 1}`;
-}
-function getSeasonInfo() {
-    const now = new Date(); 
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const seasonName = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
-    if(document.getElementById('seasonDisplay')) {
-        document.getElementById('seasonDisplay').innerText = "Season: " + seasonName;
-        document.getElementById('lbSeasonName').innerText = "Leaderboard for " + seasonName;
-    }
-    return { seasonID: getSeasonID() };
-}
-if(document.getElementById('roundDisplay')) document.getElementById('roundDisplay').innerText = "Compete for Glory";
+/* --- MEDAL STYLE TROPHIES (NO BOXES) --- */
+.awards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; margin-top: 25px; }
+.award-card, .special-trophy-card { background: transparent; border: none; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 90px; position: relative; animation: popIn 0.4s ease; }
 
-// --- AUTH & PROFILE SYNC ---
-window.login = () => signInWithPopup(auth, provider);
-window.logout = () => signOut(auth);
+/* The Medal Circle */
+.award-card i, .special-trophy-card i { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 22px; margin-bottom: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.1); }
+.award-card div, .special-trophy-card .special-title { font-size: 10px; color: #8b949e; font-weight: 600; text-align: center; line-height: 1.2; }
+.special-year { display: none; }
 
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        currentUser = user;
-        document.getElementById('bottomNav').style.display = 'flex';
-        // IMPORTANT: Sync Global Profile on Login for Search to work
-        await manageUserProfile(user);
-        loadUserData(user);
-        navTo('jumpPage', document.querySelector('.nav-item'));
-    } else {
-        document.getElementById('bottomNav').style.display = 'none';
-        navTo('loginPage');
-    }
-});
+/* Rank Colors */
+.rank-1 i { background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b); color: #fff; border: 2px solid #ffed4a; }
+.rank-2 i { background: radial-gradient(circle at 30% 30%, #e0e0e0, #757575); color: #fff; border: 2px solid #fff; }
+.rank-3 i { background: radial-gradient(circle at 30% 30%, #cd7f32, #8b4513); color: #fff; border: 2px solid #ffaf7a; }
+.rank-top i { background: #161b22; color: #58a6ff; border: 1px solid #30363d; box-shadow: none; }
 
-// --- NAVIGATION ---
-window.navTo = (pageId, el) => {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-    if(el) { document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav')); el.classList.add('active-nav'); }
-    if(pageId === 'leaderboardPage') loadLeaderboard();
-};
-window.openSearchModal = () => { document.getElementById('searchModal').style.display = 'flex'; };
-window.closeSearchModal = () => { document.getElementById('searchModal').style.display = 'none'; };
-window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
-window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
+/* Special Gems */
+.style-titan i { background: radial-gradient(circle at 30% 30%, #fffacd, #ffd700, #b8860b); color: #5a3e00; box-shadow: 0 0 15px #ffd700; border: 2px solid #fff; }
+.style-titan .special-title { color: #ffd700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+.style-velocity i { background: radial-gradient(circle at 30% 30%, #ff4d4d, #990000); color: #fff; box-shadow: 0 0 15px #ff004c; border: 2px solid #ff9999; }
+.style-velocity .special-title { color: #ff4d4d; }
+.style-legacy i { background: radial-gradient(circle at 30% 30%, #7fffd4, #008080); color: #003333; box-shadow: 0 0 15px #7fffd4; border: 2px solid #e0ffff; }
+.style-legacy .special-title { color: #7fffd4; }
+.style-apex i { background: radial-gradient(circle at 30% 30%, #00d2ff, #0056b3); color: #fff; box-shadow: 0 0 15px #00d2ff; border: 2px solid #cceeff; }
+.style-apex .special-title { color: #00d2ff; }
+.style-heart i { background: radial-gradient(circle at 30% 30%, #ffb6c1, #ff1493); color: #fff; box-shadow: 0 0 15px #ff69b4; border: 2px solid #ffe4e1; }
+.style-heart .special-title { color: #ff69b4; }
 
-// --- GLOBAL PROFILE MANAGER ---
-async function manageUserProfile(user) {
-    const idRef = ref(db, `users/${user.uid}/publicID`);
-    let snap = await get(idRef);
-    let publicID;
-    if (snap.exists()) { publicID = snap.val(); } 
-    else { publicID = Math.floor(10000000 + Math.random() * 90000000); await set(idRef, publicID); }
+/* Champion Visuals */
+.profile-img-container { position: relative; display: inline-block; margin-top: 20px; padding: 5px; }
+.legendary-ring::before { content: ''; position: absolute; inset: -3px; background: conic-gradient(from 0deg, transparent 0%, #ffd700 20%, #b8860b 50%, #ffd700 80%, transparent 100%); border-radius: 50%; z-index: -1; animation: rotateGold 4s linear infinite; filter: blur(4px); }
+.legendary-ring::after { content: ''; position: absolute; inset: -1px; background: linear-gradient(45deg, #ffd700, #ffb700); border-radius: 50%; z-index: -1; }
+.year-crown-badge { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(180deg, #ffd700 0%, #ff8c00 100%); color: #000; font-size: 9px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 2px solid #161b22; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); white-space: nowrap; animation: badgePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-    // Update Global Profile Node
-    await update(ref(db, `users/${user.uid}/profile`), {
-        name: user.displayName,
-        photo: user.photoURL,
-        uid: user.uid,
-        publicID: publicID
-    });
-    return publicID;
-}
-
-// --- SEARCH LOGIC (FIXED) ---
-window.searchPlayer = async () => {
-    const inputVal = document.getElementById('modalSearchInput').value.trim();
-    if(!inputVal) { alert("Please enter Player ID!"); return; }
-    const btn = document.querySelector('#searchModal .search-btn');
-    btn.innerText = "Searching...";
-
-    try {
-        const usersRef = ref(db, 'users');
-        // Check publicID in global users node
-        const q = query(usersRef, orderByChild('publicID'), equalTo(parseInt(inputVal)));
-        const snapshot = await get(q);
-
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            const foundUid = Object.keys(data)[0]; // Got UID
-            closeSearchModal();
-            viewPlayer(foundUid);
-        } else {
-            alert("Player ID not found.");
-        }
-    } catch (error) {
-        console.error(error);
-        alert("Search failed. Check rules.");
-    } finally {
-        btn.innerText = "FIND PLAYER";
-    }
-};
-
-// --- DATA LOADING ---
-async function loadUserData(user) {
-    const season = getSeasonInfo().seasonID;
-    const publicID = await manageUserProfile(user);
-    
-    document.getElementById('pUid').innerText = publicID;
-    document.getElementById('pName').innerText = user.displayName;
-    document.getElementById('pImg').src = user.photoURL;
-    
-    onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
-        currentTotalScore = s.exists() ? parseFloat(s.val()) : 0;
-        document.getElementById('pTotal').innerText = currentTotalScore.toFixed(2) + "m";
-        document.getElementById('todayBest').innerText = currentTotalScore.toFixed(2) + "m";
-    });
-    onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
-        checkChampionStatus(snap.exists()?snap.val():null, 'myProfileContainer');
-        renderAwards(snap, 'awardsList');
-    });
-}
-
-// --- VIEW PLAYER (FIXED PROFILE FETCH) ---
-window.viewPlayer = async (uid) => {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('publicProfilePage').classList.add('active');
-    
-    document.getElementById('ppName').innerText = "Loading...";
-    document.getElementById('ppUid').innerText = "...";
-    document.getElementById('ppTotal').innerText = "0.00m";
-    document.getElementById('ppImg').src = "https://via.placeholder.com/80";
-    document.getElementById('ppAwardsList').innerHTML = '<p style="grid-column: span 3; color:#555;">Loading...</p>';
-    
-    const container = document.getElementById('publicProfileContainer');
-    if(container) { container.classList.remove('legendary-ring'); const b=container.querySelector('.year-crown-badge'); if(b) b.remove(); }
-    
-    // 1. Fetch Global Profile (Fixes "Unknown Player")
-    try {
-        const profileSnap = await get(ref(db, `users/${uid}/profile`));
-        if (profileSnap.exists()) {
-            const p = profileSnap.val();
-            document.getElementById('ppName').innerText = p.name;
-            document.getElementById('ppImg').src = p.photo;
-            document.getElementById('ppUid').innerText = p.publicID;
-        } else {
-            document.getElementById('ppName').innerText = "Unknown User";
-        }
-    } catch(e) { console.error(e); }
-
-    // 2. Fetch Season Score
-    const season = getSeasonInfo().seasonID;
-    onValue(ref(db, `${season}/users/${uid}/totalScore`), (snap) => {
-        const score = snap.exists() ? parseFloat(snap.val()) : 0;
-        document.getElementById('ppTotal').innerText = score.toFixed(2) + "m";
-    }, {onlyOnce: true});
-
-    // 3. Fetch Awards
-    onValue(ref(db, `users/${uid}/awards`), (snap) => {
-        checkChampionStatus(snap.exists()?snap.val():null, 'publicProfileContainer');
-        renderAwards(snap, 'ppAwardsList');
-    }, {onlyOnce: true});
-};
-
-window.closePublicProfile = () => { navTo('leaderboardPage'); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav')); document.querySelectorAll('.nav-item')[1].classList.add('active-nav'); };
-
-// --- JUMP LOGIC (FIXED CUMULATIVE) ---
-async function handleJump(height) {
-    if(!currentUser) return;
-    const season = getSeasonInfo().seasonID;
-
-    // UI Update
-    const newTotal = currentTotalScore + height;
-    document.getElementById('todayBest').innerText = newTotal.toFixed(2) + "m";
-    document.getElementById('pTotal').innerText = newTotal.toFixed(2) + "m";
-
-    try {
-        // Transaction to ADD Score safely
-        await runTransaction(ref(db, `${season}/users/${currentUser.uid}`), (userData) => {
-            if (!userData) {
-                return { name: currentUser.displayName, photo: currentUser.photoURL, totalScore: height };
-            } else {
-                userData.totalScore = (userData.totalScore || 0) + height;
-                userData.name = currentUser.displayName;
-                userData.photo = currentUser.photoURL;
-                return userData;
-            }
-        });
-    } catch (e) { console.error("Jump Save Error:", e); }
-}
-
-// --- SENSOR LOGIC (STRICT) ---
-let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
-document.getElementById('startBtn').onclick = function() { if (typeof DeviceMotionEvent.requestPermission === 'function') { DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); }); } else { start(); } this.innerText = "SENSOR ACTIVE"; this.disabled = true; this.style.background = "#238636"; };
-function start() { window.addEventListener('devicemotion', (e) => { 
-    let acc = e.accelerationIncludingGravity; if(!acc || !acc.x) return; 
-    let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-    lastAcc = (lastAcc * 0.5) + (raw * 0.5); 
-    let now = performance.now();
-    
-    // Strict Thresholds: < 1.0 (Freefall) & > 20 (Impact)
-    if(lastAcc < 1.0 && !isFreeFalling) { isFreeFalling = true; startTime = now; document.getElementById('status').innerText = "AIRBORNE"; } 
-    
-    if(isFreeFalling && lastAcc > 20) { 
-        let d = (now - startTime)/1000;
-        if(d > 0.25 && d < 2.5) { // Min air time 0.25s
-            let h = 0.5 * 9.81 * (d**2);
-            if (h > 5.0) h = 5.0; // Cap
-            document.getElementById('height').innerText = h.toFixed(2); 
-            handleJump(h); 
-        } 
-        isFreeFalling = false; document.getElementById('status').innerText = "READY"; 
-    }
-    if (isFreeFalling && (now - startTime) > 2500) { isFreeFalling = false; document.getElementById('status').innerText = "READY"; }
-}); }
-
-// --- RENDERERS ---
-function loadLeaderboard() {
-    const lbList = document.getElementById('lbList');
-    lbList.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Loading Season Data...</p>";
-    const season = getSeasonInfo().seasonID;
-    onValue(ref(db, `${season}/users`), (snapshot) => {
-        if (!snapshot.exists()) { lbList.innerHTML = "<p style='text-align:center; margin-top:20px;'>No Players Yet</p>"; return; }
-        let players = []; snapshot.forEach(child => { if(child.val().totalScore) players.push({ ...child.val(), uid: child.key }); });
-        players.sort((a, b) => parseFloat(b.totalScore) - parseFloat(a.totalScore));
-        let allHtml = "";
-        players.slice(0, 50).forEach((p, i) => {
-            let rankStyle = i===0?"color:#ffd700; border:1px solid #ffd700; box-shadow: 0 0 5px rgba(255,215,0,0.3);":i===1?"color:#c0c0c0; border:1px solid #c0c0c0;":i===2?"color:#cd7f32; border:1px solid #cd7f32;":"";
-            let rankColor = i===0?"#ffd700":i===1?"#c0c0c0":i===2?"#cd7f32":"var(--primary)";
-            let name = p.name ? p.name.split(' ')[0] : 'Unknown';
-            allHtml += `<div class="player-row" onclick="viewPlayer('${p.uid}')"><div class="rank-circle" style="${rankStyle}">${i+1}</div><div class="player-info"><span class="player-name">${name}</span></div><div class="player-score" style="color:${rankColor}">${parseFloat(p.totalScore).toFixed(2)}m</div></div>`;
-        });
-        lbList.innerHTML = allHtml;
-    });
-}
-
-function checkChampionStatus(awards, containerId) {
-    const container = document.getElementById(containerId);
-    if(!container) return;
-    container.classList.remove('legendary-ring');
-    const oldBadge = container.querySelector('.year-crown-badge');
-    if(oldBadge) oldBadge.remove();
-    if(!awards) return;
-    let yearCounts = {};
-    Object.values(awards).forEach(award => {
-        if(!award.isSpecial && parseInt(award.rank) === 1) { 
-            const year = award.seasonName.split(' ')[1];
-            if(year) yearCounts[year] = (yearCounts[year] || 0) + 1;
-        }
-    });
-    let maxGold = 0; let bestYear = "";
-    for(let y in yearCounts) { if(yearCounts[y] > maxGold) { maxGold = yearCounts[y]; bestYear = y; } }
-    if(maxGold > 0) {
-        container.classList.add('legendary-ring');
-        container.innerHTML += `<div class="year-crown-badge">👑 ${bestYear} King</div>`;
-    }
-}
-
-function renderAwards(snap, listId) {
-    const list = document.getElementById(listId);
-    if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 3; color:#555; text-align:center;">No trophies yet.</p>`; return; }
-    list.innerHTML = "";
-    Object.values(snap.val()).forEach(a => {
-        if (a.isSpecial) {
-            const s = a.specialData;
-            list.innerHTML += `<div class="special-trophy-card ${s.style}"><i class="fas ${s.icon} special-icon"></i><div class="special-title">${s.name}</div></div>`;
-        } else {
-            let rank = parseInt(a.rank);
-            let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
-            let icn = rank<=3?'fa-trophy':'fa-medal';
-            list.innerHTML += `<div class="award-card ${cls}"><i class="fas ${icn} ${cls}"></i><div>#${rank}</div></div>`;
-        }
-    });
-}
-
-function fetchMail() {
-    if(!currentUser) return;
-    const list = document.getElementById('mailList');
-    onValue(ref(db, `users/${currentUser.uid}/inbox`), (snap) => {
-        if(!snap.exists()) { list.innerHTML = '<p style="color:#555; text-align:center;">Inbox empty.</p>'; document.getElementById('mailCount').style.display = 'none'; return; }
-        const mails = snap.val(); let html = ""; let count = 0;
-        Object.entries(mails).forEach(([key, mail]) => {
-            count++; let btn = "";
-            if (mail.type === "special_trophy") {
-                window[`trophy_${key}`] = mail.trophyData;
-                btn = `<button onclick="claimTrophy('${key}')" class="claim-btn" style="background:linear-gradient(45deg,#7928ca,#ff0080);color:#fff;">CLAIM TROPHY</button>`;
-            } else if (mail.reward) {
-                btn = `<button onclick="claimReward('${key}', ${mail.reward})" class="claim-btn">CLAIM +${mail.reward}m</button>`;
-            } else { btn = `<button onclick="deleteMail('${key}')" class="claim-btn" style="background:#30363d;color:#fff;">Dismiss</button>`; }
-            html += `<div class="mail-item"><div class="mail-title">${mail.title}</div><div class="mail-msg">${mail.message}</div>${btn}</div>`;
-        });
-        list.innerHTML = html;
-        const badge = document.getElementById('mailCount');
-        if(count > 0) { badge.innerText = count; badge.style.display = 'flex'; } else { badge.style.display = 'none'; }
-    });
-}
-
-window.claimTrophy = async (mailId) => {
-    if(!currentUser) return;
-    const tData = window[`trophy_${mailId}`];
-    if(confirm(`Claim '${tData.name}' Trophy?`)) {
-        await push(ref(db, `users/${currentUser.uid}/awards`), { seasonName: tData.date, rank: "Special", isSpecial: true, specialData: tData });
-        await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`)); delete window[`trophy_${mailId}`]; alert("🏆 Claimed!");
-    }
-};
-window.claimReward = async (mailId, amount) => {
-    if(!currentUser) return;
-    const season = getSeasonInfo().seasonID;
-    if(confirm(`Claim ${amount}m?`)) {
-        await runTransaction(ref(db, `${season}/users/${currentUser.uid}`), (d) => {
-            if(!d) return { name: currentUser.displayName, photo: currentUser.photoURL, totalScore: parseFloat(amount) };
-            d.totalScore = (d.totalScore || 0) + parseFloat(amount); return d;
-        });
-        await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`)); alert("Score Added!");
-    }
-};
-window.deleteMail = async (m) => { if(currentUser) await remove(ref(db, `users/${currentUser.uid}/inbox/${m}`)); };
+/* Common */
+.nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
+.nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.nav-item.active-nav { color: var(--primary); }
+.lb-container { width: 100%; max-width: 400px; }
+.player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; animation: fadeIn 0.5s; cursor: pointer; }
+.rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: var(--primary); }
+.player-info { flex-grow: 1; text-align: left; }
+.player-name { font-weight: 600; font-size: 14px; color: #fff; }
+.player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
+#height { font-size: 80px; font-weight: 900; color: var(--primary); margin: 0; }
+.season-badge { background: #238636; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;}
+.uid-box { background: #0d1117; padding: 5px 10px; border-radius: 8px; font-size: 11px; color: #8b949e; margin-top: 5px; display: inline-block; border: 1px solid #30363d; letter-spacing: 1px; font-family: monospace; }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
+.modal-card { width: 90%; max-width: 350px; background: #161b22; border: 1px solid #30363d; }
+.mail-item { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 10px; margin-bottom: 10px; position: relative; }
+.mail-title { font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 14px; }
+.mail-msg { font-size: 12px; color: #c9d1d9; margin-bottom: 10px; }
+.claim-btn { background: linear-gradient(45deg, #ffd700, #ff8c00); border: none; color: #000; font-weight: bold; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 12px; }
+@keyframes rotateGold { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes badgePop { 0% { transform: translateX(-50%) scale(0); } 100% { transform: translateX(-50%) scale(1); } }
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
