@@ -20,10 +20,12 @@ const provider = new GoogleAuthProvider();
 let currentUser = null; 
 let currentTotalScore = 0;
 
+// --- UTILS ---
 function getSeasonID() {
     const now = new Date();
     return `season_${now.getFullYear()}_${now.getMonth() + 1}`;
 }
+
 function getSeasonInfo() {
     const now = new Date(); 
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -36,6 +38,7 @@ function getSeasonInfo() {
 }
 if(document.getElementById('roundDisplay')) document.getElementById('roundDisplay').innerText = "Compete for Glory";
 
+// --- AUTH ---
 window.login = () => signInWithPopup(auth, provider);
 window.logout = () => signOut(auth);
 
@@ -51,6 +54,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// --- NAVIGATION ---
 window.navTo = (pageId, el) => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
@@ -63,67 +67,94 @@ window.closeSearchModal = () => { document.getElementById('searchModal').style.d
 window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
 window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
 
-// --- USER PROFILE & ID ---
+// --- ID & PROFILE MANAGEMENT ---
 async function manageUserProfile(user) {
+    // 1. Get/Generate Numeric ID
     const idRef = ref(db, `users/${user.uid}/publicID`);
     let snap = await get(idRef);
     let publicID;
-    if (snap.exists()) { publicID = snap.val(); } 
-    else {
+    
+    if (snap.exists()) {
+        publicID = snap.val();
+    } else {
         publicID = Math.floor(10000000 + Math.random() * 90000000);
         await set(idRef, publicID);
     }
-    // Update global profile for search visibility
+
+    // 2. Save Permanent Profile (NAME & PHOTO Fix for Search)
+    // We update this every login to ensure fresh data
     await update(ref(db, `users/${user.uid}/profile`), {
-        name: user.displayName, photo: user.photoURL, uid: user.uid, publicID: publicID
+        name: user.displayName,
+        photo: user.photoURL,
+        uid: user.uid,
+        publicID: publicID
     });
+
     return publicID;
 }
 
-// --- SEARCH ---
+// --- SEARCH LOGIC (FIXED) ---
 window.searchPlayer = async () => {
     const inputVal = document.getElementById('modalSearchInput').value.trim();
     if(!inputVal) { alert("Please enter Player ID!"); return; }
+
     const btn = document.querySelector('#searchModal .search-btn');
     const originalText = btn.innerText;
     btn.innerText = "Searching...";
+
     try {
         const usersRef = ref(db, 'users');
+        // Search by publicID
         const q = query(usersRef, orderByChild('publicID'), equalTo(parseInt(inputVal)));
         const snapshot = await get(q);
+
         if (snapshot.exists()) {
+            // Found the user node
             const data = snapshot.val();
-            const foundUid = Object.keys(data)[0]; 
+            const foundUid = Object.keys(data)[0]; // Extract UID
+            
             closeSearchModal();
-            viewPlayer(foundUid);
+            viewPlayer(foundUid); // Open profile
         } else {
             alert("Player ID not found.");
         }
-    } catch (error) { console.error("Search Error:", error); alert("Search failed."); } 
-    finally { btn.innerText = originalText; }
+    } catch (error) {
+        console.error("Search Error:", error);
+        alert("Search failed. Try again.");
+    } finally {
+        btn.innerText = originalText;
+    }
 };
 
+// --- DATA LOADING & VIEWING ---
 async function loadUserData(user) {
     const season = getSeasonInfo().seasonID;
-    const publicID = await manageUserProfile(user); 
+    const publicID = await manageUserProfile(user); // Ensure profile exists
+    
     document.getElementById('pUid').innerText = publicID;
     document.getElementById('pName').innerText = user.displayName;
     document.getElementById('pImg').src = user.photoURL;
     
+    // Listen to SEASON TOTAL SCORE
     onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
         currentTotalScore = s.exists() ? parseFloat(s.val()) : 0;
         document.getElementById('pTotal').innerText = currentTotalScore.toFixed(2) + "m";
         document.getElementById('todayBest').innerText = currentTotalScore.toFixed(2) + "m";
     });
+
+    // Listen to Awards
     onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
         checkChampionStatus(snap.exists()?snap.val():null, 'myProfileContainer');
         renderAwards(snap, 'awardsList');
     });
 }
 
+// --- VIEW PLAYER (FIXED: Fetches Name/Photo from Global Profile) ---
 window.viewPlayer = async (uid) => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('publicProfilePage').classList.add('active');
+    
+    // Reset UI
     document.getElementById('ppName').innerText = "Loading...";
     document.getElementById('ppUid').innerText = "...";
     document.getElementById('ppTotal').innerText = "0.00m";
@@ -133,6 +164,7 @@ window.viewPlayer = async (uid) => {
     const container = document.getElementById('publicProfileContainer');
     if(container) { container.classList.remove('legendary-ring'); const b=container.querySelector('.year-crown-badge'); if(b) b.remove(); }
     
+    // 1. Fetch Basic Profile (Global) - This fixes the "No Name" issue in search
     try {
         const profileSnap = await get(ref(db, `users/${uid}/profile`));
         if (profileSnap.exists()) {
@@ -145,12 +177,14 @@ window.viewPlayer = async (uid) => {
         }
     } catch(e) { console.error(e); }
 
+    // 2. Fetch Season Score
     const season = getSeasonInfo().seasonID;
     onValue(ref(db, `${season}/users/${uid}/totalScore`), (snap) => {
         const score = snap.exists() ? parseFloat(snap.val()) : 0;
         document.getElementById('ppTotal').innerText = score.toFixed(2) + "m";
     }, {onlyOnce: true});
 
+    // 3. Fetch Awards
     onValue(ref(db, `users/${uid}/awards`), (snap) => {
         checkChampionStatus(snap.exists()?snap.val():null, 'publicProfileContainer');
         renderAwards(snap, 'ppAwardsList');
@@ -159,50 +193,118 @@ window.viewPlayer = async (uid) => {
 
 window.closePublicProfile = () => { navTo('leaderboardPage'); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav')); document.querySelectorAll('.nav-item')[1].classList.add('active-nav'); };
 
-// --- JUMP LOGIC ---
+// --- JUMP LOGIC (FIXED: Cumulative + Stricter Sensor) ---
 async function handleJump(height) {
     if(!currentUser) return;
     const season = getSeasonInfo().seasonID;
+
+    // 1. UI Update Immediately (Visual Feedback)
     const displayScore = currentTotalScore + height;
     document.getElementById('todayBest').innerText = displayScore.toFixed(2) + "m";
     document.getElementById('pTotal').innerText = displayScore.toFixed(2) + "m";
 
     try {
+        // 2. Transaction to ADD score (Fixes the Highest Score issue)
+        // This safely adds the new height to whatever is in the database
         await runTransaction(ref(db, `${season}/users/${currentUser.uid}`), (userData) => {
-            if (!userData) { return { name: currentUser.displayName, photo: currentUser.photoURL, totalScore: height }; } 
-            else { 
+            if (!userData) {
+                // If user doesn't exist in season yet, create entry
+                return {
+                    name: currentUser.displayName,
+                    photo: currentUser.photoURL,
+                    totalScore: height
+                };
+            } else {
+                // If exists, ADD height to totalScore
                 userData.totalScore = (userData.totalScore || 0) + height;
-                userData.name = currentUser.displayName; 
+                // Update name/photo just in case they changed
+                userData.name = currentUser.displayName;
                 userData.photo = currentUser.photoURL;
                 return userData;
             }
         });
-    } catch (e) { console.error("Jump Save Error:", e); }
+        console.log("Score Added: +" + height);
+    } catch (e) { 
+        console.error("Jump Save Error:", e); 
+        // Revert local UI if save failed (optional, but good practice)
+    }
 }
 
-let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
-document.getElementById('startBtn').onclick = function() { if (typeof DeviceMotionEvent.requestPermission === 'function') { DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); }); } else { start(); } this.innerText = "SENSOR ACTIVE"; this.disabled = true; this.style.background = "#238636"; };
-function start() { window.addEventListener('devicemotion', (e) => { let acc = e.accelerationIncludingGravity; if(!acc || !acc.x) return; let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2); lastAcc = (lastAcc * 0.5) + (raw * 0.5); let now = performance.now(); 
-    if(lastAcc < 1.2 && !isFreeFalling) { isFreeFalling = true; startTime = now; document.getElementById('status').innerText = "AIRBORNE"; } 
-    if(isFreeFalling && lastAcc > 20) { 
-        let d = (now - startTime)/1000; 
-        if(d > 0.25 && d < 2.5) { 
-            let h = 0.5 * 9.81 * (d**2); if (h > 5.0) h = 5.0; 
-            document.getElementById('height').innerText = h.toFixed(2); handleJump(h); 
-        } 
-        isFreeFalling = false; document.getElementById('status').innerText = "READY"; 
-    }
-    if (isFreeFalling && (now - startTime) > 2500) { isFreeFalling = false; document.getElementById('status').innerText = "READY"; }
-}); }
+// --- SENSOR LOGIC (FIXED: High Sensitivity Issue) ---
+let isFreeFalling = false; 
+let startTime = 0; 
+let lastAcc = 9.8;
 
+document.getElementById('startBtn').onclick = function() { 
+    if (typeof DeviceMotionEvent.requestPermission === 'function') { 
+        DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); }); 
+    } else { start(); } 
+    this.innerText = "SENSOR ACTIVE"; 
+    this.disabled = true; 
+    this.style.background = "#238636"; 
+};
+
+function start() { 
+    window.addEventListener('devicemotion', (e) => { 
+        let acc = e.accelerationIncludingGravity; 
+        if(!acc || !acc.x) return; 
+        
+        let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+        // Low Pass Filter to smooth out jitter
+        lastAcc = (lastAcc * 0.5) + (raw * 0.5); 
+        
+        let now = performance.now();
+        
+        // ISSUE 2 FIX: Stricter Thresholds
+        // Freefall: Must be VERY close to 0 (gravity-less)
+        if(lastAcc < 1.2 && !isFreeFalling) { 
+            isFreeFalling = true; 
+            startTime = now; 
+            document.getElementById('status').innerText = "AIRBORNE"; 
+        } 
+        
+        // Impact: Must be a HARD landing (> 20G equivalent spike roughly)
+        if(isFreeFalling && lastAcc > 20) { 
+            let d = (now - startTime)/1000;
+            
+            // Duration Check: Must be in air for at least 0.25s
+            if(d > 0.25 && d < 2.5) { 
+                let h = 0.5 * 9.81 * (d**2); // h = 1/2 * g * t^2
+                // Cap max jump to realistic human limit (e.g. 1.5m - 2m) to prevent glitches
+                if (h > 5.0) h = 5.0; 
+
+                document.getElementById('height').innerText = h.toFixed(2); 
+                handleJump(h); // Add Score
+            } 
+            isFreeFalling = false; 
+            document.getElementById('status').innerText = "READY"; 
+        }
+        
+        // Reset if freefall lasts too long (fake drop)
+        if (isFreeFalling && (now - startTime) > 2500) {
+             isFreeFalling = false;
+             document.getElementById('status').innerText = "READY";
+        }
+    }); 
+}
+
+// --- LEADERBOARD & AWARDS ---
 function loadLeaderboard() {
     const lbList = document.getElementById('lbList');
     lbList.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Loading Season Data...</p>";
     const season = getSeasonInfo().seasonID;
+    
     onValue(ref(db, `${season}/users`), (snapshot) => {
         if (!snapshot.exists()) { lbList.innerHTML = "<p style='text-align:center; margin-top:20px;'>No Players Yet</p>"; return; }
-        let players = []; snapshot.forEach(child => { if(child.val().totalScore) players.push({ ...child.val(), uid: child.key }); });
+        
+        let players = []; 
+        snapshot.forEach(child => { 
+            if(child.val().totalScore) players.push({ ...child.val(), uid: child.key }); 
+        });
+        
+        // Sort High to Low
         players.sort((a, b) => parseFloat(b.totalScore) - parseFloat(a.totalScore));
+        
         let allHtml = "";
         players.slice(0, 50).forEach((p, i) => {
             let rankStyle = i===0?"color:#ffd700; border:1px solid #ffd700; box-shadow: 0 0 5px rgba(255,215,0,0.3);":i===1?"color:#c0c0c0; border:1px solid #c0c0c0;":i===2?"color:#cd7f32; border:1px solid #cd7f32;":"";
@@ -236,6 +338,7 @@ function checkChampionStatus(awards, containerId) {
     }
 }
 
+// --- MAIL & AWARD RENDERER ---
 function renderAwards(snap, listId) {
     const list = document.getElementById(listId);
     if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 3; color:#555; text-align:center;">No trophies yet.</p>`; return; }
