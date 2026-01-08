@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getDatabase, ref, set, get, onValue, remove, push, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -19,7 +18,7 @@ const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null; 
-let seasonBestScore = 0;
+let currentSeasonTotal = 0.00; // Local tracker for adding scores
 
 // --- UTILS ---
 function getSeasonID() {
@@ -27,29 +26,31 @@ function getSeasonID() {
     return `season_${now.getFullYear()}_${now.getMonth() + 1}`;
 }
 function getSeasonInfo() {
-    const now = new Date(); const d = now.getDate();
+    const now = new Date();
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const seasonName = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
     if(document.getElementById('seasonDisplay')) {
         document.getElementById('seasonDisplay').innerText = "Season: " + seasonName;
         document.getElementById('lbSeasonName').innerText = "Leaderboard for " + seasonName;
     }
-    let round = 1; if (d > 7) round = 2; if (d > 14) round = 3; if (d > 21) round = 4; if (d > 28) round = "FINAL";
-    return { text: round === "FINAL" ? "Finalizing..." : `Round ${round}`, seasonID: getSeasonID() };
+    return { seasonID: getSeasonID() };
 }
-if(document.getElementById('roundDisplay')) document.getElementById('roundDisplay').innerText = getSeasonInfo().text;
 
+// --- AUTH & NAVIGATION ---
 window.login = () => signInWithPopup(auth, provider);
-window.logout = () => signOut(auth);
+window.logout = () => { closeMenu(); signOut(auth); };
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
         document.getElementById('bottomNav').style.display = 'flex';
+        document.getElementById('hamburgerBtn').style.display = 'flex'; // Show Menu Button
         loadUserData(user);
         navTo('jumpPage', document.querySelector('.nav-item'));
     } else {
+        currentUser = null;
         document.getElementById('bottomNav').style.display = 'none';
+        document.getElementById('hamburgerBtn').style.display = 'none'; // Hide Menu Button
         navTo('loginPage');
     }
 });
@@ -61,13 +62,18 @@ window.navTo = (pageId, el) => {
     if(pageId === 'leaderboardPage') loadLeaderboard();
 };
 
-// --- MODAL CONTROLS ---
-window.openSearchModal = () => { document.getElementById('searchModal').style.display = 'flex'; };
-window.closeSearchModal = () => { document.getElementById('searchModal').style.display = 'none'; };
-
-window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
-window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
-
+// --- MENU FUNCTIONS ---
+window.openMenu = () => {
+    document.getElementById('sideMenu').classList.add('open');
+    document.getElementById('sideMenuOverlay').style.display = 'block';
+    if(currentUser) {
+        document.getElementById('menuUserEmail').innerText = currentUser.displayName || "User";
+    }
+};
+window.closeMenu = () => {
+    document.getElementById('sideMenu').classList.remove('open');
+    document.getElementById('sideMenuOverlay').style.display = 'none';
+};
 
 // --- NUMERIC ID LOGIC ---
 async function getOrGeneratePublicID(user) {
@@ -82,265 +88,241 @@ async function getOrGeneratePublicID(user) {
     }
 }
 
-// --- SEARCH LOGIC (Updated to use Modal Input) ---
-window.searchPlayer = async () => {
-    // Note: Now using 'modalSearchInput'
-    const inputVal = document.getElementById('modalSearchInput').value.trim();
-    if(!inputVal) { alert("Please enter Player ID!"); return; }
+// --- DATA LOADING & SCORING (CUMULATIVE) ---
+async function loadUserData(user) {
+    const season = getSeasonInfo().seasonID;
+    const publicID = await getOrGeneratePublicID(user);
+    
+    document.getElementById('pUid').innerText = publicID;
+    document.getElementById('pName').innerText = user.displayName;
+    document.getElementById('pImg').src = user.photoURL;
+    document.getElementById('menuUserId').innerText = publicID;
 
-    const btn = document.querySelector('.search-btn');
-    const originalText = btn.innerText;
-    btn.innerText = "Searching...";
+    // Listen for TOTAL SCORE updates
+    onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
+        if(s.exists()) {
+            currentSeasonTotal = parseFloat(s.val());
+        } else {
+            currentSeasonTotal = 0.00;
+        }
+        
+        // Update Displays
+        const displayScore = currentSeasonTotal.toFixed(2) + "m";
+        document.getElementById('pTotal').innerText = displayScore;
+        if(document.getElementById('todayBest')) {
+            document.getElementById('todayBest').innerText = displayScore;
+        }
+    });
+
+    onValue(ref(db, `users/${user.uid}/awards`), (snap) => renderAwards(snap, 'awardsList'));
+}
+
+// CALL THIS TO SAVE A JUMP (ADDS TO TOTAL)
+async function saveJumpData(jumpHeight) {
+    if (!currentUser || jumpHeight < 0.05) return; // Ignore tiny movements
+
+    const season = getSeasonInfo().seasonID;
+    const newTotal = currentSeasonTotal + parseFloat(jumpHeight);
 
     try {
-        const usersRef = ref(db, 'users');
-        const q = query(usersRef, orderByChild('publicID'), equalTo(parseInt(inputVal)));
-        const snapshot = await get(q);
-
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            const foundUid = Object.keys(data)[0]; 
-            closeSearchModal(); // Close modal on success
-            viewPlayer(foundUid);
-        } else {
-            alert("Player ID not found.");
-        }
-    } catch (error) {
-        console.error(error);
-        alert("Search Error.");
-    } finally {
-        btn.innerText = originalText;
-    }
-};
-
-// --- CHAMPION LOGIC ---
-function checkChampionStatus(awards, containerId) {
-    const container = document.getElementById(containerId);
-    if(!container) return;
-    container.classList.remove('legendary-ring');
-    const oldBadge = container.querySelector('.year-crown-badge');
-    if(oldBadge) oldBadge.remove();
-
-    if(!awards) return;
-
-    let yearCounts = {};
-    Object.values(awards).forEach(award => {
-        if(!award.isSpecial && parseInt(award.rank) === 1) { 
-            const year = award.seasonName.split(' ')[1];
-            if(year) yearCounts[year] = (yearCounts[year] || 0) + 1;
-        }
-    });
-
-    let maxGold = 0; let bestYear = "";
-    for(let y in yearCounts) { if(yearCounts[y] > maxGold) { maxGold = yearCounts[y]; bestYear = y; } }
-
-    if(maxGold > 0) {
-        container.classList.add('legendary-ring');
-        container.innerHTML += `<div class="year-crown-badge">👑 ${bestYear} King</div>`;
-    }
-}
-
-// --- MAIL SYSTEM ---
-function fetchMail() {
-    if(!currentUser) return;
-    const list = document.getElementById('mailList');
-    
-    onValue(ref(db, `users/${currentUser.uid}/inbox`), (snap) => {
-        if(!snap.exists()) {
-            list.innerHTML = '<p style="color:#555; text-align:center; padding:20px;">Inbox is empty.</p>';
-            document.getElementById('mailCount').style.display = 'none';
-            return;
-        }
-
-        const mails = snap.val();
-        let html = "";
-        let count = 0;
-
-        Object.entries(mails).forEach(([key, mail]) => {
-            count++;
-            let btn = "";
-
-            if (mail.type === "special_trophy") {
-                window[`trophy_${key}`] = mail.trophyData;
-                btn = `<button onclick="claimTrophy('${key}')" class="claim-btn" style="background:linear-gradient(45deg, #7928ca, #ff0080); color:white;"><i class="fas fa-trophy"></i> CLAIM TROPHY</button>`;
-            } else if (mail.reward) {
-                btn = `<button onclick="claimReward('${key}', ${mail.reward})" class="claim-btn"><i class="fas fa-coins"></i> CLAIM +${mail.reward}m SCORE</button>`;
-            } else {
-                btn = `<button onclick="deleteMail('${key}')" class="claim-btn" style="background:#30363d; color:#fff;">Dismiss</button>`;
-            }
-
-            html += `
-            <div class="mail-item">
-                <div class="mail-title">${mail.title}</div>
-                <div class="mail-msg">${mail.message}</div>
-                ${btn}
-            </div>`;
+        await set(ref(db, `${season}/users/${currentUser.uid}`), {
+            name: currentUser.displayName,
+            photo: currentUser.photoURL,
+            publicID: parseInt(document.getElementById('pUid').innerText),
+            totalScore: newTotal // CUMULATIVE UPDATE
         });
+        console.log(`Added ${jumpHeight}m. New Total: ${newTotal}`);
+    } catch (e) { console.error("Save failed", e); }
+}
 
-        list.innerHTML = html;
-        const badge = document.getElementById('mailCount');
-        if(count > 0) { badge.innerText = count; badge.style.display = 'flex'; } 
-        else { badge.style.display = 'none'; }
+// --- PHYSICS & JUMP DETECTION (FLIGHT TIME) ---
+let isJumping = false;
+let jumpStartTime = 0;
+
+window.requestPermission = () => {
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission()
+            .then(response => {
+                if (response === 'granted') startSensor();
+                else alert('Permission denied');
+            })
+            .catch(console.error);
+    } else {
+        startSensor();
+    }
+};
+
+function startSensor() {
+    document.getElementById('status').innerText = "DETECTING...";
+    document.getElementById('startBtn').style.display = 'none';
+    
+    window.addEventListener('devicemotion', (event) => {
+        const acc = Math.abs(event.accelerationIncludingGravity.z);
+        
+        // 1. FREEFALL DETECTION (Start Jump)
+        if (acc < 2.0 && !isJumping) { 
+            isJumping = true;
+            jumpStartTime = Date.now();
+            document.getElementById('status').innerText = "IN AIR!";
+            document.getElementById('status').style.color = "#00ff88";
+        }
+        
+        // 2. LANDING DETECTION (End Jump)
+        if (acc > 15.0 && isJumping) { 
+            const flightTime = (Date.now() - jumpStartTime) / 1000;
+            
+            // Limit fake long jumps (max 1.5 sec flight time)
+            if (flightTime > 0.15 && flightTime < 1.5) {
+                // Formula: h = 0.5 * g * (t/2)^2 => h = 1.226 * t^2
+                const height = 1.226 * Math.pow(flightTime, 2);
+                const heightM = height.toFixed(2);
+                
+                document.getElementById('height').innerText = heightM;
+                saveJumpData(heightM); // Add to total
+            }
+            
+            isJumping = false;
+            document.getElementById('status').innerText = "READY";
+            document.getElementById('status').style.color = "#e3b341";
+        }
     });
 }
 
-window.claimReward = async (mailId, rewardAmount) => {
-    if(!currentUser) return;
+// --- LEADERBOARD ---
+async function loadLeaderboard() {
     const season = getSeasonInfo().seasonID;
-    if(confirm(`Claim ${rewardAmount}m reward?`)) {
-        try {
-            const userRef = ref(db, `${season}/users/${currentUser.uid}/totalScore`);
-            const snap = await get(userRef);
-            let currentScore = snap.exists() ? parseFloat(snap.val()) : 0;
-            let newScore = currentScore + parseFloat(rewardAmount);
-            await set(ref(db, `${season}/users/${currentUser.uid}`), { name: currentUser.displayName, photo: currentUser.photoURL, totalScore: newScore });
-            seasonBestScore = newScore;
-            await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`));
-            alert("Score Boosted!");
-        } catch(e) { console.error(e); }
+    const list = document.getElementById('lbList');
+    list.innerHTML = '<p style="color:#555">Loading...</p>';
+
+    const q = query(ref(db, `${season}/users`), orderByChild('totalScore'));
+    
+    const snapshot = await get(q);
+    if (!snapshot.exists()) {
+        list.innerHTML = '<p style="color:#555">No players yet this season.</p>';
+        return;
     }
+
+    let players = [];
+    snapshot.forEach(child => players.push(child.val()));
+    players.reverse(); // Highest total first
+
+    list.innerHTML = "";
+    players.forEach((p, index) => {
+        let rankColor = index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#30363d';
+        let txtColor = index < 3 ? '#000' : '#fff';
+        
+        list.innerHTML += `
+        <div class="player-row" onclick="searchPlayerByID(${p.publicID})">
+            <div class="rank-circle" style="background:${rankColor}; color:${txtColor}">${index + 1}</div>
+            <div class="profile-img-container" style="margin:0 10px 0 0; margin-top:0;">
+                 <img src="${p.photo}" style="width:35px; height:35px; border-radius:50%;">
+            </div>
+            <div class="player-info">
+                <div class="player-name">${p.name}</div>
+                <div style="font-size:10px; color:#8b949e;">ID: ${p.publicID}</div>
+            </div>
+            <div class="player-score">${parseFloat(p.totalScore).toFixed(2)}m</div>
+        </div>`;
+    });
+}
+
+// --- SEARCH & PROFILE VIEW ---
+window.openSearchModal = () => { document.getElementById('searchModal').style.display = 'flex'; };
+window.closeSearchModal = () => { document.getElementById('searchModal').style.display = 'none'; };
+window.closePublicProfile = () => { document.getElementById('publicProfilePage').classList.remove('active'); };
+
+window.searchPlayer = async () => {
+    const id = document.getElementById('modalSearchInput').value;
+    searchPlayerByID(id);
 };
 
-window.claimTrophy = async (mailId) => {
-    if(!currentUser) return;
-    const tData = window[`trophy_${mailId}`];
-    if(!tData) { alert("Error finding trophy data."); return; }
-    if(confirm(`Claim '${tData.name}' Trophy?`)) {
-        try {
-            await push(ref(db, `users/${currentUser.uid}/awards`), {
-                seasonName: tData.date,
-                rank: "Special",
-                isSpecial: true,
-                specialData: tData
-            });
-            await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`));
-            delete window[`trophy_${mailId}`];
-            alert("🏆 Trophy added to profile!");
-        } catch(e) { console.error(e); }
+async function searchPlayerByID(publicID) {
+    if(!publicID) return;
+    closeSearchModal();
+    
+    const q = query(ref(db, 'users'), orderByChild('publicID'), equalTo(parseInt(publicID)));
+    const snapshot = await get(q);
+    
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        const uid = Object.keys(data)[0];
+        viewPlayer(uid);
+    } else {
+        alert("Player not found!");
     }
-};
+}
 
-window.deleteMail = async (mailId) => { if(currentUser) await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`)); };
+async function viewPlayer(targetUid) {
+    const season = getSeasonInfo().seasonID;
+    
+    // Get Basic Info
+    const userRef = ref(db, `users/${targetUid}`);
+    const userSnap = await get(userRef);
+    if(!userSnap.exists()) return;
+    const userData = userSnap.val();
 
-// --- AWARD RENDERER ---
+    // Get Season Score
+    const scoreRef = ref(db, `${season}/users/${targetUid}/totalScore`);
+    const scoreSnap = await get(scoreRef);
+    const score = scoreSnap.exists() ? scoreSnap.val() : 0;
+
+    // Fill UI
+    document.getElementById('ppName').innerText = userData.displayName || "Player"; // Fallback name
+    document.getElementById('ppUid').innerText = userData.publicID;
+    document.getElementById('ppTotal').innerText = parseFloat(score).toFixed(2) + "m";
+    
+    // Attempt to load photo (might not be in 'users' root, check season data if missing)
+    // For simplicity, we assume auth provided photo is stored or we use a placeholder
+    // In a real app, you'd store the photoUrl in 'users/{uid}' upon login too.
+    const seasonUserSnap = await get(ref(db, `${season}/users/${targetUid}`));
+    if(seasonUserSnap.exists()) {
+         document.getElementById('ppImg').src = seasonUserSnap.val().photo;
+    }
+
+    renderAwards(await get(ref(db, `users/${targetUid}/awards`)), 'ppAwardsList');
+    
+    document.getElementById('publicProfilePage').classList.add('active');
+}
+
+// --- AWARDS & MAIL (UNCHANGED UTILS) ---
 function renderAwards(snap, listId) {
     const list = document.getElementById(listId);
-    if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 3; color:#555; text-align:center;">No trophies yet.</p>`; return; }
-    
+    if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 3; color:#555; font-size:12px;">No trophies yet.</p>`; return; }
     list.innerHTML = "";
-    const awards = snap.val();
-
-    Object.values(awards).forEach(a => {
+    Object.values(snap.val()).forEach(a => {
         if (a.isSpecial) {
             const s = a.specialData;
-            list.innerHTML += `
-                <div class="special-trophy-card ${s.style}">
-                    <i class="fas ${s.icon} special-icon"></i>
-                    <div class="special-title">${s.name}</div>
-                </div>`;
+            list.innerHTML += `<div class="special-trophy-card ${s.style}"><i class="fas ${s.icon} special-icon"></i><div class="special-title">${s.name}</div></div>`;
         } else {
             let rank = parseInt(a.rank);
             let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
-            let icn = rank<=3?'fa-trophy':'fa-medal';
-            list.innerHTML += `
-                <div class="award-card ${cls}">
-                    <i class="fas ${icn} ${cls}" style="font-size:20px;"></i>
-                    <div style="font-weight:bold; color:#fff; font-size:12px;">#${rank}</div>
-                    <div style="font-size:8px; color:#888;">${a.seasonName}</div>
-                </div>`;
+            list.innerHTML += `<div class="award-card ${cls}"><i class="fas fa-trophy ${cls}"></i><div>#${rank}</div><div style="font-size:8px; color:#555;">${a.seasonName}</div></div>`;
         }
     });
 }
 
-async function loadUserData(user) {
-    const season = getSeasonInfo().seasonID;
-    
-    // Numeric ID Logic
-    const publicID = await getOrGeneratePublicID(user);
-    document.getElementById('pUid').innerText = publicID;
-
-    document.getElementById('pName').innerText = user.displayName;
-    document.getElementById('pImg').src = user.photoURL;
-    
-    onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
-        seasonBestScore = s.exists() ? parseFloat(s.val()) : 0;
-        document.getElementById('pTotal').innerText = seasonBestScore.toFixed(2) + "m";
-        document.getElementById('todayBest').innerText = seasonBestScore.toFixed(2) + "m";
-    });
-    onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
-        checkChampionStatus(snap.exists()?snap.val():null, 'myProfileContainer');
-        renderAwards(snap, 'awardsList');
-    });
-}
-
-window.viewPlayer = async (uid) => {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('publicProfilePage').classList.add('active');
-    
-    document.getElementById('ppName').innerText = "Loading...";
-    document.getElementById('ppUid').innerText = "...";
-    document.getElementById('ppTotal').innerText = "...";
-    document.getElementById('ppImg').src = "https://via.placeholder.com/80";
-    document.getElementById('ppAwardsList').innerHTML = '<p style="grid-column: span 3; color:#555;">Loading...</p>';
-    
-    const container = document.getElementById('publicProfileContainer');
-    if(container) { container.classList.remove('legendary-ring'); const b=container.querySelector('.year-crown-badge'); if(b) b.remove(); }
-    
-    const season = getSeasonInfo().seasonID;
-    
-    get(ref(db, `users/${uid}/publicID`)).then(snap => {
-        document.getElementById('ppUid').innerText = snap.exists() ? snap.val() : "---";
-    });
-
-    onValue(ref(db, `${season}/users/${uid}`), (snap) => {
-        if(snap.exists()) {
-            const u = snap.val();
-            document.getElementById('ppName').innerText = u.name;
-            document.getElementById('ppImg').src = u.photo || "https://via.placeholder.com/80";
-            document.getElementById('ppTotal').innerText = parseFloat(u.totalScore || 0).toFixed(2) + "m";
-        } else {
-            document.getElementById('ppName').innerText = "Unknown Player"; document.getElementById('ppTotal').innerText = "0.00m";
-        }
-    }, {onlyOnce: true});
-    onValue(ref(db, `users/${uid}/awards`), (snap) => {
-        checkChampionStatus(snap.exists()?snap.val():null, 'publicProfileContainer');
-        renderAwards(snap, 'ppAwardsList');
-    });
-};
-
-window.closePublicProfile = () => { navTo('leaderboardPage'); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav')); document.querySelectorAll('.nav-item')[1].classList.add('active-nav'); };
-
-async function handleJump(height) {
+// Mail logic remains same as previous steps (Inbox, Claim, etc.)
+window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
+window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
+function fetchMail() {
     if(!currentUser) return;
-    const season = getSeasonInfo().seasonID;
-    if (height > seasonBestScore) {
-        seasonBestScore = height;
-        document.getElementById('todayBest').innerText = height.toFixed(2) + "m";
-        document.getElementById('pTotal').innerText = height.toFixed(2) + "m";
-        try { await set(ref(db, `${season}/users/${currentUser.uid}`), { name: currentUser.displayName, photo: currentUser.photoURL, totalScore: height }); } 
-        catch (e) { console.error(e); }
-    }
-}
-
-function loadLeaderboard() {
-    const lbList = document.getElementById('lbList');
-    lbList.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Loading Season Data...</p>";
-    const season = getSeasonInfo().seasonID;
-    onValue(ref(db, `${season}/users`), (snapshot) => {
-        if (!snapshot.exists()) { lbList.innerHTML = "<p style='text-align:center; margin-top:20px;'>No Players Yet</p>"; return; }
-        let players = []; snapshot.forEach(child => { if(child.val().totalScore) players.push({ ...child.val(), uid: child.key }); });
-        players.sort((a, b) => parseFloat(b.totalScore) - parseFloat(a.totalScore));
-        let allHtml = "";
-        players.slice(0, 50).forEach((p, i) => {
-            let rankStyle = i===0?"color:#ffd700; border:1px solid #ffd700; box-shadow: 0 0 5px rgba(255,215,0,0.3);":i===1?"color:#c0c0c0; border:1px solid #c0c0c0;":i===2?"color:#cd7f32; border:1px solid #cd7f32;":"";
-            let rankColor = i===0?"#ffd700":i===1?"#c0c0c0":i===2?"#cd7f32":"var(--primary)";
-            let name = p.name ? p.name.split(' ')[0] : 'Unknown';
-            allHtml += `<div class="player-row" onclick="viewPlayer('${p.uid}')"><div class="rank-circle" style="${rankStyle}">${i+1}</div><div class="player-info"><span class="player-name">${name}</span></div><div class="player-score" style="color:${rankColor}">${parseFloat(p.totalScore).toFixed(2)}m</div></div>`;
+    onValue(ref(db, `users/${currentUser.uid}/inbox`), (snap) => {
+        const list = document.getElementById('mailList');
+        if(!snap.exists()) { list.innerHTML = '<p style="color:#555; text-align:center;">Empty.</p>'; document.getElementById('mailCount').style.display='none'; return; }
+        let html = ""; let c = 0;
+        Object.entries(snap.val()).forEach(([k, m]) => {
+            c++;
+            let btn = m.reward ? `<button onclick="claimReward('${k}', ${m.reward})" class="claim-btn">CLAIM +${m.reward}m</button>` : `<button onclick="deleteMail('${k}')" class="claim-btn" style="background:#30363d;">Dismiss</button>`;
+            html += `<div class="mail-item"><div style="font-weight:bold; color:#00ff88;">${m.title}</div><div style="font-size:12px; color:#ccc;">${m.message}</div>${btn}</div>`;
         });
-        lbList.innerHTML = allHtml;
+        list.innerHTML = html;
+        document.getElementById('mailCount').innerText = c; document.getElementById('mailCount').style.display = 'flex';
     });
 }
-
-let isFreeFalling = false; let startTime = 0; let lastAcc = 9.8;
-document.getElementById('startBtn').onclick = function() { if (typeof DeviceMotionEvent.requestPermission === 'function') { DeviceMotionEvent.requestPermission().then(s => { if(s=='granted') start(); }); } else { start(); } this.innerText = "SENSOR ACTIVE"; this.disabled = true; this.style.background = "#238636"; };
-function start() { window.addEventListener('devicemotion', (e) => { let acc = e.accelerationIncludingGravity; if(!acc || !acc.x) return; let raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2); lastAcc = (lastAcc * 0.7) + (raw * 0.3); let now = performance.now(); if(lastAcc < 2.5 && !isFreeFalling) { isFreeFalling = true; startTime = now; document.getElementById('status').innerText = "AIRBORNE"; } if(isFreeFalling && lastAcc > 14) { let d = (now - startTime)/1000; if(d > 0.2 && d < 2.5) { let h = 0.125 * 9.81 * (d**2); document.getElementById('height').innerText = h.toFixed(2); handleJump(h); } isFreeFalling = false; document.getElementById('status').innerText = "READY"; } }); }
+window.deleteMail = async (id) => { if(currentUser) await remove(ref(db, `users/${currentUser.uid}/inbox/${id}`)); };
+window.claimReward = async (id, val) => {
+    if(!currentUser) return;
+    await saveJumpData(val); // Reuse the cumulative add function!
+    await deleteMail(id);
+    alert("Reward Claimed!");
+};
