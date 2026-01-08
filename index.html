@@ -1,18 +1,49 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Ultimate</title>
+    <title>Jump Pro - Cumulative</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <div id="sideMenuOverlay" class="menu-overlay" onclick="closeMenu()"></div>
+    <div id="sideMenu" class="side-menu">
+        <div class="menu-header">
+            <h3><i class="fas fa-bars"></i> Menu</h3>
+            <button onclick="closeMenu()" style="background:none; border:none; color:#fff; font-size:20px;">&times;</button>
+        </div>
+        
+        <div class="menu-content">
+            <div class="menu-user-info">
+                <i class="fas fa-user-circle" style="font-size: 30px; margin-bottom: 10px;"></i><br>
+                <span id="menuUserEmail" style="font-size:14px; color:#fff; font-weight: bold;">User</span>
+                <div style="font-size: 10px; color: #8b949e; margin-top: 5px;">ID: <span id="menuUserId">---</span></div>
+            </div>
+
+            <hr style="border-color: #30363d; margin: 20px 0;">
+
+            <button onclick="logout()" class="menu-item-btn logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+        
+        <div style="position:absolute; bottom:20px; width:100%; text-align:center; color:#555; font-size:10px;">
+            Jump Pro v3.0 (Cumulative)
+        </div>
+    </div>
+
+    <button onclick="openMenu()" id="hamburgerBtn" class="hamburger-btn" style="display:none;">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <div id="loginPage" class="page active">
         <div class="card" style="margin-top: 100px;">
             <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary);"></i>
             <h2>Jump Pro</h2>
+            <p style="color:#8b949e; font-size: 12px;">Rank up by jumping!</p>
             <button onclick="login()" class="btn-main" style="margin-top:20px; background:#fff;">Continue with Google</button>
         </div>
     </div>
@@ -25,18 +56,18 @@
             </button>
 
             <div id="seasonDisplay" class="season-badge">Loading Season...</div>
-            <div id="roundDisplay" style="color:#8b949e; font-size:12px; margin-bottom:15px;">Loading...</div>
             
             <div id="height">0.00</div>
-            <div style="color: #484f58; font-size: 12px;">METERS (INSTANT)</div>
+            <div style="color: #484f58; font-size: 12px;">METERS (LAST JUMP)</div>
             <div id="status" style="margin: 20px 0; color: #e3b341; font-weight: bold;">READY</div>
             
-            <div style="background:#0d1117; padding:10px; border-radius:10px; margin-bottom:20px;">
-                <div style="font-size:12px; color:#8b949e;">SEASON BEST</div>
-                <div id="todayBest" style="font-size:20px; font-weight:bold; color:#fff;">0.00m</div>
+            <div style="background:#0d1117; padding:15px; border-radius:10px; margin-bottom:20px; border: 1px solid #30363d;">
+                <div style="font-size:11px; color:#8b949e; text-transform: uppercase; letter-spacing: 1px;">Total Distance (Season)</div>
+                <div id="todayBest" style="font-size:24px; font-weight:800; color:#fff;">0.00m</div>
+                <div style="font-size:10px; color:#238636; margin-top:5px;">Every jump adds up!</div>
             </div>
             
-            <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
+            <button id="startBtn" class="btn-main" onclick="requestPermission()">ACTIVATE SENSOR</button>
         </div>
     </div>
 
@@ -63,7 +94,7 @@
             <div class="uid-box">ID: <span id="pUid" style="color:#fff; font-weight:bold;">---</span></div>
             
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
-                <span style="font-size:11px; color:#555;">SEASON BEST SCORE</span><br>
+                <span style="font-size:11px; color:#555;">TOTAL SEASON DISTANCE</span><br>
                 <span id="pTotal" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
             </div>
             
@@ -75,8 +106,6 @@
                     <p style="grid-column: span 3; color: #555; font-size: 12px;">No awards earned yet.</p>
                 </div>
             </div>
-            
-            <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#f85149; cursor:pointer;">Logout</button>
         </div>
     </div>
 
@@ -96,7 +125,7 @@
             <div class="uid-box">ID: <span id="ppUid" style="color:#fff; font-weight:bold;">---</span></div>
             
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px; border: 1px solid #30363d;">
-                <span style="font-size:11px; color:#555;">SEASON BEST SCORE</span><br>
+                <span style="font-size:11px; color:#555;">TOTAL SEASON DISTANCE</span><br>
                 <span id="ppTotal" style="font-size:32px; font-weight:800; color:#58a6ff;">0.00m</span>
             </div>
 
@@ -145,4 +174,3 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
-
