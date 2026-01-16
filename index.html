@@ -177,7 +177,7 @@
             <div class="uid-box">ID: <span id="ppUid" style="color:#fff; font-weight:bold;">---</span></div>
             
             <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px; border: 1px solid #30363d;">
-                <span style="font-size:11px; color:#555;">TOTAL SCORE</span><br>
+                <span style="font-size:11px; color:#555;">TOTAL SCORE (This Season)</span><br>
                 <span id="ppTotal" style="font-size:32px; font-weight:800; color:#58a6ff;">0.00m</span>
             </div>
             <div style="margin-top: 30px; width: 100%;">
@@ -225,7 +225,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, onValue, remove, push, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, update, get, onValue, remove, push, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
@@ -281,19 +281,15 @@
         });
 
         window.navTo = (pageId, el) => {
-            // Hide all standard pages
             document.querySelectorAll('.page').forEach(p => {
                 p.classList.remove('active');
                 p.style.display = 'none';
             });
-            
-            // Show target page
             const target = document.getElementById(pageId);
             if(target) {
                 target.style.display = 'flex';
                 setTimeout(() => target.classList.add('active'), 10);
             }
-
             if(el) { document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav')); el.classList.add('active-nav'); }
             if(pageId === 'leaderboardPage') loadLeaderboard();
         };
@@ -301,12 +297,9 @@
         // --- VIEW PLAYER LOGIC (UPDATED) ---
         window.viewPlayer = (uid, userData) => {
             const ppPage = document.getElementById('publicProfilePage');
-            
-            // Force Show
             ppPage.style.display = 'flex';
             setTimeout(() => ppPage.classList.add('active'), 10);
             
-            // Fill Data
             document.getElementById('ppName').innerText = userData.name || "Unknown";
             document.getElementById('ppImg').src = userData.photo || "";
             document.getElementById('ppUid').innerText = userData.publicID || "---";
@@ -314,7 +307,6 @@
             
             document.getElementById('ppAwardsList').innerHTML = '<p style="color:#555">Loading...</p>';
             
-            // Load awards
             onValue(ref(db, `users/${uid}/awards`), (snap) => {
                 renderAwards(snap, 'ppAwardsList');
             });
@@ -326,26 +318,40 @@
             setTimeout(() => ppPage.style.display = 'none', 300);
         };
         
-        // --- NEW FUNCTION: DIRECT PROFILE VISIT (FIX) ---
+        // --- DIRECT PROFILE VISIT (FIX) ---
         window.visitProfile = async (uid) => {
-            const season = getSeasonInfo().seasonID;
-            // Fetch user data directly by UID
-            const userRef = ref(db, `${season}/users/${uid}`);
-            
+            // 1. Try fetching from MAIN users list (Permanent Data)
             try {
+                const userRef = ref(db, `users/${uid}`);
                 const snapshot = await get(userRef);
+                
                 if(snapshot.exists()) {
-                    window.viewPlayer(uid, snapshot.val());
+                    let userData = snapshot.val();
+                    
+                    // 2. Fetch Current Season Score (Optional)
+                    const season = getSeasonInfo().seasonID;
+                    const scoreSnap = await get(ref(db, `${season}/users/${uid}/totalScore`));
+                    userData.totalScore = scoreSnap.exists() ? scoreSnap.val() : 0;
+                    
+                    window.viewPlayer(uid, userData);
                 } else {
-                    alert("Player data not found.");
+                    // Fallback: If not in global users, check season (Old logic)
+                    const season = getSeasonInfo().seasonID;
+                    const seasonRef = ref(db, `${season}/users/${uid}`);
+                    const seasonSnap = await get(seasonRef);
+                    if(seasonSnap.exists()) {
+                         window.viewPlayer(uid, seasonSnap.val());
+                    } else {
+                        alert("Player profile not found.");
+                    }
                 }
             } catch (error) {
                 console.error(error);
-                alert("Error loading profile.");
+                alert("Error opening profile.");
             }
         };
 
-        // --- SEARCH LOGIC ---
+        // --- SEARCH LOGIC (GLOBAL SEARCH FIX) ---
         window.searchPlayer = async () => {
             let inputVal = document.getElementById('modalSearchInput').value.trim();
             if(!inputVal) { alert("Please enter Player ID!"); return; }
@@ -355,29 +361,31 @@
             btn.innerText = "Searching...";
             
             try {
-                const season = getSeasonInfo().seasonID;
+                // IMPORTANT: Search in GLOBAL 'users' list, not 'season'
+                // This finds players even if they haven't played this month.
                 
-                // 1. Try as Number
-                let q = query(ref(db, `${season}/users`), orderByChild('publicID'), equalTo(parseInt(inputVal)));
+                let q = query(ref(db, 'users'), orderByChild('publicID'), equalTo(parseInt(inputVal)));
                 let snapshot = await get(q);
                 
-                // 2. Try as String (Backup)
                 if (!snapshot.exists()) {
-                    q = query(ref(db, `${season}/users`), orderByChild('publicID'), equalTo(inputVal.toString()));
+                    // Try string search (backup)
+                    q = query(ref(db, 'users'), orderByChild('publicID'), equalTo(inputVal.toString()));
                     snapshot = await get(q);
                 }
                 
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     const foundUid = Object.keys(data)[0]; 
+                    
+                    // Manually trigger visitProfile
+                    await window.visitProfile(foundUid);
                     window.closeSearchModal();
-                    window.viewPlayer(foundUid, data[foundUid]);
                 } else {
-                    alert("Player not found in current season.");
+                    alert("Player ID not found in database.");
                 }
             } catch (error) {
                 console.error(error);
-                alert("Search Error.");
+                alert("Search Error. (Check Database Rules)");
             } finally {
                 btn.innerText = originalText;
             }
@@ -390,7 +398,7 @@
             window.searchPlayer();
         };
 
-        // --- LEADERBOARD (UPDATED FIX) ---
+        // --- LEADERBOARD ---
         function loadLeaderboard() {
             const list = document.getElementById('lbList');
             list.innerHTML = '<p style="color:#555">Loading...</p>';
@@ -414,8 +422,6 @@
                 users.forEach((u, index) => {
                     const rank = index + 1;
                     let rankColor = rank===1?"#ffd700":rank===2?"#e0e0e0":rank===3?"#cd7f32":"#fff";
-                    
-                    // Uses visitProfile now instead of search
                     html += `
                     <div class="player-row" onclick="window.visitProfile('${u.uid}')">
                         <div class="rank-circle" style="color:${rankColor}; border: 1px solid ${rankColor};">${rank}</div>
@@ -476,16 +482,24 @@
             document.getElementById('todayBest').innerText = currentTotalScore.toFixed(2) + "m";
             document.getElementById('pTotal').innerText = currentTotalScore.toFixed(2) + "m";
             try {
-                await set(ref(db, `${season}/users/${currentUser.uid}`), {
+                // Update Season Score
+                await update(ref(db, `${season}/users/${currentUser.uid}`), {
                     name: currentUser.displayName,
                     photo: currentUser.photoURL,
                     publicID: parseInt(document.getElementById('pUid').innerText),
                     totalScore: newTotal
                 });
+                
+                // ALSO Update Permanent Record (So they can be searched later)
+                await update(ref(db, `users/${currentUser.uid}`), {
+                    name: currentUser.displayName,
+                    photo: currentUser.photoURL,
+                    lastActive: new Date().toISOString()
+                });
             } catch(e) { console.error(e); }
         }
 
-        // --- UTILS & INITIAL LOADERS ---
+        // --- UTILS ---
         window.openSearchModal = () => { document.getElementById('searchModal').style.display = 'flex'; };
         window.closeSearchModal = () => { document.getElementById('searchModal').style.display = 'none'; };
         window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
@@ -494,10 +508,21 @@
         async function getOrGeneratePublicID(user) {
             const idRef = ref(db, `users/${user.uid}/publicID`);
             const snap = await get(idRef);
-            if (snap.exists()) return snap.val();
-            const newID = Math.floor(10000000 + Math.random() * 90000000);
-            await set(idRef, newID);
-            return newID;
+            let pid;
+            if (snap.exists()) {
+                pid = snap.val();
+            } else {
+                pid = Math.floor(10000000 + Math.random() * 90000000);
+                await set(idRef, pid);
+            }
+            
+            // IMPORTANT: Save Name/Photo permanently here too
+            await update(ref(db, `users/${user.uid}`), {
+                name: user.displayName,
+                photo: user.photoURL,
+                publicID: pid
+            });
+            return pid;
         }
 
         function renderAwards(snap, listId) {
