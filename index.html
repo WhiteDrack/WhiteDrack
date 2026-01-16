@@ -224,7 +224,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        // Changed to signInWithRedirect for better Mobile App support
+        import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, update, get, onValue, remove, push, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -265,7 +266,8 @@
         }
 
         // --- AUTH & NAVIGATION ---
-        window.login = () => signInWithPopup(auth, provider);
+        // Using Redirect for App Compatibility
+        window.login = () => signInWithRedirect(auth, provider);
         window.logout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
@@ -335,7 +337,7 @@
                     
                     window.viewPlayer(uid, userData);
                 } else {
-                    // Fallback: If not in global users, check season (Old logic)
+                    // Fallback
                     const season = getSeasonInfo().seasonID;
                     const seasonRef = ref(db, `${season}/users/${uid}`);
                     const seasonSnap = await get(seasonRef);
@@ -361,9 +363,7 @@
             btn.innerText = "Searching...";
             
             try {
-                // IMPORTANT: Search in GLOBAL 'users' list, not 'season'
-                // This finds players even if they haven't played this month.
-                
+                // IMPORTANT: Search in GLOBAL 'users' list
                 let q = query(ref(db, 'users'), orderByChild('publicID'), equalTo(parseInt(inputVal)));
                 let snapshot = await get(q);
                 
@@ -377,7 +377,6 @@
                     const data = snapshot.val();
                     const foundUid = Object.keys(data)[0]; 
                     
-                    // Manually trigger visitProfile
                     await window.visitProfile(foundUid);
                     window.closeSearchModal();
                 } else {
@@ -391,7 +390,6 @@
             }
         };
 
-        // Leaderboard click helper
         window.searchPlayerById = (pid) => {
             if(!pid || pid === 'undefined') return;
             document.getElementById('modalSearchInput').value = pid;
