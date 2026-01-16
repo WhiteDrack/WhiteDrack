@@ -325,6 +325,25 @@
             ppPage.classList.remove('active');
             setTimeout(() => ppPage.style.display = 'none', 300);
         };
+        
+        // --- NEW FUNCTION: DIRECT PROFILE VISIT (FIX) ---
+        window.visitProfile = async (uid) => {
+            const season = getSeasonInfo().seasonID;
+            // Fetch user data directly by UID
+            const userRef = ref(db, `${season}/users/${uid}`);
+            
+            try {
+                const snapshot = await get(userRef);
+                if(snapshot.exists()) {
+                    window.viewPlayer(uid, snapshot.val());
+                } else {
+                    alert("Player data not found.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error loading profile.");
+            }
+        };
 
         // --- SEARCH LOGIC ---
         window.searchPlayer = async () => {
@@ -371,7 +390,7 @@
             window.searchPlayer();
         };
 
-        // --- LEADERBOARD ---
+        // --- LEADERBOARD (UPDATED FIX) ---
         function loadLeaderboard() {
             const list = document.getElementById('lbList');
             list.innerHTML = '<p style="color:#555">Loading...</p>';
@@ -396,8 +415,9 @@
                     const rank = index + 1;
                     let rankColor = rank===1?"#ffd700":rank===2?"#e0e0e0":rank===3?"#cd7f32":"#fff";
                     
+                    // Uses visitProfile now instead of search
                     html += `
-                    <div class="player-row" onclick="window.searchPlayerById('${u.publicID}')">
+                    <div class="player-row" onclick="window.visitProfile('${u.uid}')">
                         <div class="rank-circle" style="color:${rankColor}; border: 1px solid ${rankColor};">${rank}</div>
                         <div class="player-info">
                             <div class="player-name">${u.name}</div>
