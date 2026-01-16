@@ -161,8 +161,8 @@
         </div>
     </div>
 
-    <div id="publicProfilePage" class="page" style="z-index: 2000;">
-        <div class="card">
+    <div id="publicProfilePage" class="page" style="z-index: 9999; background: var(--bg); position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+        <div class="card" style="margin-top: 20px; max-height: 90vh; overflow-y: auto;">
             <div style="width:100%; display:flex; justify-content:flex-start;">
                 <button onclick="window.closePublicProfile()" style="background:none; border:none; color:#8b949e; cursor:pointer; display:flex; align-items:center; gap:5px; font-size:14px;">
                     <i class="fas fa-arrow-left"></i> Back
@@ -253,7 +253,7 @@
         }
 
         function getSeasonInfo() {
-            const now = new Date(); const d = now.getDate();
+            const now = new Date();
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             const seasonName = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
             
@@ -261,12 +261,8 @@
                 document.getElementById('seasonDisplay').innerText = "Season: " + seasonName;
                 document.getElementById('lbSeasonName').innerText = "Leaderboard for " + seasonName;
             }
-            
-            let round = 1; if (d > 7) round = 2; if (d > 14) round = 3; if (d > 21) round = 4; if (d > 28) round = "FINAL";
-            return { text: round === "FINAL" ? "Finalizing..." : `Round ${round}`, seasonID: getSeasonID() };
+            return { seasonID: getSeasonID() };
         }
-
-        if(document.getElementById('roundDisplay')) document.getElementById('roundDisplay').innerText = getSeasonInfo().text;
 
         // --- AUTH & NAVIGATION ---
         window.login = () => signInWithPopup(auth, provider);
@@ -285,111 +281,52 @@
         });
 
         window.navTo = (pageId, el) => {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+            // Hide all standard pages
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+                p.style.display = 'none';
+            });
+            
+            // Show target page
+            const target = document.getElementById(pageId);
+            if(target) {
+                target.style.display = 'flex';
+                setTimeout(() => target.classList.add('active'), 10);
+            }
+
             if(el) { document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav')); el.classList.add('active-nav'); }
             if(pageId === 'leaderboardPage') loadLeaderboard();
         };
 
-        // --- MODAL CONTROLS ---
-        window.openSearchModal = () => { document.getElementById('searchModal').style.display = 'flex'; };
-        window.closeSearchModal = () => { document.getElementById('searchModal').style.display = 'none'; };
-        window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
-        window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
-        window.closePublicProfile = () => { document.getElementById('publicProfilePage').classList.remove('active'); };
-
-        // --- SENSOR LOGIC ---
-        window.toggleSensor = () => {
-            const btn = document.getElementById('startBtn');
-            if(isSensorActive) {
-                isSensorActive = false;
-                btn.innerText = "ACTIVATE SENSOR";
-                btn.style.background = "#00ff88"; 
-                document.getElementById('status').innerText = "READY";
-                document.getElementById('status').style.color = "#e3b341";
-            } else {
-                requestPermissionAndStart();
-            }
+        // --- VIEW PLAYER LOGIC (UPDATED) ---
+        window.viewPlayer = (uid, userData) => {
+            const ppPage = document.getElementById('publicProfilePage');
+            
+            // Force Show
+            ppPage.style.display = 'flex';
+            setTimeout(() => ppPage.classList.add('active'), 10);
+            
+            // Fill Data
+            document.getElementById('ppName').innerText = userData.name || "Unknown";
+            document.getElementById('ppImg').src = userData.photo || "";
+            document.getElementById('ppUid').innerText = userData.publicID || "---";
+            document.getElementById('ppTotal').innerText = (userData.totalScore || 0).toFixed(2) + "m";
+            
+            document.getElementById('ppAwardsList').innerHTML = '<p style="color:#555">Loading...</p>';
+            
+            // Load awards
+            onValue(ref(db, `users/${uid}/awards`), (snap) => {
+                renderAwards(snap, 'ppAwardsList');
+            });
         };
 
-        function requestPermissionAndStart() {
-            if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') startSensor();
-                        else alert("Permission denied");
-                    }).catch(console.error);
-            } else {
-                startSensor();
-            }
-        }
+        window.closePublicProfile = () => { 
+            const ppPage = document.getElementById('publicProfilePage');
+            ppPage.classList.remove('active');
+            setTimeout(() => ppPage.style.display = 'none', 300);
+        };
 
-        function startSensor() {
-            isSensorActive = true;
-            const btn = document.getElementById('startBtn');
-            btn.innerText = "SENSOR ACTIVE (JUMP NOW)";
-            btn.style.background = "#f85149";
-            document.getElementById('status').innerText = "LISTENING...";
-            document.getElementById('status').style.color = "#00ff88";
-
-            let inAir = false;
-            window.addEventListener('devicemotion', (event) => {
-                if(!isSensorActive) return;
-                const y = event.accelerationIncludingGravity ? event.accelerationIncludingGravity.y : 0;
-                const threshold = 12; 
-
-                if (y > threshold && !inAir) {
-                    inAir = true;
-                    // Calculate jump (Demo: random between 0.5 and 2.5)
-                    const jumpHeight = (Math.random() * (2.5 - 0.5) + 0.5).toFixed(2);
-                    
-                    document.getElementById('height').innerText = jumpHeight;
-                    addScore(parseFloat(jumpHeight));
-                    
-                    setTimeout(() => { inAir = false; }, 1000); 
-                }
-            });
-        }
-
-        // --- ADD SCORE (CUMULATIVE) ---
-        async function addScore(height) {
-            if(!currentUser) return;
-            const season = getSeasonInfo().seasonID;
-            
-            // Add new height to current total
-            let newTotal = currentTotalScore + height;
-            
-            // Update Local Variable
-            currentTotalScore = newTotal;
-            
-            // Update UI
-            document.getElementById('todayBest').innerText = currentTotalScore.toFixed(2) + "m";
-            document.getElementById('pTotal').innerText = currentTotalScore.toFixed(2) + "m";
-
-            try {
-                // Save to Firebase
-                await set(ref(db, `${season}/users/${currentUser.uid}`), {
-                    name: currentUser.displayName,
-                    photo: currentUser.photoURL,
-                    publicID: parseInt(document.getElementById('pUid').innerText), 
-                    totalScore: newTotal
-                });
-            } catch(e) { console.error("Save error", e); }
-        }
-
-        async function getOrGeneratePublicID(user) {
-            const idRef = ref(db, `users/${user.uid}/publicID`);
-            const snap = await get(idRef);
-            if (snap.exists()) {
-                return snap.val();
-            } else {
-                const newID = Math.floor(10000000 + Math.random() * 90000000);
-                await set(idRef, newID);
-                return newID;
-            }
-        }
-
-        // --- SEARCH LOGIC (FIXED) ---
+        // --- SEARCH LOGIC ---
         window.searchPlayer = async () => {
             let inputVal = document.getElementById('modalSearchInput').value.trim();
             if(!inputVal) { alert("Please enter Player ID!"); return; }
@@ -400,16 +337,22 @@
             
             try {
                 const season = getSeasonInfo().seasonID;
-                const searchID = parseInt(inputVal); 
                 
-                const q = query(ref(db, `${season}/users`), orderByChild('publicID'), equalTo(searchID));
-                const snapshot = await get(q);
+                // 1. Try as Number
+                let q = query(ref(db, `${season}/users`), orderByChild('publicID'), equalTo(parseInt(inputVal)));
+                let snapshot = await get(q);
+                
+                // 2. Try as String (Backup)
+                if (!snapshot.exists()) {
+                    q = query(ref(db, `${season}/users`), orderByChild('publicID'), equalTo(inputVal.toString()));
+                    snapshot = await get(q);
+                }
                 
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     const foundUid = Object.keys(data)[0]; 
                     window.closeSearchModal();
-                    viewPlayer(foundUid, data[foundUid]);
+                    window.viewPlayer(foundUid, data[foundUid]);
                 } else {
                     alert("Player not found in current season.");
                 }
@@ -421,32 +364,12 @@
             }
         };
 
-        // Helper for Leaderboard Click
+        // Leaderboard click helper
         window.searchPlayerById = (pid) => {
-            if(!pid || pid === 'undefined') {
-                alert("Player data error.");
-                return;
-            }
+            if(!pid || pid === 'undefined') return;
             document.getElementById('modalSearchInput').value = pid;
             window.searchPlayer();
         };
-
-        // --- VIEW PLAYER PROFILE ---
-        function viewPlayer(uid, userData) {
-            const ppPage = document.getElementById('publicProfilePage');
-            ppPage.classList.add('active'); 
-            
-            document.getElementById('ppName').innerText = userData.name;
-            document.getElementById('ppImg').src = userData.photo;
-            document.getElementById('ppUid').innerText = userData.publicID || "---";
-            document.getElementById('ppTotal').innerText = (userData.totalScore || 0).toFixed(2) + "m";
-            
-            document.getElementById('ppAwardsList').innerHTML = '<p style="color:#555">Loading...</p>';
-            
-            onValue(ref(db, `users/${uid}/awards`), (snap) => {
-                renderAwards(snap, 'ppAwardsList');
-            });
-        }
 
         // --- LEADERBOARD ---
         function loadLeaderboard() {
@@ -461,7 +384,11 @@
                     return;
                 }
                 let users = [];
-                snapshot.forEach((child) => { users.push(child.val()); });
+                snapshot.forEach((child) => { 
+                    let u = child.val();
+                    u.uid = child.key;
+                    users.push(u); 
+                });
                 users.reverse();
                 
                 let html = "";
@@ -483,11 +410,79 @@
             });
         }
 
-        // --- AWARDS & MAIL ---
+        // --- SENSOR & SCORE ---
+        window.toggleSensor = () => {
+            const btn = document.getElementById('startBtn');
+            if(isSensorActive) {
+                isSensorActive = false;
+                btn.innerText = "ACTIVATE SENSOR";
+                btn.style.background = "#00ff88"; 
+                document.getElementById('status').innerText = "READY";
+                document.getElementById('status').style.color = "#e3b341";
+            } else {
+                if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                    DeviceMotionEvent.requestPermission().then(permissionState => {
+                        if (permissionState === 'granted') startSensor();
+                    }).catch(console.error);
+                } else { startSensor(); }
+            }
+        };
+        
+        function startSensor() {
+            isSensorActive = true;
+            document.getElementById('startBtn').innerText = "SENSOR ACTIVE (JUMP NOW)";
+            document.getElementById('startBtn').style.background = "#f85149";
+            document.getElementById('status').innerText = "LISTENING...";
+            document.getElementById('status').style.color = "#00ff88";
+            let inAir = false;
+            window.addEventListener('devicemotion', (event) => {
+                if(!isSensorActive) return;
+                const y = event.accelerationIncludingGravity ? event.accelerationIncludingGravity.y : 0;
+                if (y > 12 && !inAir) {
+                    inAir = true;
+                    const jumpHeight = (Math.random() * (2.5 - 0.5) + 0.5).toFixed(2);
+                    document.getElementById('height').innerText = jumpHeight;
+                    addScore(parseFloat(jumpHeight));
+                    setTimeout(() => { inAir = false; }, 1000); 
+                }
+            });
+        }
+
+        async function addScore(height) {
+            if(!currentUser) return;
+            const season = getSeasonInfo().seasonID;
+            let newTotal = currentTotalScore + height;
+            currentTotalScore = newTotal;
+            document.getElementById('todayBest').innerText = currentTotalScore.toFixed(2) + "m";
+            document.getElementById('pTotal').innerText = currentTotalScore.toFixed(2) + "m";
+            try {
+                await set(ref(db, `${season}/users/${currentUser.uid}`), {
+                    name: currentUser.displayName,
+                    photo: currentUser.photoURL,
+                    publicID: parseInt(document.getElementById('pUid').innerText),
+                    totalScore: newTotal
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        // --- UTILS & INITIAL LOADERS ---
+        window.openSearchModal = () => { document.getElementById('searchModal').style.display = 'flex'; };
+        window.closeSearchModal = () => { document.getElementById('searchModal').style.display = 'none'; };
+        window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
+        window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
+
+        async function getOrGeneratePublicID(user) {
+            const idRef = ref(db, `users/${user.uid}/publicID`);
+            const snap = await get(idRef);
+            if (snap.exists()) return snap.val();
+            const newID = Math.floor(10000000 + Math.random() * 90000000);
+            await set(idRef, newID);
+            return newID;
+        }
+
         function renderAwards(snap, listId) {
             const list = document.getElementById(listId);
             if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 3; color:#555; text-align:center;">No trophies yet.</p>`; return; }
-            
             list.innerHTML = "";
             const awards = snap.val();
             Object.values(awards).forEach(a => {
@@ -507,10 +502,7 @@
             const container = document.getElementById(containerId);
             if(!container) return;
             container.classList.remove('legendary-ring');
-            const oldBadge = container.querySelector('.year-crown-badge');
-            if(oldBadge) oldBadge.remove();
             if(!awards) return;
-            
             let yearCounts = {};
             Object.values(awards).forEach(award => {
                 if(!award.isSpecial && parseInt(award.rank) === 1) { 
@@ -520,10 +512,7 @@
             });
             let maxGold = 0; let bestYear = "";
             for(let y in yearCounts) { if(yearCounts[y] > maxGold) { maxGold = yearCounts[y]; bestYear = y; } }
-            if(maxGold > 0) {
-                container.classList.add('legendary-ring');
-                container.innerHTML += `<div class="year-crown-badge">👑 ${bestYear} King</div>`;
-            }
+            if(maxGold > 0) container.classList.add('legendary-ring');
         }
 
         function fetchMail() {
@@ -565,21 +554,7 @@
                 alert("Score Boosted!");
             }
         };
-
-        window.claimTrophy = async (mailId) => {
-            if(!currentUser) return;
-            const tData = window[`trophy_${mailId}`];
-            if(!tData) { alert("Error finding trophy data."); return; }
-            if(confirm(`Claim '${tData.name}' Trophy?`)) {
-                try {
-                    await push(ref(db, `users/${currentUser.uid}/awards`), { seasonName: tData.date, rank: "Special", isSpecial: true, specialData: tData });
-                    await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`));
-                    delete window[`trophy_${mailId}`];
-                    alert("🏆 Trophy added!");
-                } catch(e) { console.error(e); }
-            }
-        };
-
+        window.claimTrophy = async (mailId) => { if(currentUser && window[`trophy_${mailId}`]) { await push(ref(db, `users/${currentUser.uid}/awards`), { seasonName: window[`trophy_${mailId}`].date, rank: "Special", isSpecial: true, specialData: window[`trophy_${mailId}`] }); await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`)); alert("🏆 Trophy added!"); }};
         window.deleteMail = async (mailId) => { if(currentUser) await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`)); };
 
         async function loadUserData(user) {
@@ -588,13 +563,11 @@
             document.getElementById('pUid').innerText = publicID;
             document.getElementById('pName').innerText = user.displayName;
             document.getElementById('pImg').src = user.photoURL;
-            
             onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
                 currentTotalScore = s.exists() ? parseFloat(s.val()) : 0;
                 document.getElementById('pTotal').innerText = currentTotalScore.toFixed(2) + "m";
                 document.getElementById('todayBest').innerText = currentTotalScore.toFixed(2) + "m";
             });
-            
             onValue(ref(db, `users/${user.uid}/awards`), (snap) => {
                 renderAwards(snap, 'awardsList');
                 checkChampionStatus(snap.val(), 'myProfileContainer');
