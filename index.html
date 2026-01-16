@@ -1,169 +1,504 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Pro - Ultimate</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jump Pro - Ultimate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="sideMenuOverlay" class="menu-overlay" onclick="closeMenu()"></div>
-    <div id="sideMenu" class="side-menu">
-        <div class="menu-header">
-            <h3><i class="fas fa-bars"></i> Menu</h3>
-            <button onclick="closeMenu()" style="background:none; border:none; color:#fff; font-size:20px;">&times;</button>
-        </div>
-        <div class="menu-content">
-            <div class="menu-user-info">
-                <span id="menuUserEmail" style="font-size:12px; color:#8b949e;">Player</span>
-            </div>
-            <button onclick="logout()" class="menu-item-btn logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
-        </div>
-        <div style="position:absolute; bottom:20px; width:100%; text-align:center; color:#555; font-size:10px;">
-            Jump Pro v2.0
-        </div>
-    </div>
-
-    <div id="loginPage" class="page active">
-        <div class="card" style="margin-top: 100px;">
-            <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary);"></i>
-            <h2>Jump Pro</h2>
-            <button onclick="login()" class="btn-main" style="margin-top:20px; background:#fff;">Continue with Google</button>
-        </div>
-    </div>
-
-    <div id="jumpPage" class="page">
-        <div class="card">
-            
-            <button onclick="openSearchModal()" class="search-icon-btn">
-                <i class="fas fa-search"></i>
-            </button>
-
-            <button onclick="openMailbox()" class="inbox-icon-btn" style="right: 15px;">
-                <i class="fas fa-envelope"></i>
-                <span id="mailCount" class="badge" style="display:none;">0</span>
-            </button>
-
-            <div id="seasonDisplay" class="season-badge">Loading Season...</div>
-            <div id="roundDisplay" style="color:#8b949e; font-size:12px; margin-bottom:15px;">Loading...</div>
-            
-            <div id="height">0.00</div>
-            <div style="color: #484f58; font-size: 12px;">METERS (INSTANT)</div>
-            <div id="status" style="margin: 20px 0; color: #e3b341; font-weight: bold;">READY</div>
-            
-            <div style="background:#0d1117; padding:10px; border-radius:10px; margin-bottom:20px;">
-                <div style="font-size:12px; color:#8b949e;">TOTAL DISTANCE (SEASON)</div>
-                <div id="todayBest" style="font-size:20px; font-weight:bold; color:#fff;">0.00m</div>
-            </div>
-            
-            <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
-        </div>
-    </div>
-
-    <div id="leaderboardPage" class="page">
-        <h2 style="margin-bottom: 5px;"><i class="fas fa-trophy"></i> Global Rank</h2>
-        <div style="font-size: 12px; color: #8b949e; margin-bottom: 15px;" id="lbSeasonName">Current Month</div>
-        
-        <p style="font-size: 10px; color: #555; margin-top: 5px;">(Tap a player to view profile)</p>
-        <div id="lbList" class="lb-container"><p style="color:#555">Waiting for data...</p></div>
-    </div>
-
-    <div id="profilePage" class="page">
-        <div class="card">
-            
-            <button onclick="openMenu()" class="hamburger-btn">
-                <i class="fas fa-bars"></i>
-            </button>
-
-            <div class="profile-img-container" id="myProfileContainer">
-                <img id="pImg" style="width:80px; height:80px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;" src="">
-            </div>
-            
-            <h2 id="pName" style="margin: 10px 0;">Name</h2>
-            <div class="uid-box">ID: <span id="pUid" style="color:#fff; font-weight:bold;">---</span></div>
-            
-            <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
-                <span style="font-size:11px; color:#555;">TOTAL DISTANCE</span><br>
-                <span id="pTotal" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
-            </div>
-            
-            <div style="margin-top: 30px; width: 100%;">
-                <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
-                    <i class="fas fa-medal" style="color: #e3b341;"></i> Trophy Case
-                </h3>
-                <div id="awardsList" class="awards-grid">
-                    <p style="grid-column: span 3; color: #555; font-size: 12px;">No awards earned yet.</p>
-                </div>
-            </div>
-            </div>
-    </div>
-
-    <div id="publicProfilePage" class="page" style="z-index: 2000;">
-        <div class="card">
-            <div style="width:100%; display:flex; justify-content:flex-start;">
-                <button onclick="closePublicProfile()" style="background:none; border:none; color:#8b949e; cursor:pointer; display:flex; align-items:center; gap:5px; font-size:14px;">
-                    <i class="fas fa-arrow-left"></i> Back
-                </button>
-            </div>
-            
-            <div class="profile-img-container" id="publicProfileContainer">
-                <img id="ppImg" style="width:80px; height:80px; border-radius:50%; border:2px solid #58a6ff; object-fit:cover;" src="">
-            </div>
-            
-            <h2 id="ppName" style="margin: 10px 0;">Player</h2>
-            <div class="uid-box">ID: <span id="ppUid" style="color:#fff; font-weight:bold;">---</span></div>
-            
-            <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px; border: 1px solid #30363d;">
-                <span style="font-size:11px; color:#555;">TOTAL SCORE</span><br>
-                <span id="ppTotal" style="font-size:32px; font-weight:800; color:#58a6ff;">0.00m</span>
-            </div>
-
-            <div style="margin-top: 30px; width: 100%;">
-                <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
-                    <i class="fas fa-trophy" style="color: #58a6ff;"></i> Awards
-                </h3>
-                <div id="ppAwardsList" class="awards-grid">
-                    <p style="grid-column: span 3; color: #555; font-size: 12px;">Loading awards...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="searchModal" class="modal-overlay" style="display:none;">
-        <div class="card modal-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3><i class="fas fa-search"></i> Search Player</h3>
-                <button onclick="closeSearchModal()" style="background:none; border:none; color:#8b949e; font-size:20px; cursor:pointer;">&times;</button>
-            </div>
-            <div style="padding-bottom:15px;">
-                <input type="number" id="modalSearchInput" class="search-input" placeholder="Enter Player ID (e.g. 849201)" style="width:100%; box-sizing:border-box; margin-bottom:10px;">
-                <button onclick="searchPlayer()" class="search-btn" style="width:100%;">FIND PLAYER</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="mailModal" class="modal-overlay" style="display:none;">
-        <div class="card modal-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3><i class="fas fa-gift"></i> Inbox</h3>
-                <button onclick="closeMailbox()" style="background:none; border:none; color:#8b949e; font-size:20px; cursor:pointer;">&times;</button>
-            </div>
-            <div id="mailList" style="text-align:left; max-height:300px; overflow-y:auto;">
-                <p style="color:#555; text-align:center;">Loading messages...</p>
-            </div>
-        </div>
-    </div>
-
-    <nav class="nav-bar" id="bottomNav" style="display:none;">
-        <button class="nav-item active-nav" onclick="navTo('jumpPage', this)"><i class="fas fa-bolt"></i><span>JUMP</span></button>
-        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-chart-line"></i><span>RANK</span></button>
-        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user-circle"></i><span>PROFILE</span></button>
-    </nav>
-
-    <script type="module" src="script.js"></script>
+    <div id="loginPage" class="page active">
+        <div class="card" style="margin-top: 100px;">
+            <i class="fas fa-rocket" style="font-size: 50px; color: var(--primary);"></i>
+            <h2>Jump Pro</h2>
+            <button onclick="login()" class="btn-main" style="margin-top:20px; background:#fff;">Continue with Google</button>
+        </div>
+    </div>
+    <div id="jumpPage" class="page">
+        <div class="card">
+            
+            <button onclick="openSearchModal()" class="search-icon-btn">
+                <i class="fas fa-search"></i>
+            </button>
+            <div id="seasonDisplay" class="season-badge">Loading Season...</div>
+            <div id="roundDisplay" style="color:#8b949e; font-size:12px; margin-bottom:15px;">Loading...</div>
+            
+            <div id="height">0.00</div>
+            <div style="color: #484f58; font-size: 12px;">METERS (INSTANT)</div>
+            <div id="status" style="margin: 20px 0; color: #e3b341; font-weight: bold;">READY</div>
+            
+            <div style="background:#0d1117; padding:10px; border-radius:10px; margin-bottom:20px;">
+                <div style="font-size:12px; color:#8b949e;">SEASON BEST</div>
+                <div id="todayBest" style="font-size:20px; font-weight:bold; color:#fff;">0.00m</div>
+            </div>
+            
+            <button id="startBtn" class="btn-main">ACTIVATE SENSOR</button>
+        </div>
+    </div>
+    <div id="leaderboardPage" class="page">
+        <h2 style="margin-bottom: 5px;"><i class="fas fa-trophy"></i> Global Rank</h2>
+        <div style="font-size: 12px; color: #8b949e; margin-bottom: 15px;" id="lbSeasonName">Current Month</div>
+        
+        <p style="font-size: 10px; color: #555; margin-top: 5px;">(Tap a player to view profile)</p>
+        <div id="lbList" class="lb-container"><p style="color:#555">Waiting for data...</p></div>
+    </div>
+    <div id="profilePage" class="page">
+        <div class="card">
+            <button onclick="openMailbox()" class="inbox-icon-btn">
+                <i class="fas fa-envelope"></i>
+                <span id="mailCount" class="badge" style="display:none;">0</span>
+            </button>
+            <div class="profile-img-container" id="myProfileContainer">
+                <img id="pImg" style="width:80px; height:80px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;" src="">
+            </div>
+            
+            <h2 id="pName" style="margin: 10px 0;">Name</h2>
+            <div class="uid-box">ID: <span id="pUid" style="color:#fff; font-weight:bold;">---</span></div>
+            
+            <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px;">
+                <span style="font-size:11px; color:#555;">SEASON BEST SCORE</span><br>
+                <span id="pTotal" style="font-size:32px; font-weight:800; color:var(--primary);">0.00m</span>
+            </div>
+            
+            <div style="margin-top: 30px; width: 100%;">
+                <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
+                    <i class="fas fa-medal" style="color: #e3b341;"></i> Trophy Case
+                </h3>
+                <div id="awardsList" class="awards-grid">
+                    <p style="grid-column: span 3; color: #555; font-size: 12px;">No awards earned yet.</p>
+                </div>
+            </div>
+            
+            <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#f85149; cursor:pointer;">Logout</button>
+        </div>
+    </div>
+    <div id="publicProfilePage" class="page" style="z-index: 2000;">
+        <div class="card">
+            <div style="width:100%; display:flex; justify-content:flex-start;">
+                <button onclick="closePublicProfile()" style="background:none; border:none; color:#8b949e; cursor:pointer; display:flex; align-items:center; gap:5px; font-size:14px;">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+            
+            <div class="profile-img-container" id="publicProfileContainer">
+                <img id="ppImg" style="width:80px; height:80px; border-radius:50%; border:2px solid #58a6ff; object-fit:cover;" src="">
+            </div>
+            
+            <h2 id="ppName" style="margin: 10px 0;">Player</h2>
+            <div class="uid-box">ID: <span id="ppUid" style="color:#fff; font-weight:bold;">---</span></div>
+            
+            <div style="margin-top: 20px; background: #0d1117; padding: 20px; border-radius: 15px; border: 1px solid #30363d;">
+                <span style="font-size:11px; color:#555;">SEASON BEST SCORE</span><br>
+                <span id="ppTotal" style="font-size:32px; font-weight:800; color:#58a6ff;">0.00m</span>
+            </div>
+            <div style="margin-top: 30px; width: 100%;">
+                <h3 style="text-align: left; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
+                    <i class="fas fa-trophy" style="color: #58a6ff;"></i> Awards
+                </h3>
+                <div id="ppAwardsList" class="awards-grid">
+                    <p style="grid-column: span 3; color: #555; font-size: 12px;">Loading awards...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="searchModal" class="modal-overlay" style="display:none;">
+        <div class="card modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3><i class="fas fa-search"></i> Search Player</h3>
+                <button onclick="closeSearchModal()" style="background:none; border:none; color:#8b949e; font-size:20px; cursor:pointer;">&times;</button>
+            </div>
+            <div style="padding-bottom:15px;">
+                <input type="number" id="modalSearchInput" class="search-input" placeholder="Enter Player ID (e.g. 849201)" style="width:100%; box-sizing:border-box; margin-bottom:10px;">
+                <button onclick="searchPlayer()" class="search-btn" style="width:100%;">FIND PLAYER</button>
+            </div>
+        </div>
+    </div>
+    <div id="mailModal" class="modal-overlay" style="display:none;">
+        <div class="card modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3><i class="fas fa-gift"></i> Inbox</h3>
+                <button onclick="closeMailbox()" style="background:none; border:none; color:#8b949e; font-size:20px; cursor:pointer;">&times;</button>
+            </div>
+            <div id="mailList" style="text-align:left; max-height:300px; overflow-y:auto;">
+                <p style="color:#555; text-align:center;">Loading messages...</p>
+            </div>
+        </div>
+    </div>
+    <nav class="nav-bar" id="bottomNav" style="display:none;">
+        <button class="nav-item active-nav" onclick="navTo('jumpPage', this)"><i class="fas fa-bolt"></i><span>JUMP</span></button>
+        <button class="nav-item" onclick="navTo('leaderboardPage', this)"><i class="fas fa-chart-line"></i><span>RANK</span></button>
+        <button class="nav-item" onclick="navTo('profilePage', this)"><i class="fas fa-user-circle"></i><span>PROFILE</span></button>
+    </nav>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
+:root { --primary: #00ff88; --gold: #ffd700; --silver: #e0e0e0; --bronze: #cd7f32; --bg: #0b0f19; --card: #161b22; --text: #f0f6fc; --nav-bg: #1f242d; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+/* Page & Layout */
+.page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; flex: 1; overflow-y: auto; padding-bottom: 100px; }
+.active { display: flex; animation: fadeIn 0.3s ease; }
+.card { position: relative; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 400px; text-align: center; }
+/* --- SEARCH & INBOX BUTTONS --- */
+.search-container { display: flex; gap: 10px; width: 100%; max-width: 400px; margin-bottom: 15px; }
+.search-input { flex: 1; padding: 12px; background: #0d1117; border: 1px solid #30363d; color: #fff; border-radius: 8px; outline: none; font-size: 14px; }
+.search-btn { background: #1f6feb; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
+.inbox-icon-btn, .search-icon-btn { position: absolute; top: 15px; right: 15px; background: #1f242d; border: 1px solid #30363d; color: #fff; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; transition: transform 0.2s; }
+.search-icon-btn { right: auto; left: 15px; } /* Search left mein */
+.inbox-icon-btn:active, .search-icon-btn:active { transform: scale(0.9); }
+.badge { position: absolute; top: -2px; right: -2px; background: #f85149; color: white; border-radius: 50%; width: 15px; height: 15px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid #161b22; }
+/* --- NEW TROPHY DESIGN (MEDALS, NO BOXES) --- */
+.awards-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 15px; /* Thoda gap badhaya */
+    width: 100%; 
+    margin-top: 25px; 
+}
+/* Base Style for All Awards - Remove Box Background */
+.award-card, .special-trophy-card { 
+    background: transparent; /* No Box Color */
+    border: none; /* No Border */
+    padding: 0;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: flex-start; 
+    min-height: 90px;
+    position: relative;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+/* --- THE MEDAL CIRCLE (This creates the trophy look) --- */
+.award-card i, .special-trophy-card i {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; /* Circle Shape */
+    font-size: 22px;
+    margin-bottom: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.3);
+    border: 2px solid rgba(255,255,255,0.1);
+    transition: transform 0.2s;
+}
+.award-card:active i, .special-trophy-card:active i {
+    transform: scale(0.9);
+}
+/* Titles are now floating below */
+.award-card div, .special-trophy-card .special-title {
+    font-size: 10px;
+    color: #8b949e;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+}
+/* --- RANK MEDALS (1, 2, 3) --- */
+.rank-1 i { background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b); color: #fff; text-shadow: 0 1px 2px #000; border: 2px solid #ffed4a; }
+.rank-2 i { background: radial-gradient(circle at 30% 30%, #e0e0e0, #757575); color: #fff; text-shadow: 0 1px 2px #000; border: 2px solid #fff; }
+.rank-3 i { background: radial-gradient(circle at 30% 30%, #cd7f32, #8b4513); color: #fff; text-shadow: 0 1px 2px #000; border: 2px solid #ffaf7a; }
+.rank-top i { background: #161b22; color: #58a6ff; border: 1px solid #30363d; box-shadow: none; } /* Normal Ranks flat */
+/* --- SPECIAL PREMIUM TROPHIES (Gem/Orb Look) --- */
+/* 1. TITAN (Golden Orb) */
+.style-titan i {
+    background: radial-gradient(circle at 30% 30%, #fffacd, #ffd700, #b8860b);
+    color: #5a3e00;
+    box-shadow: 0 0 15px #ffd700;
+    border: 2px solid #fff;
+}
+.style-titan .special-title { color: #ffd700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+/* 2. VELOCITY (Ruby Red) */
+.style-velocity i {
+    background: radial-gradient(circle at 30% 30%, #ff4d4d, #990000);
+    color: #fff;
+    box-shadow: 0 0 15px #ff004c;
+    border: 2px solid #ff9999;
+}
+.style-velocity .special-title { color: #ff4d4d; }
+/* 3. LEGACY (Emerald/Teal) */
+.style-legacy i {
+    background: radial-gradient(circle at 30% 30%, #7fffd4, #008080);
+    color: #003333;
+    box-shadow: 0 0 15px #7fffd4;
+    border: 2px solid #e0ffff;
+}
+.style-legacy .special-title { color: #7fffd4; }
+/* 4. APEX (Sapphire Blue) */
+.style-apex i {
+    background: radial-gradient(circle at 30% 30%, #00d2ff, #0056b3);
+    color: #fff;
+    box-shadow: 0 0 15px #00d2ff;
+    border: 2px solid #cceeff;
+}
+.style-apex .special-title { color: #00d2ff; }
+/* 5. HEART (Rose Gold/Pink) */
+.style-heart i {
+    background: radial-gradient(circle at 30% 30%, #ffb6c1, #ff1493);
+    color: #fff;
+    box-shadow: 0 0 15px #ff69b4;
+    border: 2px solid #ffe4e1;
+}
+.style-heart .special-title { color: #ff69b4; }
+/* --- OTHER UI ELEMENTS --- */
+.profile-img-container { position: relative; display: inline-block; margin-top: 20px; padding: 5px; }
+.legendary-ring::before { content: ''; position: absolute; inset: -3px; background: conic-gradient(from 0deg, transparent 0%, #ffd700 20%, #b8860b 50%, #ffd700 80%, transparent 100%); border-radius: 50%; z-index: -1; animation: rotateGold 4s linear infinite; filter: blur(4px); }
+.legendary-ring::after { content: ''; position: absolute; inset: -1px; background: linear-gradient(45deg, #ffd700, #ffb700); border-radius: 50%; z-index: -1; }
+.year-crown-badge { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(180deg, #ffd700 0%, #ff8c00 100%); color: #000; font-size: 9px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 2px solid #161b22; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); white-space: nowrap; animation: badgePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #30363d; z-index: 1000; }
+.nav-item { background: none; border: none; color: #8b949e; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.nav-item.active-nav { color: var(--primary); }
+.lb-container { width: 100%; max-width: 400px; }
+.player-row { display: flex; align-items: center; padding: 12px 15px; background: #21262d; margin-bottom: 8px; border-radius: 12px; border: 1px solid #30363d; animation: fadeIn 0.5s; cursor: pointer; }
+.rank-circle { width: 30px; height: 30px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: var(--primary); }
+.player-info { flex-grow: 1; text-align: left; }
+.player-name { font-weight: 600; font-size: 14px; color: #fff; }
+.player-score { font-weight: 800; color: var(--primary); font-size: 16px; }
+#height { font-size: 80px; font-weight: 900; color: var(--primary); margin: 0; }
+.btn-main { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
+.season-badge { background: #238636; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;}
+.uid-box { background: #0d1117; padding: 5px 10px; border-radius: 8px; font-size: 11px; color: #8b949e; margin-top: 5px; display: inline-block; border: 1px solid #30363d; letter-spacing: 1px; font-family: monospace; }
+@keyframes rotateGold { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes badgePop { 0% { transform: translateX(-50%) scale(0); } 100% { transform: translateX(-50%) scale(1); } }
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* Mail Modal */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
+.modal-card { width: 90%; max-width: 350px; background: #161b22; border: 1px solid #30363d; }
+.mail-item { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 10px; margin-bottom: 10px; position: relative; }
+.mail-title { font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 14px; }
+.mail-msg { font-size: 12px; color: #c9d1d9; margin-bottom: 10px; }
+.claim-btn { background: linear-gradient(45deg, #ffd700, #ff8c00); border: none; color: #000; font-weight: bold; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 12px; }
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getDatabase, ref, set, get, onValue, remove, push, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+const firebaseConfig = {
+    apiKey: "AIzaSyDOPErXM1g4vdmiVdau67U7vGRsmbtMMhE",
+    authDomain: "white-drack-fd1ee.firebaseapp.com",
+    databaseURL: "https://white-drack-fd1ee-default-rtdb.firebaseio.com",
+    projectId: "white-drack-fd1ee",
+    storageBucket: "white-drack-fd1ee.firebasestorage.app",
+    messagingSenderId: "151227903888",
+    appId: "1:151227903888:web:02a2d7ab14f7d1e152cd15"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const provider = new GoogleAuthProvider();
+let currentUser = null; 
+let seasonBestScore = 0;
+// --- UTILS ---
+function getSeasonID() {
+    const now = new Date();
+    return `season_${now.getFullYear()}_${now.getMonth() + 1}`;
+}
+function getSeasonInfo() {
+    const now = new Date(); const d = now.getDate();
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const seasonName = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+    if(document.getElementById('seasonDisplay')) {
+        document.getElementById('seasonDisplay').innerText = "Season: " + seasonName;
+        document.getElementById('lbSeasonName').innerText = "Leaderboard for " + seasonName;
+    }
+    let round = 1; if (d > 7) round = 2; if (d > 14) round = 3; if (d > 21) round = 4; if (d > 28) round = "FINAL";
+    return { text: round === "FINAL" ? "Finalizing..." : `Round ${round}`, seasonID: getSeasonID() };
+}
+if(document.getElementById('roundDisplay')) document.getElementById('roundDisplay').innerText = getSeasonInfo().text;
+window.login = () => signInWithPopup(auth, provider);
+window.logout = () => signOut(auth);
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        document.getElementById('bottomNav').style.display = 'flex';
+        loadUserData(user);
+        navTo('jumpPage', document.querySelector('.nav-item'));
+    } else {
+        document.getElementById('bottomNav').style.display = 'none';
+        navTo('loginPage');
+    }
+});
+window.navTo = (pageId, el) => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    if(el) { document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active-nav')); el.classList.add('active-nav'); }
+    if(pageId === 'leaderboardPage') loadLeaderboard();
+};
+// --- MODAL CONTROLS ---
+window.openSearchModal = () => { document.getElementById('searchModal').style.display = 'flex'; };
+window.closeSearchModal = () => { document.getElementById('searchModal').style.display = 'none'; };
+window.openMailbox = () => { document.getElementById('mailModal').style.display = 'flex'; fetchMail(); };
+window.closeMailbox = () => { document.getElementById('mailModal').style.display = 'none'; };
+// --- NUMERIC ID LOGIC ---
+async function getOrGeneratePublicID(user) {
+    const idRef = ref(db, `users/${user.uid}/publicID`);
+    const snap = await get(idRef);
+    if (snap.exists()) {
+        return snap.val();
+    } else {
+        const newID = Math.floor(10000000 + Math.random() * 90000000);
+        await set(idRef, newID);
+        return newID;
+    }
+}
+// --- SEARCH LOGIC (Updated to use Modal Input) ---
+window.searchPlayer = async () => {
+    // Note: Now using 'modalSearchInput'
+    const inputVal = document.getElementById('modalSearchInput').value.trim();
+    if(!inputVal) { alert("Please enter Player ID!"); return; }
+    const btn = document.querySelector('.search-btn');
+    const originalText = btn.innerText;
+    btn.innerText = "Searching...";
+    try {
+        const usersRef = ref(db, 'users');
+        const q = query(usersRef, orderByChild('publicID'), equalTo(parseInt(inputVal)));
+        const snapshot = await get(q);
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const foundUid = Object.keys(data)[0]; 
+            closeSearchModal(); // Close modal on success
+            viewPlayer(foundUid);
+        } else {
+            alert("Player ID not found.");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Search Error.");
+    } finally {
+        btn.innerText = originalText;
+    }
+};
+// --- CHAMPION LOGIC ---
+function checkChampionStatus(awards, containerId) {
+    const container = document.getElementById(containerId);
+    if(!container) return;
+    container.classList.remove('legendary-ring');
+    const oldBadge = container.querySelector('.year-crown-badge');
+    if(oldBadge) oldBadge.remove();
+    if(!awards) return;
+    let yearCounts = {};
+    Object.values(awards).forEach(award => {
+        if(!award.isSpecial && parseInt(award.rank) === 1) { 
+            const year = award.seasonName.split(' ')[1];
+            if(year) yearCounts[year] = (yearCounts[year] || 0) + 1;
+        }
+    });
+    let maxGold = 0; let bestYear = "";
+    for(let y in yearCounts) { if(yearCounts[y] > maxGold) { maxGold = yearCounts[y]; bestYear = y; } }
+    if(maxGold > 0) {
+        container.classList.add('legendary-ring');
+        container.innerHTML += `<div class="year-crown-badge">👑 ${bestYear} King</div>`;
+    }
+}
+// --- MAIL SYSTEM ---
+function fetchMail() {
+    if(!currentUser) return;
+    const list = document.getElementById('mailList');
+    
+    onValue(ref(db, `users/${currentUser.uid}/inbox`), (snap) => {
+        if(!snap.exists()) {
+            list.innerHTML = '<p style="color:#555; text-align:center; padding:20px;">Inbox is empty.</p>';
+            document.getElementById('mailCount').style.display = 'none';
+            return;
+        }
+        const mails = snap.val();
+        let html = "";
+        let count = 0;
+        Object.entries(mails).forEach(([key, mail]) => {
+            count++;
+            let btn = "";
+            if (mail.type === "special_trophy") {
+                window[`trophy_${key}`] = mail.trophyData;
+                btn = `<button onclick="claimTrophy('${key}')" class="claim-btn" style="background:linear-gradient(45deg, #7928ca, #ff0080); color:white;"><i class="fas fa-trophy"></i> CLAIM TROPHY</button>`;
+            } else if (mail.reward) {
+                btn = `<button onclick="claimReward('${key}', ${mail.reward})" class="claim-btn"><i class="fas fa-coins"></i> CLAIM +${mail.reward}m SCORE</button>`;
+            } else {
+                btn = `<button onclick="deleteMail('${key}')" class="claim-btn" style="background:#30363d; color:#fff;">Dismiss</button>`;
+            }
+            html += `
+            <div class="mail-item">
+                <div class="mail-title">${mail.title}</div>
+                <div class="mail-msg">${mail.message}</div>
+                ${btn}
+            </div>`;
+        });
+        list.innerHTML = html;
+        const badge = document.getElementById('mailCount');
+        if(count > 0) { badge.innerText = count; badge.style.display = 'flex'; } 
+        else { badge.style.display = 'none'; }
+    });
+}
+window.claimReward = async (mailId, rewardAmount) => {
+    if(!currentUser) return;
+    const season = getSeasonInfo().seasonID;
+    if(confirm(`Claim ${rewardAmount}m reward?`)) {
+        try {
+            const userRef = ref(db, `${season}/users/${currentUser.uid}/totalScore`);
+            const snap = await get(userRef);
+            let currentScore = snap.exists() ? parseFloat(snap.val()) : 0;
+            let newScore = currentScore + parseFloat(rewardAmount);
+            await set(ref(db, `${season}/users/${currentUser.uid}`), { name: currentUser.displayName, photo: currentUser.photoURL, totalScore: newScore });
+            seasonBestScore = newScore;
+            await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`));
+            alert("Score Boosted!");
+        } catch(e) { console.error(e); }
+    }
+};
+window.claimTrophy = async (mailId) => {
+    if(!currentUser) return;
+    const tData = window[`trophy_${mailId}`];
+    if(!tData) { alert("Error finding trophy data."); return; }
+    if(confirm(`Claim '${tData.name}' Trophy?`)) {
+        try {
+            await push(ref(db, `users/${currentUser.uid}/awards`), {
+                seasonName: tData.date,
+                rank: "Special",
+                isSpecial: true,
+                specialData: tData
+            });
+            await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`));
+            delete window[`trophy_${mailId}`];
+            alert("🏆 Trophy added to profile!");
+        } catch(e) { console.error(e); }
+    }
+};
+window.deleteMail = async (mailId) => { if(currentUser) await remove(ref(db, `users/${currentUser.uid}/inbox/${mailId}`)); };
+// --- AWARD RENDERER ---
+function renderAwards(snap, listId) {
+    const list = document.getElementById(listId);
+    if(!snap.exists()) { list.innerHTML = `<p style="grid-column: span 3; color:#555; text-align:center;">No trophies yet.</p>`; return; }
+    
+    list.innerHTML = "";
+    const awards = snap.val();
+    Object.values(awards).forEach(a => {
+        if (a.isSpecial) {
+            const s = a.specialData;
+            list.innerHTML += `
+                <div class="special-trophy-card ${s.style}">
+                    <i class="fas ${s.icon} special-icon"></i>
+                    <div class="special-title">${s.name}</div>
+                </div>`;
+        } else {
+            let rank = parseInt(a.rank);
+            let cls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-top';
+            let icn = rank<=3?'fa-trophy':'fa-medal';
+            list.innerHTML += `
+                <div class="award-card ${cls}">
+                    <i class="fas ${icn} ${cls}" style="font-size:20px;"></i>
+                    <div style="font-weight:bold; color:#fff; font-size:12px;">#${rank}</div>
+                    <div style="font-size:8px; color:#888;">${a.seasonName}</div>
+                </div>`;
+        }
+    });
+}
+async function loadUserData(user) {
+    const season = getSeasonInfo().seasonID;
+    
+    // Numeric ID Logic
+    const publicID = await getOrGeneratePublicID(user);
+    document.getElementById('pUid').innerText = publicID;
+    document.getElementById('pName').innerText = user.displayName;
+    document.getElementById('pImg').src = user.photoURL;
+    
+    onValue(ref(db, `${season}/users/${user.uid}/totalScore`), (s) => {
+        seasonBestScore = s.exists() ? parseFloat(s.val()) : 0;
+        document.getElementById('pTotal').innerText = seasonBestScore.toFixed(2) + "m";
+        document.getElementById('todayBest').inne
